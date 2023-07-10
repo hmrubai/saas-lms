@@ -5,12 +5,14 @@ namespace App\Http\Controllers;
 use Exception;
 use App\Models\User;
 use App\Models\Grade;
+use App\Models\Payment;
+use App\Models\Setting;
 use App\Models\Country;
 use App\Models\Category;
 use App\Models\PackageType;
 use App\Models\Correction;
+use App\Models\Organization;
 use App\Models\CorrectionRating;
-use App\Models\Payment;
 use App\Models\PaymentDetail;
 use App\Models\TopicConsume;
 
@@ -18,6 +20,32 @@ use Illuminate\Http\Request;
 
 class MasterSettingsController extends Controller
 {
+    //Master Settings
+    public function organizationList(Request $request)
+    {
+        $organization_list = Organization::select('id', 'name', 'slug', 'details', 'address', 'email', 'contact_no', 'logo', 'contact_person')->where('is_active', true)->get();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'List Successful',
+            'data' => $organization_list
+        ], 200);
+    }
+
+    //settingDetails
+    public function settingDetailsByID(Request $request)
+    {
+        $slug = $request->slug ? $request->slug : 0;
+
+        $setting = Setting::where('organization_slug', $slug)->first();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Settings Details',
+            'data' => $setting
+        ], 200);
+    }
+
     public function trancateData(Request $request)
     {
         Correction::truncate();

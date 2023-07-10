@@ -20,6 +20,9 @@ Route::get('country-list', [MasterSettingsController::class, 'countryList']);
 Route::get('school-list', [SchoolController::class, 'schoolList']);
 Route::get('get-expert-list', [AuthController::class, 'getExpertList']);
 
+Route::get('organization-list', [MasterSettingsController::class, 'organizationList']);
+Route::get('settings-by-slug/{slug}', [MasterSettingsController::class, 'settingDetailsByID']);
+
 Route::middleware('auth:sanctum')->group( function () {
     Route::get('/user', function (Request $request) {
         return $request->user();
