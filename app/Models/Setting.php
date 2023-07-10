@@ -1,0 +1,28 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class Setting extends Model
+{
+    use HasFactory;
+    
+    protected $table = 'settings';
+
+    protected $fillable = [
+        'organization_name',
+        'organization_slug',
+        'host_url',
+        'user_id',
+        'contact_no',
+        'logo',
+        'color_theme',
+        'is_active'
+    ];
+
+    protected $casts = [
+        'is_active' => 'boolean',
+    ];
+}

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 
 use Exception;
 use App\Models\User;
+use App\Models\MentorInformation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
@@ -14,13 +15,15 @@ use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
 {
+
     public function registerUser(Request $request)
     {
         try {
             $validateUser = Validator::make($request->all(), 
             [
                 'name' => 'required',
-                'contact_no' => 'required|unique:users',
+                'inistitute_slug' => 'required',
+                'username' => 'required|unique:users',
                 'password' => 'required'
             ]);
 
@@ -29,7 +32,29 @@ class AuthController extends Controller
                     'status' => false,
                     'message' => 'validation error',
                     'data' => $validateUser->errors()
-                ], 401);
+                ], 422);
+            }
+
+            if($request->email){
+                $is_exist = User::where('email', $request->email)->first();
+                if (empty($is_exist)){
+                    return response()->json([
+                        'status' => true,
+                        'message' => 'Email address already been used! Please use another email',
+                        'data' => []
+                    ], 422);
+                }
+            }
+
+            if($request->contact_no){
+                $is_exist = User::where('contact_no', $request->contact_no)->first();
+                if (empty($is_exist)){
+                    return response()->json([
+                        'status' => true,
+                        'message' => 'Contact No already been used! Please use another number',
+                        'data' => []
+                    ], 422);
+                }
             }
 
             $profile_image = null;
@@ -46,7 +71,9 @@ class AuthController extends Controller
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
+                'username' => $request->username,
                 'contact_no' => $request->contact_no,
+                'inistitute_slug' => $request->inistitute_slug,
                 'address' => $request->address,
                 'user_type' => $request->user_type ? $request->user_type : "Student",
                 'password' => Hash::make($request->password)
@@ -64,7 +91,7 @@ class AuthController extends Controller
 
             $response_user = [
                 'name' => $user->name, 
-                'email'=> $user->email, 
+                'username'=> $user->username, 
                 'user_type' => $request->user_type ? $request->user_type : "Student", 
                 'token' => $user->createToken("API TOKEN")->plainTextToken
             ];
@@ -85,7 +112,21 @@ class AuthController extends Controller
     }
 
     public function insertMentor(Request $request, $user_id, $profile_url){
+        try {
+            MentorInformation::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'contact_no' => $request->contact_no,
+                'username' => $request->username,
+                'address' => $request->address,
+                'image' => $profile_url,
+                'user_id' => $user_id
+            ]);
+            return true;
 
+        } catch (\Throwable $th) {
+            return false;
+        }
     }
 
     public function loginUser(Request $request)
@@ -93,7 +134,7 @@ class AuthController extends Controller
         try {
             $validateUser = Validator::make($request->all(), 
             [
-                'email' => 'required|email',
+                'username' => 'required',
                 'password' => 'required'
             ]);
 
@@ -105,18 +146,18 @@ class AuthController extends Controller
                 ], 401);
             }
 
-            if(!Auth::attempt($request->only(['email', 'password']))){
+            if(!Auth::attempt($request->only(['username', 'password']))){
                 return response()->json([
                     'status' => false,
-                    'message' => 'Email & Password does not match with our record.',
+                    'message' => 'Username & Password does not match with our record.',
                     'data' => []
                 ], 401);
             }
 
-            Log::debug('An informational message.');
-            Log::channel('#testing')->info('Something happened!');
+            Log::debug('Login from portal.');
+            //Log::channel('#testing')->info('Something happened!');
 
-            $user = User::where('email', $request->email)->first();
+            $user = User::where('username', $request->username)->first();
 
             if(!$user->is_active){
                 return response()->json([
@@ -130,11 +171,10 @@ class AuthController extends Controller
                 'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
+                'username' => $user->username,
                 'user_type' => $user->user_type,
                 'image' => $user->image,
                 'address' => $user->address,
-                'institution' => $user->institution,
-                'education' => $user->education,
                 'contact_no' => $user->contact_no,
                 'updated_at' => $user->updated_at,
                 'token' => $user->createToken("API TOKEN")->plainTextToken

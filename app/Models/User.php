@@ -18,11 +18,9 @@ class User extends Authenticatable
         'email',
         'contact_no',
         'address',
-        // 'institution',
-        // 'education',
+        'username',
+        'organization_slug',
         'image',
-        // 'country_id',
-        // 'school_id',
         'password',
         'user_type',
         'is_active'

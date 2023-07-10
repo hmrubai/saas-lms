@@ -17,8 +17,10 @@ class CreateUsersTable extends Migration
             $table->id();
             $table->string('name');
             $table->string('email')->nullable();
-            $table->string('contact_no')->unique();
+            $table->string('contact_no')->nullable();
+            $table->string('username')->unique();
             $table->string('address')->nullable();
+            $table->string('organization_slug');
             $table->enum('user_type', ['GlobalAdmin', 'LocalAdmin', 'SchoolAdmin', 'Expert', 'Student'])->default('Student');
             $table->string('image')->nullable();
             $table->boolean('is_active')->default(1);

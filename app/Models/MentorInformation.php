@@ -4,7 +4,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Package extends Model
+class MentorInformation extends Model
 {
     use HasFactory;
 
@@ -14,8 +14,10 @@ class Package extends Model
         'user_id',
         'name',
         'email',
+        'username',
         'contact_no',
         'mentor_code',
+        'organization_slug',
         'device_id',
         'referral_code',
         'referred_code',

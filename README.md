@@ -1,6 +1,6 @@
-## AEW (Advanced English Writing)
+## SAAS LMS 
 
-This application will be use as a backend application of AEW (Advanced English Writing). This service aims to make students interested in English & optimize their creative writing skills. The service is completely human-centric to help improve students’ self-learning skills & personal motivation for creative writing ability.
+This application will be use as a backend application of SaaS LMS of BacBon. This service aims to make students interested to improve their creative skills. The service is completely human-centric to help improve students’ self-learning skills & personal motivation for creative ability.
 
 ## Contributor
 
@@ -12,7 +12,8 @@ This application will be use as a backend application of AEW (Advanced English W
 - Expert Management
 - Student Management
 - Admin Management
-- Package 
-- Syllebus
-- Topic
-- Correction
+- Course 
+- Subject Lactures
+- Video, Quiz, Script Contants
+- Payments
+- Check Progress of Student
