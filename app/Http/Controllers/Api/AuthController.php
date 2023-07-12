@@ -23,7 +23,7 @@ class AuthController extends Controller
             $validateUser = Validator::make($request->all(), 
             [
                 'name' => 'required',
-                'inistitute_slug' => 'required',
+                'organization_slug' => 'required',
                 'username' => 'required|unique:users',
                 'password' => 'required'
             ]);
@@ -38,7 +38,7 @@ class AuthController extends Controller
 
             if($request->email){
                 $is_exist = User::where('email', $request->email)->first();
-                if ($is_exist){
+                if (!empty($is_exist)){
                     return response()->json([
                         'status' => true,
                         'message' => 'Email address already been used! Please use another email',
@@ -49,7 +49,7 @@ class AuthController extends Controller
 
             if($request->contact_no){
                 $is_exist = User::where('contact_no', $request->contact_no)->first();
-                if ($is_exist){
+                if (!empty($is_exist)){
                     return response()->json([
                         'status' => true,
                         'message' => 'Contact No already been used! Please use another number',
@@ -74,7 +74,7 @@ class AuthController extends Controller
                 'email' => $request->email,
                 'username' => $request->username,
                 'contact_no' => $request->contact_no,
-                'inistitute_slug' => $request->inistitute_slug,
+                'organization_slug' => $request->organization_slug,
                 'address' => $request->address,
                 'user_type' => $request->user_type ? $request->user_type : "Student",
                 'password' => Hash::make($request->password)
@@ -126,6 +126,7 @@ class AuthController extends Controller
                 'email' => $request->email,
                 'contact_no' => $request->contact_no,
                 'username' => $request->username,
+                'organization_slug' => $request->organization_slug,
                 'address' => $request->address,
                 'image' => $profile_url,
                 'user_id' => $user_id
@@ -144,6 +145,7 @@ class AuthController extends Controller
                 'name' => $request->name,
                 'email' => $request->email,
                 'contact_no' => $request->contact_no,
+                'organization_slug' => $request->organization_slug,
                 'username' => $request->username,
                 'address' => $request->address,
                 'image' => $profile_url,
