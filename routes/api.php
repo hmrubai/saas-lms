@@ -12,13 +12,21 @@ use App\Http\Controllers\SchoolController;
 use App\Http\Controllers\ConsumeController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\CorrectionController;
-
+use App\Http\Controllers\LocationController;
 
 Route::post('/auth/register', [AuthController::class, 'registerUser']);
 Route::post('/auth/login', [AuthController::class, 'loginUser']);
 Route::get('country-list', [MasterSettingsController::class, 'countryList']);
 Route::get('school-list', [SchoolController::class, 'schoolList']);
 Route::get('get-expert-list', [AuthController::class, 'getExpertList']);
+
+
+// Location
+Route::get('division-list', [LocationController::class, 'divisionList']);
+Route::get('district-list/{division_id}', [LocationController::class, 'districtListByID']);
+Route::get('upazila-list/{district_id}', [LocationController::class, 'upazilaListByID']);
+Route::get('area-list/{upazilla_id}', [LocationController::class, 'unionListByID']);
+
 
 Route::get('organization-list', [MasterSettingsController::class, 'organizationList']);
 Route::get('settings-by-slug/{slug}', [MasterSettingsController::class, 'settingDetailsByID']);

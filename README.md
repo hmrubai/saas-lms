@@ -5,6 +5,7 @@ This application will be use as a backend application of SaaS LMS of BacBon. Thi
 ## Contributor
 
 - **[Hosne Mobarak Rubai](https://github.com/hmrubai/)**
+- **[Foysal Ahmmad Arfin](https://github.com/arfin-foysal/)**
 
 ## Features
 
