@@ -15,6 +15,7 @@ use App\Models\Organization;
 use App\Models\CorrectionRating;
 use App\Models\PaymentDetail;
 use App\Models\TopicConsume;
+use Illuminate\Support\Facades\Validator;
 
 use Illuminate\Http\Request;
 
@@ -190,6 +191,67 @@ class MasterSettingsController extends Controller
                     return response()->json([
                         'status' => false,
                         'message' => 'Grade already Exist!',
+                        'data' => []
+                    ], 200);
+                }
+            }
+
+        } catch (Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => $e->getMessage(),
+                'data' => []
+            ], 200);
+        }
+    }
+
+    public function adminMenuList(Request $request)
+    {
+        $menus = Category::all();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'List Successful',
+            'data' => $menus
+        ], 200);
+    }
+
+    public function saveOrUpdateMenu (Request $request)
+    {
+        try {
+            $validateUser = Validator::make($request->all(), 
+            [
+                'name' => 'required'
+            ]);
+
+            if($validateUser->fails()){
+                return response()->json([
+                    'status' => false,
+                    'message' => 'validation error',
+                    'data' => $validateUser->errors()
+                ], 422);
+            }
+            if($request->id){
+                Category::where('id', $request->id)->update($request->all());
+                return response()->json([
+                    'status' => true,
+                    'message' => 'Menu has been updated successfully',
+                    'data' => []
+                ], 200);
+
+            } else {
+                $isExist = Category::where('name', $request->name)->first();
+                if (empty($isExist)) {
+                    Category::create($request->all());
+                    return response()->json([
+                        'status' => true,
+                        'message' => 'Menu has been created successfully',
+                        'data' => []
+                    ], 200);
+                }else{
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Menu already Exist!',
                         'data' => []
                     ], 200);
                 }

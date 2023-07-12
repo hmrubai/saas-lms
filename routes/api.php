@@ -29,9 +29,13 @@ Route::middleware('auth:sanctum')->group( function () {
     });
 
     Route::get('get-profile', [AuthController::class, 'getProfile']);
-
     Route::post('profile-update', [AuthController::class, 'updateUser']);
 
+    //Menu Settings
+    Route::get('admin/menu-list', [MasterSettingsController::class, 'adminMenuList']);
+    Route::post('admin/menu-save-or-update', [MasterSettingsController::class, 'saveOrUpdateMenu']);
+
+    //Old Application
     //Master Settings
     Route::get('syllabus-list', [MasterSettingsController::class, 'packageTypeList']);
     Route::get('grade-list', [MasterSettingsController::class, 'gradeList']);
