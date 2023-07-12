@@ -9,6 +9,7 @@ use App\Models\MentorInformation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
+use App\Models\StudentInformation;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -37,7 +38,7 @@ class AuthController extends Controller
 
             if($request->email){
                 $is_exist = User::where('email', $request->email)->first();
-                if (empty($is_exist)){
+                if ($is_exist){
                     return response()->json([
                         'status' => true,
                         'message' => 'Email address already been used! Please use another email',
@@ -48,7 +49,7 @@ class AuthController extends Controller
 
             if($request->contact_no){
                 $is_exist = User::where('contact_no', $request->contact_no)->first();
-                if (empty($is_exist)){
+                if ($is_exist){
                     return response()->json([
                         'status' => true,
                         'message' => 'Contact No already been used! Please use another number',
@@ -79,8 +80,13 @@ class AuthController extends Controller
                 'password' => Hash::make($request->password)
             ]);
 
+            
             if($request->user_type == 'Expert'){
                 $this->insertMentor($request, $user->id, $profile_url);
+            }
+
+            if($request->user_type == 'Student'){
+                $this->insertStudent($request, $user->id, $profile_url);
             }
 
             if($request->hasFile('image')){
@@ -111,6 +117,8 @@ class AuthController extends Controller
         }
     }
 
+
+    // Mentor Registration
     public function insertMentor(Request $request, $user_id, $profile_url){
         try {
             MentorInformation::create([
@@ -128,6 +136,29 @@ class AuthController extends Controller
             return false;
         }
     }
+
+// Student Registration
+    public function insertStudent(Request $request, $user_id, $profile_url){
+        try {
+            StudentInformation::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'contact_no' => $request->contact_no,
+                'username' => $request->username,
+                'address' => $request->address,
+                'image' => $profile_url,
+                'user_id' => $user_id
+            ]);
+            return true;
+
+        } catch (\Throwable $th) {
+            return false;
+        }
+    }
+
+
+
+
 
     public function loginUser(Request $request)
     {
