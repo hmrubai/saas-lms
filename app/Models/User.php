@@ -46,4 +46,9 @@ class User extends Authenticatable
 
         return new NewAccessToken($token, $token->getKey().'|'.$plainTextToken);
     }
+
+    public function routeNotificationForSlack($notification)
+    {
+        return 'https://hooks.slack.com/services/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';
+    }
 }

@@ -14,6 +14,10 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 
+//Notification
+use App\Notifications\SendNotification;
+use Illuminate\Support\Facades\Notification;
+
 class AuthController extends Controller
 {
 
@@ -195,6 +199,8 @@ class AuthController extends Controller
                     'data' => []
                 ], 401);
             }
+
+            Notification::send($user, new SendNotification('Auth Service: Login Successfull! ' . $user->name));
 
             $response_user = [
                 'id' => $user->id,
