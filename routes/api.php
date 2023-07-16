@@ -27,6 +27,8 @@ Route::get('district-list/{division_id}', [LocationController::class, 'districtL
 Route::get('upazila-list/{district_id}', [LocationController::class, 'upazilaListByID']);
 Route::get('area-list/{upazilla_id}', [LocationController::class, 'unionListByID']);
 
+//Tags
+Route::get('tag-list', [MasterSettingsController::class, 'tagsList']);
 
 Route::get('organization-list', [MasterSettingsController::class, 'organizationList']);
 Route::get('settings-by-slug/{slug}', [MasterSettingsController::class, 'settingDetailsByID']);
@@ -42,6 +44,9 @@ Route::middleware('auth:sanctum')->group( function () {
     //Menu Settings
     Route::get('admin/menu-list', [MasterSettingsController::class, 'adminMenuList']);
     Route::post('admin/menu-save-or-update', [MasterSettingsController::class, 'saveOrUpdateMenu']);
+
+    //Tags
+    Route::post('admin/tag-save-or-update', [MasterSettingsController::class, 'saveOrUpdateTags']);
 
     //Old Application
     //Master Settings

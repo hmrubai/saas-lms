@@ -138,7 +138,7 @@ class AuthController extends Controller
         }
     }
 
-// Student Registration
+    // Student Registration
     public function insertStudent(Request $request, $user_id, $profile_url){
         try {
             StudentInformation::create([
@@ -157,10 +157,6 @@ class AuthController extends Controller
             return false;
         }
     }
-
-
-
-
 
     public function loginUser(Request $request)
     {

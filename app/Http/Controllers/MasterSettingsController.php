@@ -8,6 +8,7 @@ use App\Models\Grade;
 use App\Models\Payment;
 use App\Models\Setting;
 use App\Models\Country;
+use App\Models\Interest;
 use App\Models\Category;
 use App\Models\PackageType;
 use App\Models\Correction;
@@ -326,9 +327,69 @@ class MasterSettingsController extends Controller
         ], 200);
     }
 
-    
+    public function tagsList(Request $request)
+    {
+        $interest = Interest::pluck('tags');
 
+        return response()->json([
+            'status' => true,
+            'message' => 'List Successful',
+            'data' => $interest
+        ], 200);
+    }
 
+    public function saveOrUpdateTags (Request $request)
+    {
+        try {
+            $validateUser = Validator::make($request->all(), 
+            [
+                'tag' => 'required'
+            ]);
 
+            if($validateUser->fails()){
+                return response()->json([
+                    'status' => false,
+                    'message' => 'validation error',
+                    'data' => $validateUser->errors()
+                ], 422);
+            }
+            if($request->id){
+                Interest::where('id', $request->id)->update([
+                    'tags' => $request->tag
+                ]);
+                return response()->json([
+                    'status' => true,
+                    'message' => 'Tag has been updated successfully',
+                    'data' => []
+                ], 200);
+
+            } else {
+                $isExist = Interest::where('tags', $request->tag)->first();
+                if (empty($isExist)) {
+                    Interest::create([
+                        'tags' => $request->tag
+                    ]);
+                    return response()->json([
+                        'status' => true,
+                        'message' => 'Tag has been created successfully',
+                        'data' => []
+                    ], 200);
+                }else{
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Tag already Exist!',
+                        'data' => []
+                    ], 200);
+                }
+            }
+
+        } catch (Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => $e->getMessage(),
+                'data' => []
+            ], 200);
+        }
+    }
 
 }
