@@ -31,6 +31,7 @@ class StudentInformation extends Model
         'profession',
         'current_address',
         'permanent_address',
+        'interests',
         'division_id',
         'city_id',
         'area_id',

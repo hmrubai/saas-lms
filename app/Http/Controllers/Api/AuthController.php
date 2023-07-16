@@ -121,7 +121,6 @@ class AuthController extends Controller
         }
     }
 
-
     // Mentor Registration
     public function insertMentor(Request $request, $user_id, $profile_url){
         try {
@@ -187,9 +186,6 @@ class AuthController extends Controller
                 ], 401);
             }
 
-            Log::debug('Login from portal.');
-            //Log::channel('#testing')->info('Something happened!');
-
             $user = User::where('username', $request->username)->first();
 
             if(!$user->is_active){
@@ -200,7 +196,9 @@ class AuthController extends Controller
                 ], 401);
             }
 
-            Notification::send($user, new SendNotification('Auth Service: Login Successfull! ' . $user->name));
+            Log::debug('Auth Service: Login Successfull! ' . $user->name);
+
+            //Notification::send($user, new SendNotification('Auth Service: Login Successfull! ' . $user->name));
 
             $response_user = [
                 'id' => $user->id,

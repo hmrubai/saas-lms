@@ -13,6 +13,7 @@ use App\Http\Controllers\ConsumeController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\CorrectionController;
 use App\Http\Controllers\LocationController;
+use App\Http\Controllers\StudentController;
 
 Route::post('/auth/register', [AuthController::class, 'registerUser']);
 Route::post('/auth/login', [AuthController::class, 'loginUser']);
@@ -47,7 +48,12 @@ Route::middleware('auth:sanctum')->group( function () {
 
     //Tags
     Route::post('admin/tag-save-or-update', [MasterSettingsController::class, 'saveOrUpdateTags']);
+    
+    //USER ROUTES
+    Route::post('update-tags', [StudentController::class, 'updateInterests']);
+    
 
+    
     //Old Application
     //Master Settings
     Route::get('syllabus-list', [MasterSettingsController::class, 'packageTypeList']);
