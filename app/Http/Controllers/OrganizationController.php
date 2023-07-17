@@ -156,4 +156,50 @@ class OrganizationController extends Controller
             ], 200);
         }
     }
+
+    public function updateSettings (Request $request)
+    {
+        try {
+            $validateUser = Validator::make($request->all(), 
+            [
+                'id' => 'required',
+                'host_url' => 'required',
+                'asset_host' => 'required',
+                'color_theme' => 'required'
+            ]);
+
+            if($validateUser->fails()){
+                return response()->json([
+                    'status' => false,
+                    'message' => 'validation error',
+                    'data' => $validateUser->errors()
+                ], 422);
+            }
+
+            $user_id = $request->user()->id;
+
+            Setting::where('id', $request->id)->update([
+                "host_url" => $request->host_url,
+                "asset_host" => $request->asset_host,
+                "user_id" => $user_id,
+                "color_theme" => $request->color_theme
+            ]);
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Settings has been updated successfully',
+                'data' => []
+            ], 200);
+            
+
+        } catch (Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => $e->getMessage(),
+                'data' => []
+            ], 200);
+        }
+    }
+
+
 }

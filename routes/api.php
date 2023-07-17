@@ -50,6 +50,7 @@ Route::middleware('auth:sanctum')->group( function () {
 
     //Organization
     Route::post('admin/organization-save-or-update', [OrganizationController::class, 'saveOrUpdateOrganization']);
+    Route::post('admin/settings-update', [OrganizationController::class, 'updateSettings']);
 
     //Tags
     Route::post('admin/tag-save-or-update', [MasterSettingsController::class, 'saveOrUpdateTags']);
