@@ -21,12 +21,13 @@ Route::get('country-list', [MasterSettingsController::class, 'countryList']);
 Route::get('school-list', [SchoolController::class, 'schoolList']);
 Route::get('get-expert-list', [AuthController::class, 'getExpertList']);
 
-
 // Location
 Route::get('division-list', [LocationController::class, 'divisionList']);
 Route::get('district-list/{division_id}', [LocationController::class, 'districtListByID']);
 Route::get('upazila-list/{district_id}', [LocationController::class, 'upazilaListByID']);
 Route::get('area-list/{upazilla_id}', [LocationController::class, 'unionListByID']);
+
+Route::get('menu-list', [MasterSettingsController::class, 'adminMenuList']);
 
 //Tags
 Route::get('tag-list', [MasterSettingsController::class, 'tagsList']);
@@ -53,7 +54,7 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::post('update-tags', [StudentController::class, 'updateInterests']);
     
 
-    
+
     //Old Application
     //Master Settings
     Route::get('syllabus-list', [MasterSettingsController::class, 'packageTypeList']);
