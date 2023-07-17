@@ -14,6 +14,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\CorrectionController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\StudentController;
+use App\Http\Controllers\OrganizationController;
 
 Route::post('/auth/register', [AuthController::class, 'registerUser']);
 Route::post('/auth/login', [AuthController::class, 'loginUser']);
@@ -32,7 +33,7 @@ Route::get('menu-list', [MasterSettingsController::class, 'adminMenuList']);
 //Tags
 Route::get('tag-list', [MasterSettingsController::class, 'tagsList']);
 
-Route::get('organization-list', [MasterSettingsController::class, 'organizationList']);
+Route::get('organization-list', [OrganizationController::class, 'organizationList']);
 Route::get('settings-by-slug/{slug}', [MasterSettingsController::class, 'settingDetailsByID']);
 
 Route::middleware('auth:sanctum')->group( function () {
@@ -47,12 +48,17 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::get('admin/menu-list', [MasterSettingsController::class, 'adminMenuList']);
     Route::post('admin/menu-save-or-update', [MasterSettingsController::class, 'saveOrUpdateMenu']);
 
+    //Organization
+    Route::post('admin/organization-save-or-update', [OrganizationController::class, 'saveOrUpdateOrganization']);
+
     //Tags
     Route::post('admin/tag-save-or-update', [MasterSettingsController::class, 'saveOrUpdateTags']);
     
     //USER ROUTES
     Route::post('update-tags', [StudentController::class, 'updateInterests']);
     
+    //Organization
+
 
 
     //Old Application

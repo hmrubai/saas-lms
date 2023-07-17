@@ -23,17 +23,7 @@ use Illuminate\Http\Request;
 class MasterSettingsController extends Controller
 {
     //Master Settings
-    public function organizationList(Request $request)
-    {
-        $organization_list = Organization::select('id', 'name', 'slug', 'details', 'address', 'email', 'contact_no', 'logo', 'contact_person')->where('is_active', true)->get();
-
-        return response()->json([
-            'status' => true,
-            'message' => 'List Successful',
-            'data' => $organization_list
-        ], 200);
-    }
-
+    
     //settingDetails
     public function settingDetailsByID(Request $request)
     {

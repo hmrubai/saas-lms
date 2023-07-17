@@ -16,6 +16,7 @@ class Organization extends Model
         'slug',
         'details',
         'address',
+        'email',
         'user_id',
         'contact_no',
         'logo',

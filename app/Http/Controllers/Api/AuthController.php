@@ -102,6 +102,7 @@ class AuthController extends Controller
             $response_user = [
                 'name' => $user->name, 
                 'username'=> $user->username, 
+                'interests' => [],
                 'user_type' => $request->user_type ? $request->user_type : "Student", 
                 'token' => $user->createToken("API TOKEN")->plainTextToken
             ];
@@ -200,11 +201,18 @@ class AuthController extends Controller
 
             //Notification::send($user, new SendNotification('Auth Service: Login Successfull! ' . $user->name));
 
+            $interests = [];
+            if($user->user_type == 'Student'){
+                $interest = StudentInformation::where('user_id', $user->id)->first();
+                $interests = explode(",",$interest->interests);
+            }
+
             $response_user = [
                 'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
                 'username' => $user->username,
+                'interests' => $interests,
                 'user_type' => $user->user_type,
                 'image' => $user->image,
                 'address' => $user->address,

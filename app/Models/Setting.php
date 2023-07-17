@@ -15,6 +15,7 @@ class Setting extends Model
         'organization_name',
         'organization_slug',
         'host_url',
+        'asset_host',
         'user_id',
         'contact_no',
         'logo',
