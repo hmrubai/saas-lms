@@ -11,6 +11,10 @@ use Illuminate\Support\Facades\Validator;
 
 class OrganizationController extends Controller
 {
+
+
+    
+
     public function organizationList(Request $request)
     {
         $organization_list = Organization::select('id', 'name', 'slug', 'details', 'address', 'email', 'contact_no', 'logo', 'contact_person','is_active')->where('is_active', true)->get();
