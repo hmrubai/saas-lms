@@ -58,12 +58,12 @@ Route::middleware('auth:sanctum')->group( function () {
     //USER ROUTES
     Route::post('update-tags', [StudentController::class, 'updateInterests']);
     
-    //Organization
+    
 
 
 
     //Old Application
-    //Master Settings
+    /* //Master Settings
     Route::get('syllabus-list', [MasterSettingsController::class, 'packageTypeList']);
     Route::get('grade-list', [MasterSettingsController::class, 'gradeList']);
     Route::get('category-list', [MasterSettingsController::class, 'categoryList']);
@@ -137,7 +137,7 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::post('submit-rating-by-student', [CorrectionController::class, 'submitStudentRating']);
     Route::get('expert-dashboard', [CorrectionController::class, 'getMiniDashboardInfo']);
 
-    Route::get('my-balance-list', [ConsumeController::class, 'myBalanceList']); 
+    Route::get('my-balance-list', [ConsumeController::class, 'myBalanceList']); */
 });
 
 Route::group(['prefix' => 'open'], function(){
