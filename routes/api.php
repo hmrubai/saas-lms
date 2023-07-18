@@ -10,6 +10,7 @@ use App\Http\Controllers\PackageController;
 use App\Http\Controllers\TopicController;
 use App\Http\Controllers\SchoolController;
 use App\Http\Controllers\ConsumeController;
+use App\Http\Controllers\ContentController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\CorrectionController;
 use App\Http\Controllers\LocationController;
@@ -36,6 +37,8 @@ Route::get('tag-list', [MasterSettingsController::class, 'tagsList']);
 Route::get('organization-list', [OrganizationController::class, 'organizationList']);
 Route::get('settings-by-slug/{slug}', [MasterSettingsController::class, 'settingDetailsByID']);
 
+Route::get('class-list',[ContentController::class, 'classList']);
+
 Route::middleware('auth:sanctum')->group( function () {
     Route::get('/user', function (Request $request) {
         return $request->user();
@@ -57,6 +60,17 @@ Route::middleware('auth:sanctum')->group( function () {
     
     //USER ROUTES
     Route::post('update-tags', [StudentController::class, 'updateInterests']);
+
+    //Content
+
+    // Route::get('admin/class-list',[ContentController::class, 'classList']);
+    Route::get('admin/subject-list',[ContentController::class, 'subjectList']);
+    Route::get('admin/chapter-list',[ContentController::class, 'chapterList']);
+
+
+    Route::post('admin/class-save-or-update', [ContentController::class, 'saveOrUpdateClass']);
+    Route::post ('admin/subject-save-or-update', [ContentController::class, 'saveOrUpdateSubject']);
+    Route::post('admin/chapter-save-or-update',[ContentController::class,'saveOrUpdateChapter']);
     
     
 
