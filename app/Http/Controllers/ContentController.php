@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Traits\HelperTrait;
 use App\Models\Chapter;
+use App\Models\ChapterVideo;
 use App\Models\ClassLevel;
 use App\Models\Subject;
 use Illuminate\Http\Request;
@@ -10,23 +12,10 @@ use Illuminate\Support\Facades\DB;
 
 class ContentController extends Controller
 {
-    function codeGenerator($prefix, $model)
-    {
-        if ($model::count() == 0) {
-            $newId = $prefix . str_pad(1, 5, 0, STR_PAD_LEFT);
-            return $newId;
-        }
-
-        $lastId = $model::orderBy('id', 'desc')->first()->id;
-        $lastIncrement = substr($lastId, -3);
-        $newId = $prefix . str_pad($lastIncrement + 1, 5, 0, STR_PAD_LEFT);
-        $newId++;
-        return $newId;
-    }
-
+    use HelperTrait;
     public function classList()
     {
-        $classList = ClassLevel::select('id','name', 'name_bn', 'class_code', 'price', 'is_free', 'icon', 'color_code', 'sequence', 'is_active')->get();
+        $classList = ClassLevel::select('id', 'name', 'name_bn', 'class_code', 'price', 'is_free', 'icon', 'color_code', 'sequence', 'is_active')->get();
         return response()->json([
             'status' => true,
             'message' => 'List Successful',
@@ -37,7 +26,6 @@ class ContentController extends Controller
     public function saveOrUpdateClass(Request $request)
     {
         try {
-
             if (empty($request->id)) {
 
                 ClassLevel::create([
@@ -88,10 +76,10 @@ class ContentController extends Controller
 
     public function subjectList()
     {
-        $subjectList = ClassLevel::select('id','name' ,'name_bn','class_level_id', 'subject_code', 'price', 'is_free', 'icon', 'color_code', 'sequence', 'is_active')->get();
+        $subjectList = Subject::select('id', 'name', 'name_bn', 'class_level_id', 'subject_code', 'price', 'is_free', 'icon', 'color_code', 'sequence', 'is_active')->get();
         return response()->json([
             'status' => true,
-            'message' => 'List Successful',
+            'message' => 'Subject List Successful',
             'data' =>    $subjectList
         ], 200);
     }
@@ -99,7 +87,6 @@ class ContentController extends Controller
     public function saveOrUpdateSubject(Request $request)
     {
         try {
-
             if (empty($request->id)) {
 
                 Subject::create([
@@ -111,7 +98,7 @@ class ContentController extends Controller
                     "is_free" => $request->is_free,
                     "icon" => $request->icon,
                     "color_code" => $request->color_code,
-                    "sequence" => $request->sequence, 
+                    "sequence" => $request->sequence,
                     "is_active" => $request->is_active,
                 ]);
 
@@ -131,7 +118,7 @@ class ContentController extends Controller
                     "is_free" => $request->is_free,
                     "icon" => $request->icon,
                     "color_code" => $request->color_code,
-                    "sequence" => $request->sequence, 
+                    "sequence" => $request->sequence,
                     "is_active" => $request->is_active,
                 ]);
 
@@ -153,14 +140,14 @@ class ContentController extends Controller
 
     public function chapterList()
     {
-        $chapterList = ClassLevel::select('id','name', 'name_bn','class_level_id','subject_id','chapter_code', 'price', 'is_free', 'icon', 'color_code', 'sequence', 'is_active')->get();
+        $chapterList = Chapter::select('id', 'name', 'name_bn', 'class_level_id', 'subject_id', 'chapter_code', 'price', 'is_free', 'icon', 'color_code', 'sequence', 'is_active')->get();
         return response()->json([
             'status' => true,
-            'message' => 'List Successful',
+            'message' => 'Chapter List Successful',
             'data' =>    $chapterList
         ], 200);
     }
-    
+
     public function saveOrUpdateChapter(Request $request)
     {
         try {
@@ -177,7 +164,7 @@ class ContentController extends Controller
                     "is_free" => $request->is_free,
                     "icon" => $request->icon,
                     "color_code" => $request->color_code,
-                    "sequence" => $request->sequence, 
+                    "sequence" => $request->sequence,
                     "is_active" => $request->is_active,
                 ]);
 
@@ -189,22 +176,131 @@ class ContentController extends Controller
             } else {
 
                 Chapter::where('id', $request->id)->update([
-                        "name" => $request->name,
-                        "name_bn" => $request->name_bn,
-                        "class_level_id" => $request->class_level_id,
-                        "subject_id" => $request->subject_id,
-                        "chapter_code" => $this->codeGenerator('CHC', Chapter::class),
-                        "price" => $request->price,
-                        "is_free" => $request->is_free,
-                        "icon" => $request->icon,
-                        "color_code" => $request->color_code,
-                        "sequence" => $request->sequence,
-                        "is_active" => $request->is_active,
+                    "name" => $request->name,
+                    "name_bn" => $request->name_bn,
+                    "class_level_id" => $request->class_level_id,
+                    "subject_id" => $request->subject_id,
+                    "chapter_code" => $this->codeGenerator('CHC', Chapter::class),
+                    "price" => $request->price,
+                    "is_free" => $request->is_free,
+                    "icon" => $request->icon,
+                    "color_code" => $request->color_code,
+                    "sequence" => $request->sequence,
+                    "is_active" => $request->is_active,
                 ]);
 
                 return response()->json([
                     'status' => true,
                     'message' => 'Chapter Updated Successfully',
+                    'data' => []
+                ], 200);
+            }
+        } catch (\Throwable $th) {
+
+            return response()->json([
+                'status' => false,
+                'message' => $th->getMessage(),
+                'data' => []
+            ], 200);
+        }
+    }
+    public function videoChapterList()
+    {
+        $videoChapterList = ChapterVideo::select(
+                'id',
+                "title",
+                "title_bn",
+                "video_code",
+                "class_level_id",
+                "subject_id",
+                "chapter_id",
+                "video_code",
+                "author_name",
+                "author_details",
+                "description",
+                "raw_url",
+                "s3_url",
+                "youtube_url",
+                "download_url",
+                "thumbnail",
+                "duration",
+                "price",
+                "rating",
+                "is_free",
+                "sequence",
+                "is_active",
+            )->get();
+        return response()->json([
+            'status' => true,
+            'message' => 'Chapter List Successful',
+            'data' =>    $videoChapterList
+        ], 200);
+    }
+
+    public function saveOrUpdateChapterVideo(Request $request)
+    {
+        try {
+
+            if (empty($request->id)) {
+
+                ChapterVideo::create([
+                    "title" => $request->title,
+                    "title_bn" => $request->title_bn,
+                    "video_code" => $request->video_code,
+                    "class_level_id" => $request->class_level_id,
+                    "subject_id" => $request->subject_id,
+                    "chapter_id" => $request->chapter_id,
+                    "video_code" => $this->codeGenerator('CVC', Chapter::class),
+                    "author_name" => $request->author_name,
+                    "author_details" => $request->author_details,
+                    "description" => $request->description,
+                    "raw_url" => $request->raw_url,
+                    "s3_url" => $request->s3_url,
+                    "youtube_url" => $request->youtube_url,
+                    "download_url" => $request->download_url,
+                    "thumbnail" => $request->thumbnail,
+                    "duration" => $request->duration,
+                    "price" => $request->price,
+                    "rating" => $request->rating,
+                    "is_free" => $request->is_free,
+                    "sequence" => $request->sequence,
+                    "is_active" => $request->is_active,
+                ]);
+
+                return response()->json([
+                    'status' => true,
+                    'message' => 'Chapter Video Created Successfully',
+                    'data' => []
+                ], 200);
+            } else {
+
+                ChapterVideo::where('id', $request->id)->update([
+                    "title" => $request->title,
+                    "title_bn" => $request->title_bn,
+                    "video_code" => $request->video_code,
+                    "class_level_id" => $request->class_level_id,
+                    "subject_id" => $request->subject_id,
+                    "chapter_id" => $request->chapter_id,
+                    "video_code" => $this->codeGenerator('CVC', Chapter::class),
+                    "author_name" => $request->author_name,
+                    "author_details" => $request->author_details,
+                    "description" => $request->description,
+                    "raw_url" => $request->raw_url,
+                    "s3_url" => $request->s3_url,
+                    "youtube_url" => $request->youtube_url,
+                    "download_url" => $request->download_url,
+                    "thumbnail" => $request->thumbnail,
+                    "duration" => $request->duration,
+                    "price" => $request->price,
+                    "rating" => $request->rating,
+                    "is_free" => $request->is_free,
+                    "sequence" => $request->sequence,
+                    "is_active" => $request->is_active,
+                ]);
+
+                return response()->json([
+                    'status' => true,
+                    'message' => 'Chapter Video Updated Successfully',
                     'data' => []
                 ], 200);
             }
