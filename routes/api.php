@@ -16,12 +16,15 @@ use App\Http\Controllers\CorrectionController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\OrganizationController;
+use App\Http\Controllers\PromotionalSiteController;
 
 Route::post('/auth/register', [AuthController::class, 'registerUser']);
 Route::post('/auth/login', [AuthController::class, 'loginUser']);
 Route::get('country-list', [MasterSettingsController::class, 'countryList']);
 Route::get('school-list', [SchoolController::class, 'schoolList']);
 Route::get('get-expert-list', [AuthController::class, 'getExpertList']);
+
+Route::post('client-info-save', [PromotionalSiteController::class, 'clientInfoSave']);
 
 // Location
 Route::get('division-list', [LocationController::class, 'divisionList']);
@@ -37,9 +40,9 @@ Route::get('tag-list', [MasterSettingsController::class, 'tagsList']);
 Route::get('organization-list', [OrganizationController::class, 'organizationList']);
 Route::get('settings-by-slug/{slug}', [MasterSettingsController::class, 'settingDetailsByID']);
 
-Route::get('class-list',[ContentController::class, 'classList']);
+Route::get('class-list', [ContentController::class, 'classList']);
 
-Route::middleware('auth:sanctum')->group( function () {
+Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {
         return $request->user();
     });
@@ -57,20 +60,21 @@ Route::middleware('auth:sanctum')->group( function () {
 
     //Tags
     Route::post('admin/tag-save-or-update', [MasterSettingsController::class, 'saveOrUpdateTags']);
-    
+
     //USER ROUTES
     Route::post('update-tags', [StudentController::class, 'updateInterests']);
 
     //Content
-
-    Route::get('admin/class-list',[ContentController::class, 'classList']);
-    Route::get('admin/subject-list',[ContentController::class, 'subjectList']);
-    Route::get('admin/chapter-list',[ContentController::class, 'chapterList']);
+    Route::get('admin/class-list', [ContentController::class, 'classList']);
     Route::post('admin/class-save-or-update', [ContentController::class, 'saveOrUpdateClass']);
-    Route::post ('admin/subject-save-or-update', [ContentController::class, 'saveOrUpdateSubject']);
-    Route::post('admin/chapter-save-or-update',[ContentController::class,'saveOrUpdateChapter']);
-    
-    
+    Route::get('admin/subject-list', [ContentController::class, 'subjectList']);
+    Route::post('admin/subject-save-or-update', [ContentController::class, 'saveOrUpdateSubject']);
+    Route::get('admin/chapter-list', [ContentController::class, 'chapterList']);
+    Route::post('admin/chapter-save-or-update', [ContentController::class, 'saveOrUpdateChapter']);
+    Route::get('admin/video-chapter-list', [ContentController::class, 'videoChapterList']);
+    Route::post('admin/chapter-video-save-or-update', [ContentController::class, 'saveOrUpdateChapterVideo']);
+
+
 
 
 
@@ -152,7 +156,7 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::get('my-balance-list', [ConsumeController::class, 'myBalanceList']); */
 });
 
-Route::group(['prefix' => 'open'], function(){
+Route::group(['prefix' => 'open'], function () {
     // Package 
     Route::get('package-list', [PackageController::class, 'packageList']);
     Route::get('package-details-by-id/{package_id}', [PackageController::class, 'packageDetailsByID']);
@@ -161,7 +165,7 @@ Route::group(['prefix' => 'open'], function(){
 
 Route::post('trancate-data', [MasterSettingsController::class, 'trancateData']);
 
-Route::any('{url}', function(){
+Route::any('{url}', function () {
     return response()->json([
         'status' => false,
         'message' => 'Route Not Found!',

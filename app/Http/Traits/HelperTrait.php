@@ -9,24 +9,16 @@ use Hash;
 
 trait HelperTrait
 {
-    public $projectName = 'Library Management System.';
-    protected function invoiceGenerator($model)
+    protected function codeGenerator($prefix, $model)
     {
-       if($model::count() == 0){
-        $newOrderId = 'BB' . date('Ymd') . str_pad(1, 3, 0, STR_PAD_LEFT);
-        return $newOrderId;
-       }
-
-        // Get last order id
-
-       $lastOrderId = $model::orderBy('id', 'desc')->first()->id;
-        // Get last 3 digits of last order id
-        $lastIncrement = substr($lastOrderId, -3);
-
-        // Make a new order id with appending last increment + 1
-        $newOrderId = 'BB' . date('Ymd') . str_pad($lastIncrement + 1, 3, 0, STR_PAD_LEFT);
-        $newOrderId++;
-
-        return $newOrderId;
+        if ($model::count() == 0) {
+            $newId = $prefix . str_pad(1, 5, 0, STR_PAD_LEFT);
+            return $newId;
+        }
+        $lastId = $model::orderBy('id', 'desc')->first()->id;
+        $lastIncrement = substr($lastId, -3);
+        $newId = $prefix . str_pad($lastIncrement + 1, 5, 0, STR_PAD_LEFT);
+        $newId++;
+        return $newId;
     }
 }
