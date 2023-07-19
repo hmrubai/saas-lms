@@ -10,31 +10,23 @@ use Illuminate\Support\Facades\DB;
 
 class ContentController extends Controller
 {
-
-
     function codeGenerator($prefix, $model)
     {
         if ($model::count() == 0) {
-            $newId = $prefix . date('Ymd') . str_pad(1, 3, 0, STR_PAD_LEFT);
+            $newId = $prefix . str_pad(1, 5, 0, STR_PAD_LEFT);
             return $newId;
         }
 
         $lastId = $model::orderBy('id', 'desc')->first()->id;
         $lastIncrement = substr($lastId, -3);
-        $newId = $prefix . date('Ymd') . str_pad($lastIncrement + 1, 3, 0, STR_PAD_LEFT);
+        $newId = $prefix . str_pad($lastIncrement + 1, 5, 0, STR_PAD_LEFT);
         $newId++;
         return $newId;
     }
 
-
     public function classList()
-
-
     {
-      
-
-
-        $classList = ClassLevel::select('id', 'name_bn', 'class_code', 'price', 'is_free', 'icon', 'color_code', 'sequence', 'is_active');
+        $classList = ClassLevel::select('id','name', 'name_bn', 'class_code', 'price', 'is_free', 'icon', 'color_code', 'sequence', 'is_active')->get();
         return response()->json([
             'status' => true,
             'message' => 'List Successful',
@@ -42,15 +34,11 @@ class ContentController extends Controller
         ], 200);
     }
 
-
     public function saveOrUpdateClass(Request $request)
     {
-        return $request->all();
-
         try {
 
             if (empty($request->id)) {
-
 
                 ClassLevel::create([
                     'name' => $request->name,
@@ -100,13 +88,14 @@ class ContentController extends Controller
 
     public function subjectList()
     {
-        $subjectList = ClassLevel::select('id', 'name_bn','class_level_id', 'subject_code', 'price', 'is_free', 'icon', 'color_code', 'sequence', 'is_active');
+        $subjectList = ClassLevel::select('id','name' ,'name_bn','class_level_id', 'subject_code', 'price', 'is_free', 'icon', 'color_code', 'sequence', 'is_active')->get();
         return response()->json([
             'status' => true,
             'message' => 'List Successful',
             'data' =>    $subjectList
         ], 200);
     }
+
     public function saveOrUpdateSubject(Request $request)
     {
         try {
@@ -122,7 +111,7 @@ class ContentController extends Controller
                     "is_free" => $request->is_free,
                     "icon" => $request->icon,
                     "color_code" => $request->color_code,
-                    "sequence" => $request->sequence, // do auto 
+                    "sequence" => $request->sequence, 
                     "is_active" => $request->is_active,
                 ]);
 
@@ -142,12 +131,9 @@ class ContentController extends Controller
                     "is_free" => $request->is_free,
                     "icon" => $request->icon,
                     "color_code" => $request->color_code,
-                    "sequence" => $request->sequence, // do auto
+                    "sequence" => $request->sequence, 
                     "is_active" => $request->is_active,
                 ]);
-
-
-
 
                 return response()->json([
                     'status' => true,
@@ -167,13 +153,14 @@ class ContentController extends Controller
 
     public function chapterList()
     {
-        $chapterList = ClassLevel::select('id', 'name_bn','class_level_id','subject_id','chapter_code', 'price', 'is_free', 'icon', 'color_code', 'sequence', 'is_active');
+        $chapterList = ClassLevel::select('id','name', 'name_bn','class_level_id','subject_id','chapter_code', 'price', 'is_free', 'icon', 'color_code', 'sequence', 'is_active')->get();
         return response()->json([
             'status' => true,
             'message' => 'List Successful',
             'data' =>    $chapterList
         ], 200);
     }
+    
     public function saveOrUpdateChapter(Request $request)
     {
         try {
@@ -190,7 +177,7 @@ class ContentController extends Controller
                     "is_free" => $request->is_free,
                     "icon" => $request->icon,
                     "color_code" => $request->color_code,
-                    "sequence" => $request->sequence, // do auto
+                    "sequence" => $request->sequence, 
                     "is_active" => $request->is_active,
                 ]);
 
@@ -202,7 +189,6 @@ class ContentController extends Controller
             } else {
 
                 Chapter::where('id', $request->id)->update([
-                    [
                         "name" => $request->name,
                         "name_bn" => $request->name_bn,
                         "class_level_id" => $request->class_level_id,
@@ -212,9 +198,8 @@ class ContentController extends Controller
                         "is_free" => $request->is_free,
                         "icon" => $request->icon,
                         "color_code" => $request->color_code,
-                        "sequence" => $request->sequence, // do auto
+                        "sequence" => $request->sequence,
                         "is_active" => $request->is_active,
-                    ]
                 ]);
 
                 return response()->json([
