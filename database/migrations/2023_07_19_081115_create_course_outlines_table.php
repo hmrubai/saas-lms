@@ -21,9 +21,9 @@ class CreateCourseOutlinesTable extends Migration
             $table->bigInteger('class_level_id');
             $table->bigInteger('subject_id');
             $table->bigInteger('chapter_id');
-            $table->bigInteger('chapter_script_id');
-            $table->bigInteger('chapter_video_id');
-            $table->bigInteger('chapter_quiz_id');
+            $table->bigInteger('chapter_script_id')->default(0);
+            $table->bigInteger('chapter_video_id')->default(0);
+            $table->bigInteger('chapter_quiz_id')->default(0);
             $table->boolean('is_free')->default(0);
             $table->integer('sequence')->default(0);
             $table->boolean('is_active')->default(1);
