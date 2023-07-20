@@ -204,6 +204,7 @@ class ContentController extends Controller
             ], 200);
         }
     }
+
     public function videoChapterList()
     {
         $videoChapterList = ChapterVideo::select(
