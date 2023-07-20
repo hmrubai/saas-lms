@@ -27,15 +27,15 @@ class ContentController extends Controller
     {
         try {
             if (empty($request->id)) {
-                $logo_image = null;
-                $logo_url = null;
+                $images = null;
+                $images_url = null;
                 if($request->hasFile('icon')){
                     $image = $request->file('icon');
                     $time = time();
-                    $logo_image = "image_icon_" . $time . '.' . $image->getClientOriginalExtension();
-                    $destination = 'uploads/logo';
-                    $image->move($destination, $logo_image);
-                    $logo_url = 'logo/' . $logo_image;
+                    $images = "image_icon_" . $time . '.' . $image->getClientOriginalExtension();
+                    $destination = 'uploads/icon';
+                    $image->move($destination, $images);
+                    $images_url = 'icon/' . $images;
                 }
 
                $classList= ClassLevel::create([
@@ -44,7 +44,6 @@ class ContentController extends Controller
                     'class_code' => $this->codeGenerator('CC', ClassLevel::class),
                     'price' => $request->price,
                     'is_free' => $request->is_free,
-                    //'icon' => $request->icon,
                     'color_code' => $request->color_code,
                     'sequence' => $request->sequence,
                     'is_active' => $request->is_active,
@@ -52,7 +51,7 @@ class ContentController extends Controller
 
                 if($request->hasFile('icon')){
                     $classList->update([
-                        'icon' => $logo_url
+                        'icon' => $images_url
                     ]);
                 }
 
@@ -62,15 +61,15 @@ class ContentController extends Controller
                     'data' => []
                 ], 200);
             } else {
-                $logo_image = null;
-                $logo_url = null;
+                $images = null;
+                $images_url = null;
                 if($request->hasFile('icon')){
                     $image = $request->file('icon');
                     $time = time();
-                    $logo_image = "image_icon_" . $time . '.' . $image->getClientOriginalExtension();
+                    $images = "image_icon_" . $time . '.' . $image->getClientOriginalExtension();
                     $destination = 'uploads/logo';
-                    $image->move($destination, $logo_image);
-                    $logo_url = 'logo/' . $logo_image;
+                    $image->move($destination, $images);
+                    $images_url = 'logo/' . $images;
                 }
                ClassLevel::where('id', $request->id)->update([
                     "name" => $request->name,
@@ -85,7 +84,7 @@ class ContentController extends Controller
 
                 if($request->hasFile('icon')){
                     ClassLevel::where('id', $request->id)->update([
-                        'icon' => $logo_url
+                        'icon' => $images_url
                     ]);
                 }
 
@@ -120,15 +119,15 @@ class ContentController extends Controller
         try {
             if (empty($request->id)) {
 
-                $logo_image = null;
-                $logo_url = null;
+                $images = null;
+                $images_url = null;
                 if($request->hasFile('icon')){
                     $image = $request->file('icon');
                     $time = time();
-                    $logo_image = "logo_image_" . $time . '.' . $image->getClientOriginalExtension();
+                    $images = "logo_image_" . $time . '.' . $image->getClientOriginalExtension();
                     $destination = 'uploads/icon';
-                    $image->move($destination, $logo_image);
-                    $logo_url = 'icon/' . $logo_image;
+                    $image->move($destination, $images);
+                    $images_url = 'icon/' . $images;
                 }
 
                 $subjectList =Subject::create([
@@ -145,7 +144,7 @@ class ContentController extends Controller
 
               if($request->hasFile('icon')){
                     $subjectList->update([
-                        'icon' => $logo_url
+                        'icon' => $images_url
                     ]);
                 }
 
@@ -156,15 +155,15 @@ class ContentController extends Controller
                 ], 200);
             } else {
 
-                $logo_image = null;
-                $logo_url = null;
+                $images = null;
+                $images_url = null;
                 if($request->hasFile('icon')){
                     $image = $request->file('icon');
                     $time = time();
-                    $logo_image = "logo_image_" . $time . '.' . $image->getClientOriginalExtension();
+                    $images = "logo_image_" . $time . '.' . $image->getClientOriginalExtension();
                     $destination = 'uploads/icon';
-                    $image->move($destination, $logo_image);
-                    $logo_url = 'icon/' . $logo_image;
+                    $image->move($destination, $images);
+                    $images_url = 'icon/' . $images;
                 }
 
                 Subject::where('id', $request->id)->update([
@@ -174,14 +173,13 @@ class ContentController extends Controller
                     "subject_code" => $this->codeGenerator('SC', Subject::class),
                     "price" => $request->price,
                     "is_free" => $request->is_free,
-                    "icon" => $request->icon,
                     "color_code" => $request->color_code,
                     "sequence" => $request->sequence,
                     "is_active" => $request->is_active,
                 ]);
                 if($request->hasFile('icon')){
                     Subject::where('id', $request->id)->update([
-                        'icon' => $logo_url
+                        'icon' => $images_url
                     ]);
 
                 }
@@ -199,6 +197,18 @@ class ContentController extends Controller
                 'data' => []
             ], 200);
         }
+    }
+
+
+    public function subjectListByClassID(Request $request)
+    {
+        $class_id = $request->class_id;
+        $subjectList = Subject::select('id', 'name', 'name_bn', 'class_level_id')->where('class_level_id', $class_id)->get();
+        return response()->json([
+            'status' => true,
+            'message' => 'Subject List Successful',
+            'data' =>    $subjectList
+        ], 200);
     }
 
     public function chapterList()
@@ -221,15 +231,15 @@ class ContentController extends Controller
             if (empty($request->id)) {
 
                 
-                $logo_image = null;
-                $logo_url = null;
+                $images = null;
+                $images_url = null;
                 if($request->hasFile('icon')){
                     $image = $request->file('icon');
                     $time = time();
-                    $logo_image = "logo_image_" . $time . '.' . $image->getClientOriginalExtension();
+                    $images = "logo_image_" . $time . '.' . $image->getClientOriginalExtension();
                     $destination = 'uploads/icon';
-                    $image->move($destination, $logo_image);
-                    $logo_url = 'icon/' . $logo_image;
+                    $image->move($destination, $images);
+                    $images_url = 'icon/' . $images;
                 }
 
 
@@ -247,7 +257,7 @@ class ContentController extends Controller
                 ]);
                 if($request->hasFile('icon')){
                     $chapterList->update([
-                        'icon' => $logo_url
+                        'icon' => $images_url
                     ]);
                 }
 
@@ -259,15 +269,15 @@ class ContentController extends Controller
                 ], 200);
             } else {
 
-                $logo_image = null;
-                $logo_url = null;
+                $images = null;
+                $images_url = null;
                 if($request->hasFile('icon')){
                     $image = $request->file('icon');
                     $time = time();
-                    $logo_image = "logo_image_" . $time . '.' . $image->getClientOriginalExtension();
+                    $images = "logo_image_" . $time . '.' . $image->getClientOriginalExtension();
                     $destination = 'uploads/icon';
-                    $image->move($destination, $logo_image);
-                    $logo_url = 'icon/' . $logo_image;
+                    $image->move($destination, $images);
+                    $images_url = 'icon/' . $images;
                 }
 
 
@@ -279,14 +289,13 @@ class ContentController extends Controller
                     "chapter_code" => $this->codeGenerator('CHC', Chapter::class),
                     "price" => $request->price,
                     "is_free" => $request->is_free,
-                    "icon" => $request->icon,
                     "color_code" => $request->color_code,
                     "sequence" => $request->sequence,
                     "is_active" => $request->is_active,
                 ]);
                 if($request->hasFile('icon')){
                     Chapter::where('id', $request->id)->update([
-                        'icon' => $logo_url
+                        'icon' => $images_url
                     ]);
 
                 }

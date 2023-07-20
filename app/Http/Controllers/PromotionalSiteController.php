@@ -36,4 +36,13 @@ class PromotionalSiteController extends Controller
             'data' => []
         ], 200);
     }
+
+    public function clientList(){
+        $client_list = ConsumerRequest::select('*')->get();
+        return response()->json([
+            'status' => true,
+            'message' => 'Client List Successful',
+            'data' => $client_list
+        ], 200);
+    }
 }

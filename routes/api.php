@@ -25,6 +25,7 @@ Route::get('school-list', [SchoolController::class, 'schoolList']);
 Route::get('get-expert-list', [AuthController::class, 'getExpertList']);
 
 Route::post('client-info-save', [PromotionalSiteController::class, 'clientInfoSave']);
+Route::get('client-list', [PromotionalSiteController::class, 'clientList']);
 
 // Location
 Route::get('division-list', [LocationController::class, 'divisionList']);
@@ -69,6 +70,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('admin/class-save-or-update', [ContentController::class, 'saveOrUpdateClass']);
     Route::get('admin/subject-list', [ContentController::class, 'subjectList']);
     Route::post('admin/subject-save-or-update', [ContentController::class, 'saveOrUpdateSubject']);
+
+    Route::get('admin/subject-by-class-id/{class_id}', [ContentController::class, 'subjectListByClassID']);
+
     Route::get('admin/chapter-list', [ContentController::class, 'chapterList']);
     Route::post('admin/chapter-save-or-update', [ContentController::class, 'saveOrUpdateChapter']);
     Route::get('admin/video-chapter-list', [ContentController::class, 'videoChapterList']);
