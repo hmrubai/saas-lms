@@ -21,4 +21,22 @@ trait HelperTrait
         $newId++;
         return $newId;
     }
+
+
+    protected function uploadImage($request, $icon, $destination,$folder)
+    {
+        $image_name = null;
+        $image_url = null;
+        if ($request->hasFile($icon)) {
+            $image = $request->file($icon);
+            $time = time();
+            $image_name = $image . "_" . $time . '.' . $image->getClientOriginalExtension();
+            $destination = $destination;
+            $image->move($destination, $image_name);
+            $image_url = $folder . $image_name;
+        }
+        return $image_url;
+    }
+
+
 }
