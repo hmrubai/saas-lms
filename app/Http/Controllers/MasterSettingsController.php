@@ -5,6 +5,12 @@ namespace App\Http\Controllers;
 use Exception;
 use App\Models\User;
 use App\Models\Grade;
+use App\Models\Course;
+use App\Models\CourseOutline;
+use App\Models\CourseClassRoutine;
+use App\Models\CourseFeature;
+use App\Models\CourseMentor;
+use App\Models\CourseFaq;
 use App\Models\Payment;
 use App\Models\Setting;
 use App\Models\Country;
@@ -199,6 +205,25 @@ class MasterSettingsController extends Controller
     public function adminMenuList(Request $request)
     {
         $menus = Category::all();
+        foreach ($menus as $item) {
+            $courses = Course::where('category_id', $item->id)->get();
+            $item->courses = $courses;
+
+            foreach ($courses as $course) {
+                //CourseOutline
+                //CourseClassRoutine
+                //CourseFeature
+                //CourseMentor
+                //CourseFaq
+
+                $course->course_outline = CourseOutline::where('course_id', $course->id)->get();
+                $course->course_routine = CourseClassRoutine::where('course_id', $course->id)->get();
+                $course->course_feature = CourseFeature::where('course_id', $course->id)->get();
+                $course->course_mentor = CourseMentor::where('course_id', $course->id)->get();
+                $course->course_gaq = CourseFaq::where('course_id', $course->id)->get();
+
+            }
+        }
 
         return response()->json([
             'status' => true,
