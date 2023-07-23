@@ -213,7 +213,6 @@ class ContentController extends Controller
 
     public function chapterList()
     {
-        
         $chapterList = Chapter::select('id', 'name', 'name_bn', 'class_level_id', 'subject_id', 'chapter_code', 'price', 'is_free', 'icon', 'color_code', 'sequence', 'is_active')->get();
         return response()->json([
             'status' => true,
@@ -226,11 +225,8 @@ class ContentController extends Controller
     {
         try {
 
-
-
             if (empty($request->id)) {
 
-                
                 $images = null;
                 $images_url = null;
                 if($request->hasFile('icon')){
@@ -241,7 +237,6 @@ class ContentController extends Controller
                     $image->move($destination, $images);
                     $images_url = 'icon/' . $images;
                 }
-
 
                 $chapterList=Chapter::create([
                     "name" => $request->name,
@@ -279,7 +274,6 @@ class ContentController extends Controller
                     $image->move($destination, $images);
                     $images_url = 'icon/' . $images;
                 }
-
 
                 Chapter::where('id', $request->id)->update([
                     "name" => $request->name,
