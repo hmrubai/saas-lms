@@ -9,10 +9,8 @@ use Hash;
 
 trait ApiResponseTrait
 {
-  
-    protected function apiResponse($data = null, $message = null, $status = true, $statusCode = 200)
+    protected function apiResponse($data = null, $message = null, $status = null, $statusCode = null)
     {
-     
         $array = [
             'status' => $status,
             'message' => $message,
@@ -20,6 +18,4 @@ trait ApiResponseTrait
         ];
         return response()->json($array, $statusCode);
     }
-
-
 }
