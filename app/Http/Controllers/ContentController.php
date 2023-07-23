@@ -13,6 +13,29 @@ use Illuminate\Support\Facades\DB;
 class ContentController extends Controller
 {
     use HelperTrait;
+
+    public function subjectListByClassID(Request $request)
+    {
+        $class_id = $request->class_id;
+        $subjectList = Subject::select('id', 'name', 'name_bn', 'class_level_id')->where('class_level_id', $class_id)->get();
+        return response()->json([
+            'status' => true,
+            'message' => 'Subject List Successful',
+            'data' =>    $subjectList
+        ], 200);
+    }
+
+    public function chapterListBySubjectID(Request $request)
+    {
+        $subject_id = $request->subject_id;
+        $subjectList = Chapter::select('id', 'name', 'name_bn', 'subject_id')->where('subject_id', $subject_id)->get();
+        return response()->json([
+            'status' => true,
+            'message' => 'Chapter List Successful',
+            'data' =>    $subjectList
+        ], 200);
+    }
+
     public function classList()
     {
         $classList = ClassLevel::select('id', 'name', 'name_bn', 'class_code', 'price', 'is_free', 'icon', 'color_code', 'sequence', 'is_active')->get();
@@ -27,18 +50,7 @@ class ContentController extends Controller
     {
         try {
             if (empty($request->id)) {
-                $images = null;
-                $images_url = null;
-                if($request->hasFile('icon')){
-                    $image = $request->file('icon');
-                    $time = time();
-                    $images = "image_icon_" . $time . '.' . $image->getClientOriginalExtension();
-                    $destination = 'uploads/icon';
-                    $image->move($destination, $images);
-                    $images_url = 'icon/' . $images;
-                }
-
-               $classList= ClassLevel::create([
+                $classList = ClassLevel::create([
                     'name' => $request->name,
                     'name_bn' => $request->name_bn,
                     'class_code' => $this->codeGenerator('CC', ClassLevel::class),
@@ -49,9 +61,9 @@ class ContentController extends Controller
                     'is_active' => $request->is_active,
                 ]);
 
-                if($request->hasFile('icon')){
+                if ($request->hasFile('icon')) {
                     $classList->update([
-                        'icon' => $images_url
+                        'icon' => $this->imageUpload($request, 'icon', 'icon')
                     ]);
                 }
 
@@ -61,17 +73,13 @@ class ContentController extends Controller
                     'data' => []
                 ], 200);
             } else {
-                $images = null;
-                $images_url = null;
-                if($request->hasFile('icon')){
-                    $image = $request->file('icon');
-                    $time = time();
-                    $images = "image_icon_" . $time . '.' . $image->getClientOriginalExtension();
-                    $destination = 'uploads/logo';
-                    $image->move($destination, $images);
-                    $images_url = 'logo/' . $images;
+                $class = ClassLevel::where('id', $request->id)->first();
+                if ($request->hasFile('icon')) {
+                    ClassLevel::where('id', $request->id)->update([
+                        'icon' => $this->imageUpload($request, 'icon', 'icon', $class->icon)
+                    ]);
                 }
-               ClassLevel::where('id', $request->id)->update([
+                $class->update([
                     "name" => $request->name,
                     "name_bn" => $request->name_bn,
                     "class_code" => $this->codeGenerator('CC', ClassLevel::class),
@@ -81,12 +89,6 @@ class ContentController extends Controller
                     "sequence" => $request->sequence,
                     "is_active" => $request->is_active,
                 ]);
-
-                if($request->hasFile('icon')){
-                    ClassLevel::where('id', $request->id)->update([
-                        'icon' => $images_url
-                    ]);
-                }
 
                 return response()->json([
                     'status' => true,
@@ -118,19 +120,7 @@ class ContentController extends Controller
     {
         try {
             if (empty($request->id)) {
-
-                $images = null;
-                $images_url = null;
-                if($request->hasFile('icon')){
-                    $image = $request->file('icon');
-                    $time = time();
-                    $images = "logo_image_" . $time . '.' . $image->getClientOriginalExtension();
-                    $destination = 'uploads/icon';
-                    $image->move($destination, $images);
-                    $images_url = 'icon/' . $images;
-                }
-
-                $subjectList =Subject::create([
+                $subjectList = Subject::create([
                     "name" => $request->name,
                     "name_bn" => $request->name_bn,
                     "class_level_id" => $request->class_level_id,
@@ -142,9 +132,9 @@ class ContentController extends Controller
                     "is_active" => $request->is_active,
                 ]);
 
-              if($request->hasFile('icon')){
+                if ($request->hasFile('icon')) {
                     $subjectList->update([
-                        'icon' => $images_url
+                        'icon' => $this->imageUpload($request, 'icon', 'icon')
                     ]);
                 }
 
@@ -154,19 +144,13 @@ class ContentController extends Controller
                     'data' => []
                 ], 200);
             } else {
-
-                $images = null;
-                $images_url = null;
-                if($request->hasFile('icon')){
-                    $image = $request->file('icon');
-                    $time = time();
-                    $images = "logo_image_" . $time . '.' . $image->getClientOriginalExtension();
-                    $destination = 'uploads/icon';
-                    $image->move($destination, $images);
-                    $images_url = 'icon/' . $images;
+                $subject = Subject::where('id', $request->id)->first();
+                if ($request->hasFile('icon')) {
+                    Subject::where('id', $request->id)->update([
+                        'icon' => $this->imageUpload($request, 'icon', 'icon', $subject->icon)
+                    ]);
                 }
-
-                Subject::where('id', $request->id)->update([
+                $subject->update([
                     "name" => $request->name,
                     "name_bn" => $request->name_bn,
                     "class_level_id" => $request->class_level_id,
@@ -177,12 +161,7 @@ class ContentController extends Controller
                     "sequence" => $request->sequence,
                     "is_active" => $request->is_active,
                 ]);
-                if($request->hasFile('icon')){
-                    Subject::where('id', $request->id)->update([
-                        'icon' => $images_url
-                    ]);
 
-                }
                 return response()->json([
                     'status' => true,
                     'message' => 'Subject Updated Successfully',
@@ -199,18 +178,6 @@ class ContentController extends Controller
         }
     }
 
-
-    public function subjectListByClassID(Request $request)
-    {
-        $class_id = $request->class_id;
-        $subjectList = Subject::select('id', 'name', 'name_bn', 'class_level_id')->where('class_level_id', $class_id)->get();
-        return response()->json([
-            'status' => true,
-            'message' => 'Subject List Successful',
-            'data' =>    $subjectList
-        ], 200);
-    }
-
     public function chapterList()
     {
         $chapterList = Chapter::select('id', 'name', 'name_bn', 'class_level_id', 'subject_id', 'chapter_code', 'price', 'is_free', 'icon', 'color_code', 'sequence', 'is_active')->get();
@@ -224,21 +191,8 @@ class ContentController extends Controller
     public function saveOrUpdateChapter(Request $request)
     {
         try {
-
             if (empty($request->id)) {
-
-                $images = null;
-                $images_url = null;
-                if($request->hasFile('icon')){
-                    $image = $request->file('icon');
-                    $time = time();
-                    $images = "logo_image_" . $time . '.' . $image->getClientOriginalExtension();
-                    $destination = 'uploads/icon';
-                    $image->move($destination, $images);
-                    $images_url = 'icon/' . $images;
-                }
-
-                $chapterList=Chapter::create([
+                $chapterList = Chapter::create([
                     "name" => $request->name,
                     "name_bn" => $request->name_bn,
                     "class_level_id" => $request->class_level_id,
@@ -250,12 +204,11 @@ class ContentController extends Controller
                     "sequence" => $request->sequence,
                     "is_active" => $request->is_active,
                 ]);
-                if($request->hasFile('icon')){
+                if ($request->hasFile('icon')) {
                     $chapterList->update([
-                        'icon' => $images_url
+                        'icon' => $this->imageUpload($request, 'icon', 'icon')
                     ]);
                 }
-
 
                 return response()->json([
                     'status' => true,
@@ -263,19 +216,14 @@ class ContentController extends Controller
                     'data' => []
                 ], 200);
             } else {
+                $chapter = Chapter::where('id', $request->id)->first();
 
-                $images = null;
-                $images_url = null;
-                if($request->hasFile('icon')){
-                    $image = $request->file('icon');
-                    $time = time();
-                    $images = "logo_image_" . $time . '.' . $image->getClientOriginalExtension();
-                    $destination = 'uploads/icon';
-                    $image->move($destination, $images);
-                    $images_url = 'icon/' . $images;
+                if ($request->hasFile('icon')) {
+                    Chapter::where('id', $request->id)->update([
+                        'icon' => $this->imageUpload($request, 'icon', 'icon', $chapter->icon)
+                    ]);
                 }
-
-                Chapter::where('id', $request->id)->update([
+                $chapter->update([
                     "name" => $request->name,
                     "name_bn" => $request->name_bn,
                     "class_level_id" => $request->class_level_id,
@@ -287,13 +235,6 @@ class ContentController extends Controller
                     "sequence" => $request->sequence,
                     "is_active" => $request->is_active,
                 ]);
-                if($request->hasFile('icon')){
-                    Chapter::where('id', $request->id)->update([
-                        'icon' => $images_url
-                    ]);
-
-                }
-
                 return response()->json([
                     'status' => true,
                     'message' => 'Chapter Updated Successfully',
@@ -312,30 +253,39 @@ class ContentController extends Controller
 
     public function videoChapterList()
     {
-        $videoChapterList = ChapterVideo::select(
-                'id',
-                "title",
-                "title_bn",
-                "video_code",
-                "class_level_id",
-                "subject_id",
-                "chapter_id",
-                "video_code",
-                "author_name",
-                "author_details",
-                "description",
-                "raw_url",
-                "s3_url",
-                "youtube_url",
-                "download_url",
-                "thumbnail",
-                "duration",
-                "price",
-                "rating",
-                "is_free",
-                "sequence",
-                "is_active",
-            )->get();
+        $videoChapterList = ChapterVideo::leftJoin('class_levels', 'class_levels.id', '=', 'chapter_videos.class_level_id')
+            ->leftJoin('subjects', 'subjects.id', '=', 'chapter_videos.subject_id')
+            ->leftJoin('chapters', 'chapters.id', '=', 'chapter_videos.chapter_id')
+            ->select(
+                'chapter_videos.id',
+                'chapter_videos.title',
+                'chapter_videos.title_bn',
+                'chapter_videos.class_level_id',
+                'chapter_videos.subject_id',
+                'chapter_videos.chapter_id',
+                'chapter_videos.video_code',
+                'chapter_videos.author_name',
+                'chapter_videos.author_details',
+                'chapter_videos.description',
+                'chapter_videos.raw_url',
+                'chapter_videos.s3_url',
+                'chapter_videos.youtube_url',
+                'chapter_videos.download_url',
+                'chapter_videos.duration',
+                'chapter_videos.price',
+                'chapter_videos.rating',
+                'chapter_videos.is_free',
+                'chapter_videos.sequence',
+                'chapter_videos.is_active',
+                'class_levels.name as class_name',
+                'class_levels.name_bn as class_name_bn',
+                'subjects.name as subject_name',
+                'subjects.name_bn as subject_name_bn',
+                'chapters.name as chapter_name',
+                'chapters.name_bn as chapter_name_bn',
+                'chapter_videos.thumbnail'
+            )
+            ->get();
         return response()->json([
             'status' => true,
             'message' => 'Chapter List Successful',
@@ -346,13 +296,10 @@ class ContentController extends Controller
     public function saveOrUpdateChapterVideo(Request $request)
     {
         try {
-
             if (empty($request->id)) {
-
-                ChapterVideo::create([
+                $chapterList = ChapterVideo::create([
                     "title" => $request->title,
                     "title_bn" => $request->title_bn,
-                    "video_code" => $request->video_code,
                     "class_level_id" => $request->class_level_id,
                     "subject_id" => $request->subject_id,
                     "chapter_id" => $request->chapter_id,
@@ -364,7 +311,6 @@ class ContentController extends Controller
                     "s3_url" => $request->s3_url,
                     "youtube_url" => $request->youtube_url,
                     "download_url" => $request->download_url,
-                    "thumbnail" => $request->thumbnail,
                     "duration" => $request->duration,
                     "price" => $request->price,
                     "rating" => $request->rating,
@@ -372,6 +318,11 @@ class ContentController extends Controller
                     "sequence" => $request->sequence,
                     "is_active" => $request->is_active,
                 ]);
+                if ($request->hasFile('thumbnail')) {
+                    $chapterList->update([
+                        'thumbnail' => $this->imageUpload($request, 'thumbnail', 'thumbnail')
+                    ]);
+                }
 
                 return response()->json([
                     'status' => true,
@@ -380,10 +331,15 @@ class ContentController extends Controller
                 ], 200);
             } else {
 
-                ChapterVideo::where('id', $request->id)->update([
+                $video = ChapterVideo::where('id', $request->id)->first();
+                if ($request->hasFile('thumbnail')) {
+                    ChapterVideo::where('id', $request->id)->update([
+                        'thumbnail' => $this->imageUpload($request, 'thumbnail', 'thumbnail', $video->thumbnail)
+                    ]);
+                }
+                $video->update([
                     "title" => $request->title,
                     "title_bn" => $request->title_bn,
-                    "video_code" => $request->video_code,
                     "class_level_id" => $request->class_level_id,
                     "subject_id" => $request->subject_id,
                     "chapter_id" => $request->chapter_id,
@@ -395,7 +351,6 @@ class ContentController extends Controller
                     "s3_url" => $request->s3_url,
                     "youtube_url" => $request->youtube_url,
                     "download_url" => $request->download_url,
-                    "thumbnail" => $request->thumbnail,
                     "duration" => $request->duration,
                     "price" => $request->price,
                     "rating" => $request->rating,

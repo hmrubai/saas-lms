@@ -72,6 +72,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('admin/subject-save-or-update', [ContentController::class, 'saveOrUpdateSubject']);
 
     Route::get('admin/subject-by-class-id/{class_id}', [ContentController::class, 'subjectListByClassID']);
+    Route::get('admin/chapter-by-subject-id/{subject_id}', [ContentController::class, 'chapterListBySubjectID']);
 
     Route::get('admin/chapter-list', [ContentController::class, 'chapterList']);
     Route::post('admin/chapter-save-or-update', [ContentController::class, 'saveOrUpdateChapter']);

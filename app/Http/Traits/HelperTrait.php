@@ -22,21 +22,24 @@ trait HelperTrait
         return $newId;
     }
 
-
-    protected function uploadImage($request, $icon, $destination,$folder)
+    protected function imageUpload($request, $image, $destination, $old_image = null)
     {
-        $image_name = null;
-        $image_url = null;
-        if ($request->hasFile($icon)) {
-            $image = $request->file($icon);
+        $images = null;
+        $images_url = null;
+        if ($request->hasFile($image)) {
+            if ($old_image != null) {
+                $old_image_path = public_path('uploads/' . $old_image);
+                if (file_exists($old_image_path)) {
+                    unlink($old_image_path);
+                }
+            }
+            $image = $request->file($image);
             $time = time();
-            $image_name = $image . "_" . $time . '.' . $image->getClientOriginalExtension();
-            $destination = $destination;
-            $image->move($destination, $image_name);
-            $image_url = $folder . $image_name;
+            $images = "bb_" . $time . '.' . $image->getClientOriginalExtension();
+            $destinations = 'uploads/' . $destination;
+            $image->move($destinations, $images);
+            $images_url = $destination . '/' . $images;
         }
-        return $image_url;
+        return $images_url;
     }
-
-
 }
