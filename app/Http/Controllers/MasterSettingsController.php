@@ -236,6 +236,25 @@ class MasterSettingsController extends Controller
         ], 200);
     }
 
+    public function mobileMenuList (Request $request)
+    {
+        $menus = Category::all();
+        foreach ($menus as $item) {
+            $sub_menu = [];
+            $courses = Course::where('category_id', $item->id)->get();
+            foreach ($courses as $course) {
+                array_push($sub_menu, ['sub_nenu' => $course->title, 'sub_nenu_bn' => $course->title_bn]);
+            }
+            $item->sub_menu = $sub_menu;
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => 'List Successful',
+            'data' => $menus
+        ], 200);
+    }
+
     public function saveOrUpdateMenu (Request $request)
     {
         try {
