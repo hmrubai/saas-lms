@@ -85,6 +85,17 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('admin/video-chapter-list', [ContentController::class, 'videoChapterList']);
     Route::post('admin/chapter-video-save-or-update', [ContentController::class, 'saveOrUpdateChapterVideo']);
 
+    Route::get('admin/chapter-script-list', [ContentController::class, 'scriptChapterList']);
+    Route::post('admin/chapter-script-save-or-update', [ContentController::class, 'saveOrUpdateScript']);
+
+    Route::post('admin/chapter-quiz-save-or-update', [ContentController::class, 'saveOrUpdateQuiz']);
+    Route::get('admin/chapter-quiz-list',[ContentController::class,'chapterQuizList']);
+
+
+    Route::get('admin/chapter-quiz-question-list',[ContentController::class,'quizQuestionList']);
+    Route::post('admin/chapter-quiz-question-save-or-update',[ContentController::class,'saveOrUpdateQuizQuestion']);
+
+
 
 
 
