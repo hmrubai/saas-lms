@@ -43,6 +43,12 @@ Route::get('settings-by-slug/{slug}', [MasterSettingsController::class, 'setting
 
 Route::get('class-list', [ContentController::class, 'classList']);
 
+Route::group(['prefix' => 'mobile'], function () {
+    // Package 
+    Route::get('menu-list', [MasterSettingsController::class, 'mobileMenuList']);
+});
+
+
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {
         return $request->user();
