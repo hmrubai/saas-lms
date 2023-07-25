@@ -9,6 +9,16 @@ use Hash;
 
 trait HelperTrait
 {
+    protected function apiResponse($data = null, $message = null, $status = null, $statusCode = null)
+    {
+        $array = [
+            'status' => $status,
+            'message' => $message,
+            'data' => $data
+        ];
+        return response()->json($array, $statusCode);
+    }
+    
     protected function codeGenerator($prefix, $model)
     {
         if ($model::count() == 0) {
@@ -22,20 +32,48 @@ trait HelperTrait
         return $newId;
     }
 
-
-    protected function uploadImage($request, $icon, $destination,$folder)
+    protected function imageUpload($request, $image, $destination, $old_image = null)
     {
-        $image_name = null;
-        $image_url = null;
-        if ($request->hasFile($icon)) {
-            $image = $request->file($icon);
+        $images = null;
+        $images_url = null;
+        if ($request->hasFile($image)) {
+            if ($old_image != null) {
+                $old_image_path = public_path('uploads/' . $old_image);
+                if (file_exists($old_image_path)) {
+                    unlink($old_image_path);
+                }
+            }
+            $image = $request->file($image);
             $time = time();
-            $image_name = $image . "_" . $time . '.' . $image->getClientOriginalExtension();
-            $destination = $destination;
-            $image->move($destination, $image_name);
-            $image_url = $folder . $image_name;
+            $images = "bb_" . $time . '.' . $image->getClientOriginalExtension();
+            $destinations = 'uploads/' . $destination;
+            $image->move($destinations, $images);
+            $images_url = $destination . '/' . $images;
         }
-        return $image_url;
+        return $images_url;
+    }
+
+
+    protected function imageUploadWithPrefix($request, $image, $destination,$prefix, $old_image = null,)
+    {
+        $images = null;
+        $images_url = null;
+        if ($request->hasFile($image)) {
+            if ($old_image != null) {
+                $old_image_path = public_path('uploads/' . $old_image);
+                if (file_exists($old_image_path)) {
+                    unlink($old_image_path);
+                }
+            }
+            $image = $request->file($image);
+            $time = time();
+            $images = $prefix. '_' . $time . '.' . $image->getClientOriginalExtension();
+            
+            $destinations = 'uploads/' . $destination;
+            $image->move($destinations, $images);
+            $images_url = $destination . '/' . $images;
+        }
+        return $images_url;
     }
 
 
