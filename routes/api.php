@@ -89,12 +89,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('admin/chapter-script-save-or-update', [ContentController::class, 'saveOrUpdateScript']);
 
     Route::post('admin/chapter-quiz-save-or-update', [ContentController::class, 'saveOrUpdateQuiz']);
-    Route::get('admin/chapter-quiz-list',[ContentController::class,'chapterQuizList']);
+    Route::get('admin/chapter-quiz-list', [ContentController::class, 'chapterQuizList']);
 
 
-    Route::get('admin/chapter-quiz-question-list',[ContentController::class,'quizQuestionList']);
-    Route::post('admin/chapter-quiz-question-save-or-update',[ContentController::class,'saveOrUpdateQuizQuestion']);
-
+    Route::get('admin/question-list-by-quiz/{id}', [ContentController::class, 'quizQuestionList']);
+    Route::post('admin/chapter-quiz-question-save-or-update', [ContentController::class, 'saveOrUpdateQuizQuestion']);
+    Route::delete('admin/delete-question/{id}', [ContentController::class, 'deleteQuestion']);
 
 
 

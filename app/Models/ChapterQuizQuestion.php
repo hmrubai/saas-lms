@@ -36,6 +36,10 @@ class ChapterQuizQuestion extends Model
     ];
     protected $casts = [
         'is_active' => 'boolean',
-        'is_free' => 'boolean'
+        'is_free' => 'boolean',
+        'answer1' => 'boolean',
+        'answer2' => 'boolean',
+        'answer3' => 'boolean',
+        'answer4' => 'boolean',
     ];
 }
