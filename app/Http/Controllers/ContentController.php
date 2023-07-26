@@ -9,6 +9,7 @@ use App\Models\ChapterQuizQuestion;
 use App\Models\ChapterScript;
 use App\Models\ChapterVideo;
 use App\Models\ClassLevel;
+use App\Models\QuizQuestionSet;
 use App\Models\Subject;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -17,6 +18,12 @@ use Illuminate\Support\Facades\DB;
 class ContentController extends Controller
 {
     use HelperTrait;
+
+    public function questionSetList()
+    {
+        $setList = QuizQuestionSet::select('id', 'name')->get();
+        return $this->apiResponse($setList, 'Set List Successful', true, 200);
+    }
 
     public function subjectListByClassID(Request $request)
     {
@@ -436,6 +443,7 @@ class ContentController extends Controller
                 "chapter_id" => $request->chapter_id,
                 "question_text" => $request->question_text,
                 "question_text_bn" => $request->question_text_bn,
+                "question_set_id" => $request->question_set_id,
                 "option1" => $request->option1,
                 "option2" => $request->option2,
                 "option3" => $request->option3,
@@ -488,6 +496,43 @@ class ContentController extends Controller
             return $this->apiResponse([], $th->getMessage(), false, 500);
         }
     }
+    
+    public function excelQuestionUpload(Request $request)
+    {
+        try {
+            DB::beginTransaction();
+            $excel_data = json_decode($request->excel_data, true);
+            if ($excel_data) {
+                $item = [];
+                foreach ($excel_data as $key => $value) {
+                    $item[] = [
+                        'chapter_quiz_id' => $value['chapter_quiz_id'],
+                        'class_level_id' => $value['class_level_id'],
+                        'subject_id' => $value['subject_id'],
+                        'chapter_id' => $value['chapter_id'],
+                        'question_text' => $value['question_text'],
+                        'question_text_bn' => $value['question_text_bn'],
+                        'question_set_id' => $value['question_set_id'],
+                        'option1' => $value['option1'],
+                        'option2' => $value['option2'],
+                        'option3' => $value['option3'],
+                        'option4' => $value['option4'],
+                        'answer1' => $value['answer1'],
+                        'answer2' => $value['answer2'],
+                        'answer3' => $value['answer3'],
+                        'answer4' => $value['answer4'],
+                        'explanation_text' => $value['explanation_text'],
+                    ];
+                }
+                ChapterQuizQuestion::insert($item);
+            }
+            DB::commit();
+            return $this->apiResponse($excel_data, 'Chapter Quiz Question Updated Successfully', true, 200);
+        } catch (\Throwable $th) {
+            DB::rollback();
+            return $this->apiResponse([], $th->getMessage(), false, 500);
+        }
+    }
 
     public function quizQuestionList(Request $request)
     {
@@ -503,6 +548,7 @@ class ContentController extends Controller
                 'chapter_quiz_questions.chapter_quiz_id',
                 'chapter_quiz_questions.class_level_id',
                 'chapter_quiz_questions.subject_id',
+                'chapter_quiz_questions.question_set_id',
                 'chapter_quiz_questions.chapter_id',
                 'chapter_quiz_questions.question_text',
                 'chapter_quiz_questions.question_text_bn',
