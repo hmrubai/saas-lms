@@ -6,6 +6,8 @@ use Exception;
 use App\Models\User;
 use App\Models\Grade;
 use App\Models\Course;
+use App\Models\Content;
+use App\Models\ContentOutline;
 use App\Models\CourseOutline;
 use App\Models\CourseClassRoutine;
 use App\Models\CourseFeature;
@@ -206,26 +208,48 @@ class MasterSettingsController extends Controller
     {
         $menus = Category::all();
         foreach ($menus as $item) {
-            $courses = Course::where('category_id', $item->id)->get();
-            $item->courses = $courses;
 
-            foreach ($courses as $course) {
-                $course->course_outline = CourseOutline::select(
-                        'course_outlines.*', 
+            if($item->is_course){
+                $courses = Course::where('category_id', $item->id)->orderBy('sequence', 'ASC')->get();
+                $item->courses = $courses;
+    
+                foreach ($courses as $course) {
+                    $course->course_outline = CourseOutline::select(
+                            'course_outlines.*', 
+                            'class_levels.name as class_name', 
+                            'subjects.name as subject_name',
+                            'chapters.name as chapter_name'
+                        )
+                        ->where('course_outlines.course_id', $course->id)
+                        ->leftJoin('class_levels', 'class_levels.id', 'course_outlines.class_level_id')
+                        ->leftJoin('subjects', 'subjects.id', 'course_outlines.subject_id')
+                        ->leftJoin('chapters', 'chapters.id', 'course_outlines.chapter_id')
+                        ->get();
+    
+                    $course->course_routine = CourseClassRoutine::where('course_id', $course->id)->get();
+                    $course->course_feature = CourseFeature::where('course_id', $course->id)->get();
+                    $course->course_mentor = CourseMentor::where('course_id', $course->id)->get();
+                    $course->course_faq = CourseFaq::where('course_id', $course->id)->get();
+                }
+            }
+
+            if($item->is_content){
+                $content_list = Content::where('category_id', $item->id)->get();
+                $item->contents = $content_list;
+
+                foreach ($content_list as $content) {
+                    $content->content_outline = ContentOutline::select(
+                        'content_outlines.*', 
                         'class_levels.name as class_name', 
                         'subjects.name as subject_name',
                         'chapters.name as chapter_name'
                     )
-                    ->where('course_outlines.course_id', $course->id)
-                    ->leftJoin('class_levels', 'class_levels.id', 'course_outlines.class_level_id')
-                    ->leftJoin('subjects', 'subjects.id', 'course_outlines.subject_id')
-                    ->leftJoin('chapters', 'chapters.id', 'course_outlines.chapter_id')
+                    ->where('content_outlines.content_id', $content->id)
+                    ->leftJoin('class_levels', 'class_levels.id', 'content_outlines.class_level_id')
+                    ->leftJoin('subjects', 'subjects.id', 'content_outlines.subject_id')
+                    ->leftJoin('chapters', 'chapters.id', 'content_outlines.chapter_id')
                     ->get();
-
-                $course->course_routine = CourseClassRoutine::where('course_id', $course->id)->get();
-                $course->course_feature = CourseFeature::where('course_id', $course->id)->get();
-                $course->course_mentor = CourseMentor::where('course_id', $course->id)->get();
-                $course->course_faq = CourseFaq::where('course_id', $course->id)->get();
+                }
             }
         }
 
@@ -238,13 +262,24 @@ class MasterSettingsController extends Controller
 
     public function mobileMenuList (Request $request)
     {
-        $menus = Category::all();
+        $menus = Category::orderBy('sequence', 'ASC')->get();
         foreach ($menus as $item) {
             $sub_menu = [];
-            $courses = Course::where('category_id', $item->id)->get();
-            foreach ($courses as $course) {
-                array_push($sub_menu, ['sub_nenu' => $course->title, 'sub_nenu_bn' => $course->title_bn]);
+
+            if($item->is_course){
+                $courses = Course::where('category_id', $item->id)->get();
+                foreach ($courses as $course) {
+                    array_push($sub_menu, ['sub_menu_id' => $course->id, 'sub_menu' => $course->title, 'sub_menu_bn' => $course->title_bn]);
+                }
             }
+
+            if($item->is_content){
+                $content_list = Content::where('category_id', $item->id)->get();
+                foreach ($content_list as $content) {
+                    array_push($sub_menu, ['sub_menu_id' => $content->id, 'sub_menu' => $content->title, 'sub_menu_bn' => $content->title_bn]);
+                }
+            }
+            
             $item->sub_menu = $sub_menu;
         }
 
