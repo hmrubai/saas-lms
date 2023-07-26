@@ -17,7 +17,7 @@ class CreateContentOutlinesTable extends Migration
             $table->id();
             $table->string('title');
             $table->string('title_bn')->nullable();
-            $table->string('category_id');
+            $table->bigInteger('content_id');
             $table->bigInteger('class_level_id');
             $table->bigInteger('subject_id');
             $table->bigInteger('chapter_id');
