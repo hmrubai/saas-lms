@@ -18,7 +18,7 @@ trait HelperTrait
         ];
         return response()->json($array, $statusCode);
     }
-    
+
     protected function codeGenerator($prefix, $model)
     {
         if ($model::count() == 0) {
@@ -54,7 +54,7 @@ trait HelperTrait
     }
 
 
-    protected function imageUploadWithPrefix($request, $image, $destination,$prefix, $old_image = null,)
+    protected function imageUploadWithPrefix($request, $image, $destination, $prefix, $old_image = null,)
     {
         $images = null;
         $images_url = null;
@@ -67,8 +67,8 @@ trait HelperTrait
             }
             $image = $request->file($image);
             $time = time();
-            $images = $prefix. '_' . $time . '.' . $image->getClientOriginalExtension();
-            
+            $images = $prefix . '_' . $time . '.' . $image->getClientOriginalExtension();
+
             $destinations = 'uploads/' . $destination;
             $image->move($destinations, $images);
             $images_url = $destination . '/' . $images;
@@ -76,5 +76,12 @@ trait HelperTrait
         return $images_url;
     }
 
-
+    protected function deleteImage($image)
+    {
+        $image_path = public_path('uploads/' . $image);
+        if (file_exists($image_path)) {
+            unlink($image_path);
+        }
+        return true;
+    }
 }

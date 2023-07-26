@@ -489,10 +489,12 @@ class ContentController extends Controller
         }
     }
 
-    public function quizQuestionList()
+    public function quizQuestionList(Request $request)
     {
+        $quiz_id = $request->id;
         $quizQuestions =
-            ChapterQuizQuestion::leftJoin('class_levels', 'class_levels.id', '=', 'chapter_quiz_questions.class_level_id')
+            ChapterQuizQuestion::where('chapter_quiz_id', $quiz_id)
+            ->leftJoin('class_levels', 'class_levels.id', '=', 'chapter_quiz_questions.class_level_id')
             ->leftJoin('subjects', 'subjects.id', '=', 'chapter_quiz_questions.subject_id')
             ->leftJoin('chapters', 'chapters.id', '=', 'chapter_quiz_questions.chapter_id')
             ->leftJoin('chapter_quizzes', 'chapter_quizzes.id', '=', 'chapter_quiz_questions.chapter_quiz_id')
@@ -531,5 +533,36 @@ class ContentController extends Controller
             )
             ->get();
         return $this->apiResponse($quizQuestions, 'Chapter Quiz Question List Successful', true, 200);
+    }
+
+    public function deleteQuestion(Request $request)
+    {
+        try {
+            $question = ChapterQuizQuestion::where('id', $request->id)->first();
+
+            if ($question->question_image != null) {
+                $this->deleteImage($question->question_image);
+            }
+            if ($question->option1_image != null) {
+                $this->deleteImage($question->option1_image);
+            }
+            if ($question->option2_image != null) {
+                $this->deleteImage($question->option2_image);
+            }
+            if ($question->option3_image != null) {
+                $this->deleteImage($question->option3_image);
+            }
+            if ($question->option4_image != null) {
+                $this->deleteImage($question->option4_image);
+            }
+            if ($question->explanation_image != null) {
+                $this->deleteImage($question->explanation_image);
+            }
+            $question->delete();
+
+            return $this->apiResponse([], 'Question Deleted Successfully', true, 200);
+        } catch (\Throwable $th) {
+            return $this->apiResponse([], $th->getMessage(), false, 500);
+        }
     }
 }
