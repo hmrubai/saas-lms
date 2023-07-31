@@ -15,6 +15,7 @@ class CreateWebsitePagesTable extends Migration
     {
         Schema::create('website_pages', function (Blueprint $table) {
             $table->id();
+            $table->bigInteger('organization_id');
             $table->string('page_title');
             $table->text('page_details');
             $table->string('page_banner')->nullable();
