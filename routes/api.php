@@ -71,7 +71,7 @@ Route::middleware('auth:sanctum')->group(function () {
     //USER ROUTES
     Route::post('update-tags', [StudentController::class, 'updateInterests']);
 
-    //Content
+    //Content Routes 
     Route::get('admin/class-list', [ContentController::class, 'classList']);
     Route::post('admin/class-save-or-update', [ContentController::class, 'saveOrUpdateClass']);
     Route::get('admin/subject-list', [ContentController::class, 'subjectList']);
@@ -91,9 +91,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('admin/chapter-quiz-save-or-update', [ContentController::class, 'saveOrUpdateQuiz']);
     Route::get('admin/chapter-quiz-list', [ContentController::class, 'chapterQuizList']);
 
-
+    Route::get('admin/question-set-list', [ContentController::class, 'questionSetList']);
     Route::get('admin/question-list-by-quiz/{id}', [ContentController::class, 'quizQuestionList']);
     Route::post('admin/chapter-quiz-question-save-or-update', [ContentController::class, 'saveOrUpdateQuizQuestion']);
+    Route::post('admin/excel-question-upload', [ContentController::class, 'excelQuestionUpload']);
     Route::delete('admin/delete-question/{id}', [ContentController::class, 'deleteQuestion']);
 
 
