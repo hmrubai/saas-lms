@@ -15,7 +15,7 @@ class CreateWebsiteSettingsTable extends Migration
     {
         Schema::create('website_settings', function (Blueprint $table) {
             $table->id();
-            $table->string('organization_slug');
+            $table->bigInteger('organization_id');
             $table->string('banner')->nullable();
             $table->string('contact_number')->nullable();
             $table->string('hotline_number')->nullable();
