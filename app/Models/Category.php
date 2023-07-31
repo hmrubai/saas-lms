@@ -14,6 +14,7 @@ class Category extends Model
     protected $fillable = [
         'name',
         'link',
+        'sequence',
         'is_authentication_needed',
         'has_submenu',
         'is_course',
