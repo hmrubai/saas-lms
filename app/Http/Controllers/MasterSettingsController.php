@@ -260,6 +260,77 @@ class MasterSettingsController extends Controller
         ], 200);
     }
 
+    public function courseListByID(Request $request){
+        $menu_id = $request->menu_id ? $request->menu_id : 0;
+
+        if(!$menu_id){
+            return response()->json([
+                'status' => false,
+                'message' => 'Please, attach menu ID',
+                'data' => []
+            ], 422);
+        }
+
+        $menu = Category::where('id', $menu_id)->first();
+
+        if(empty($menu)){
+            return response()->json([
+                'status' => false,
+                'message' => 'Menu not found!',
+                'data' => []
+            ], 404);
+        }
+
+        if($menu->is_course){
+            $courses = Course::where('category_id', $menu->id)->orderBy('sequence', 'ASC')->get();
+            $menu->courses = $courses;
+
+            foreach ($courses as $course) {
+                $course->course_outline = CourseOutline::select(
+                        'course_outlines.*', 
+                        'class_levels.name as class_name', 
+                        'subjects.name as subject_name',
+                        'chapters.name as chapter_name'
+                    )
+                    ->where('course_outlines.course_id', $course->id)
+                    ->leftJoin('class_levels', 'class_levels.id', 'course_outlines.class_level_id')
+                    ->leftJoin('subjects', 'subjects.id', 'course_outlines.subject_id')
+                    ->leftJoin('chapters', 'chapters.id', 'course_outlines.chapter_id')
+                    ->get();
+
+                $course->course_routine = CourseClassRoutine::where('course_id', $course->id)->get();
+                $course->course_feature = CourseFeature::where('course_id', $course->id)->get();
+                $course->course_mentor = CourseMentor::where('course_id', $course->id)->get();
+                $course->course_faq = CourseFaq::where('course_id', $course->id)->get();
+            }
+        }
+
+        if($menu->is_content){
+            $content_list = Content::where('category_id', $menu->id)->get();
+            $menu->contents = $content_list;
+
+            foreach ($content_list as $content) {
+                $content->content_outline = ContentOutline::select(
+                    'content_outlines.*', 
+                    'class_levels.name as class_name', 
+                    'subjects.name as subject_name',
+                    'chapters.name as chapter_name'
+                )
+                ->where('content_outlines.content_id', $content->id)
+                ->leftJoin('class_levels', 'class_levels.id', 'content_outlines.class_level_id')
+                ->leftJoin('subjects', 'subjects.id', 'content_outlines.subject_id')
+                ->leftJoin('chapters', 'chapters.id', 'content_outlines.chapter_id')
+                ->get();
+            }
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Successful',
+            'data' => $menu
+        ], 200);
+    }
+
     public function mobileMenuList (Request $request)
     {
         $menus = Category::orderBy('sequence', 'ASC')->get();
