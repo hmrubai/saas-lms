@@ -17,6 +17,7 @@ class ChapterQuizQuestion extends Model
         'chapter_id',
         'question_text',
         'question_text_bn',
+        'question_set_id',
         'question_image',
         'option1',
         'option2',
