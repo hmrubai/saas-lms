@@ -22,12 +22,12 @@ trait HelperTrait
     protected function codeGenerator($prefix, $model)
     {
         if ($model::count() == 0) {
-            $newId = $prefix . str_pad(1, 5, 0, STR_PAD_LEFT);
+            $newId = $prefix. "-" . str_pad(1, 5, 0, STR_PAD_LEFT);
             return $newId;
         }
         $lastId = $model::orderBy('id', 'desc')->first()->id;
         $lastIncrement = substr($lastId, -3);
-        $newId = $prefix . str_pad($lastIncrement + 1, 5, 0, STR_PAD_LEFT);
+        $newId = $prefix . "-" . str_pad($lastIncrement + 1, 5, 0, STR_PAD_LEFT);
         $newId++;
         return $newId;
     }
@@ -52,8 +52,7 @@ trait HelperTrait
         }
         return $images_url;
     }
-
-
+    
     protected function imageUploadWithPrefix($request, $image, $destination, $prefix, $old_image = null,)
     {
         $images = null;
@@ -76,6 +75,7 @@ trait HelperTrait
         return $images_url;
     }
 
+    //delete image Ex:icon/12346.png
     protected function deleteImage($image)
     {
         $image_path = public_path('uploads/' . $image);

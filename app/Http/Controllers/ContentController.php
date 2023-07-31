@@ -14,7 +14,6 @@ use App\Models\Subject;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-
 class ContentController extends Controller
 {
     use HelperTrait;
@@ -503,9 +502,9 @@ class ContentController extends Controller
             DB::beginTransaction();
             $excel_data = json_decode($request->excel_data, true);
             if ($excel_data) {
-                $item = [];
+                $qtn = [];
                 foreach ($excel_data as $key => $value) {
-                    $item[] = [
+                    $qtn[] = [
                         'chapter_quiz_id' => $value['chapter_quiz_id'],
                         'class_level_id' => $value['class_level_id'],
                         'subject_id' => $value['subject_id'],
@@ -524,7 +523,7 @@ class ContentController extends Controller
                         'explanation_text' => $value['explanation_text'],
                     ];
                 }
-                ChapterQuizQuestion::insert($item);
+                ChapterQuizQuestion::insert($qtn);
             }
             DB::commit();
             return $this->apiResponse($excel_data, 'Chapter Quiz Question Updated Successfully', true, 200);
@@ -611,4 +610,8 @@ class ContentController extends Controller
             return $this->apiResponse([], $th->getMessage(), false, 500);
         }
     }
+
+
+
+
 }
