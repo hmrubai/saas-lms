@@ -532,9 +532,16 @@ class MasterSettingsController extends Controller
         }
     }
 
-    public function websitePageList(Request $request)
+    public function websitePageList(Request $request, $id)
     {
-        $pages = WebsitePage::select('id', 'page_title', 'page_details', 'page_banner', 'organization_id')->get();
+        $pages = WebsitePage::where('organization_id', $id)->leftJoin('organizations', 'organizations.id', '=', 'website_pages.organization_id')->select(
+                'website_pages.id',
+                'website_pages.page_title',
+                'website_pages.page_details',
+                'website_pages.page_banner',
+                'website_pages.organization_id',
+                'organizations.name as organization_name'
+            )->get();
         return $this->apiResponse($pages, 'Pages List', true, 200);
     }
 
@@ -554,9 +561,9 @@ class MasterSettingsController extends Controller
                         'page_banner' => $this->imageUpload($request, 'page_banner', 'banner'),
                     ]);
                 }
-                return $this->apiResponse([], 'Page has been created successfully',true, 201);
+                return $this->apiResponse([], 'Page has been created successfully', true, 201);
             } else {
-     
+
                 $pages = WebsitePage::where('id', $request->id)->first();
                 $pages->update($page);
                 if ($request->hasFile('page_banner')) {
@@ -564,10 +571,10 @@ class MasterSettingsController extends Controller
                         'page_banner' => $this->imageUpload($request, 'page_banner', 'banner', $pages->page_banner),
                     ]);
                 }
-                return $this->apiResponse([], 'Page has been updated successfully',true, 200);
+                return $this->apiResponse([], 'Page has been updated successfully', true, 200);
             }
         } catch (\Throwable $th) {
-            return $this->apiResponse([], $th->getMessage(),false, 500);
+            return $this->apiResponse([], $th->getMessage(), false, 500);
         };
     }
 }

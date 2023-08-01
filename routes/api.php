@@ -102,8 +102,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('admin/delete-question/{id}', [ContentController::class, 'deleteQuestion']);
 
     //Website 
-    Route::post('admin/website-page-or-update', [MasterSettingsController::class, 'websitePageSaveOrUpdate']);
-    Route::get('admin/website-page-list', [MasterSettingsController::class, 'websitePageList']);
+    Route::post('admin/website-page-save-or-update', [MasterSettingsController::class, 'websitePageSaveOrUpdate']);
+    Route::get('admin/website-page-list/{id}', [MasterSettingsController::class, 'websitePageList']);
 
 
     
