@@ -30,9 +30,6 @@ use Illuminate\Http\Request;
 
 class MasterSettingsController extends Controller
 {
-    //Master Settings
-    
-    //settingDetails
     public function settingDetailsByID(Request $request)
     {
         $slug = $request->slug ? $request->slug : 0;
