@@ -53,7 +53,7 @@ trait HelperTrait
         return $images_url;
     }
     
-    protected function imageUploadWithPrefix($request, $image, $destination, $prefix, $old_image = null,)
+    protected function imageUploadWithPrefix($request, $image, $destination, $prefix, $old_image = null)
     {
         $images = null;
         $images_url = null;
