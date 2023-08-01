@@ -61,4 +61,43 @@ class CourseController extends Controller
             'data' => $menus
         ], 200);
     }
+
+    public function courseDetailsByID(Request $request)
+    {
+        $course_id = $request->course_id ? $request->course_id : 0;
+
+        if(!$course_id){
+            return response()->json([
+                'status' => false,
+                'message' => 'Please, attach menu ID',
+                'data' => []
+            ], 422);
+        }
+
+        $course = Course::where('id', $course_id)->orderBy('sequence', 'ASC')->first();
+
+        $course->course_outline = CourseOutline::select(
+            'course_outlines.*', 
+            'class_levels.name as class_name', 
+            'subjects.name as subject_name',
+            'chapters.name as chapter_name'
+        )
+        ->where('course_outlines.course_id', $course_id)
+        ->leftJoin('class_levels', 'class_levels.id', 'course_outlines.class_level_id')
+        ->leftJoin('subjects', 'subjects.id', 'course_outlines.subject_id')
+        ->leftJoin('chapters', 'chapters.id', 'course_outlines.chapter_id')
+        ->get();
+
+        $course->course_routine = CourseClassRoutine::where('course_id', $course_id)->get();
+        $course->course_feature = CourseFeature::where('course_id', $course_id)->get();
+        $course->course_mentor = CourseMentor::where('course_id', $course_id)->get();
+        $course->course_faq = CourseFaq::where('course_id', $course_id)->get();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'List Successful',
+            'data' => $course
+        ], 200);
+    }
+    
 }

@@ -49,6 +49,7 @@ Route::group(['prefix' => 'mobile'], function () {
     Route::get('course-list-by-id/{menu_id}', [MasterSettingsController::class, 'courseListByID']);
     Route::get('all-course-list', [CourseController::class, 'allCourseList']);
     Route::get('all-content-list', [ContentController::class, 'allContentList']);
+    Route::get('course-details-by-id/{course_id}', [CourseController::class, 'courseDetailsByID']);
 });
 
 
