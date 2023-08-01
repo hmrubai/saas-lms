@@ -27,7 +27,7 @@ class CourseController extends Controller
 
     public function allCourseList(Request $request)
     {
-        $menus = Category::all();
+        $menus = Category::where('is_course', true)->get();
         foreach ($menus as $item) {
 
             if($item->is_course){
@@ -99,5 +99,5 @@ class CourseController extends Controller
             'data' => $course
         ], 200);
     }
-    
+
 }

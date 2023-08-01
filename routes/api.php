@@ -44,7 +44,6 @@ Route::get('settings-by-slug/{slug}', [MasterSettingsController::class, 'setting
 Route::get('class-list', [ContentController::class, 'classList']);
 
 Route::group(['prefix' => 'mobile'], function () {
-    // Package 
     Route::get('menu-list', [MasterSettingsController::class, 'mobileMenuList']);
     Route::get('course-list-by-id/{menu_id}', [MasterSettingsController::class, 'courseListByID']);
     Route::get('all-course-list', [CourseController::class, 'allCourseList']);
@@ -52,6 +51,9 @@ Route::group(['prefix' => 'mobile'], function () {
     Route::get('course-details-by-id/{course_id}', [CourseController::class, 'courseDetailsByID']);
 });
 
+Route::group(['prefix' => 'website'], function () {
+    Route::get('menu-list', [MasterSettingsController::class, 'websiteMenuList']);
+});
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {

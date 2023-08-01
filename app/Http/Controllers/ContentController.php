@@ -650,7 +650,7 @@ class ContentController extends Controller
 
     public function allContentList(Request $request)
     {
-        $menus = Category::all();
+        $menus = Category::where('is_content', true)->get();
         foreach ($menus as $item) {
             if($item->is_content){
                 $content_list = Content::where('category_id', $item->id)->get();
