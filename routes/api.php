@@ -7,9 +7,8 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\MasterSettingsController;
 use App\Http\Controllers\PromotionalNoticeController;
 use App\Http\Controllers\PackageController;
-use App\Http\Controllers\TopicController;
 use App\Http\Controllers\SchoolController;
-use App\Http\Controllers\ConsumeController;
+use App\Http\Controllers\CourseController;
 use App\Http\Controllers\ContentController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\CorrectionController;
@@ -48,6 +47,9 @@ Route::group(['prefix' => 'mobile'], function () {
     // Package 
     Route::get('menu-list', [MasterSettingsController::class, 'mobileMenuList']);
     Route::get('course-list-by-id/{menu_id}', [MasterSettingsController::class, 'courseListByID']);
+    Route::get('all-course-list', [CourseController::class, 'allCourseList']);
+    Route::get('all-content-list', [ContentController::class, 'allContentList']);
+    Route::get('course-details-by-id/{course_id}', [CourseController::class, 'courseDetailsByID']);
 });
 
 

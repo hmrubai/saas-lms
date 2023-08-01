@@ -3,8 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Http\Traits\HelperTrait;
+use App\Models\Category;
+use App\Models\Content;
 use App\Models\Chapter;
 use App\Models\ChapterQuiz;
+use App\Models\ContentOutline;
 use App\Models\ChapterQuizQuestion;
 use App\Models\ChapterScript;
 use App\Models\ChapterVideo;
@@ -645,7 +648,35 @@ class ContentController extends Controller
         }
     }
 
+    public function allContentList(Request $request)
+    {
+        $menus = Category::all();
+        foreach ($menus as $item) {
+            if($item->is_content){
+                $content_list = Content::where('category_id', $item->id)->get();
+                $item->contents = $content_list;
 
+                foreach ($content_list as $content) {
+                    $content->content_outline = ContentOutline::select(
+                        'content_outlines.*', 
+                        'class_levels.name as class_name', 
+                        'subjects.name as subject_name',
+                        'chapters.name as chapter_name'
+                    )
+                    ->where('content_outlines.content_id', $content->id)
+                    ->leftJoin('class_levels', 'class_levels.id', 'content_outlines.class_level_id')
+                    ->leftJoin('subjects', 'subjects.id', 'content_outlines.subject_id')
+                    ->leftJoin('chapters', 'chapters.id', 'content_outlines.chapter_id')
+                    ->get();
+                }
+            }
+        }
 
+        return response()->json([
+            'status' => true,
+            'message' => 'List Successful',
+            'data' => $menus
+        ], 200);
+    }
 
 }
