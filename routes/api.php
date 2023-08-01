@@ -16,6 +16,7 @@ use App\Http\Controllers\LocationController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\PromotionalSiteController;
+use App\Http\Controllers\WebsiteController;
 
 Route::post('/auth/register', [AuthController::class, 'registerUser']);
 Route::post('/auth/login', [AuthController::class, 'loginUser']);
@@ -98,6 +99,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('admin/chapter-quiz-question-save-or-update', [ContentController::class, 'saveOrUpdateQuizQuestion']);
     Route::post('admin/excel-question-upload', [ContentController::class, 'excelQuestionUpload']);
     Route::delete('admin/delete-question/{id}', [ContentController::class, 'deleteQuestion']);
+
+    //Website 
+    Route::post('admin/website-setting-or-update', [WebsiteController::class, 'websiteSettingSaveOrUpdate']);
+
+
+    
 
 
 

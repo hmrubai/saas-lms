@@ -47,7 +47,7 @@ class ContentController extends Controller
     public function saveOrUpdateClass(Request $request)
     {
         try {
-            $class = [
+            $classLevel = [
                 'name' => $request->name,
                 'name_bn' => $request->name_bn,
                 'price' => $request->price,
@@ -58,7 +58,7 @@ class ContentController extends Controller
             ];
 
             if (empty($request->id)) {
-                $classList = ClassLevel::create($class);
+                $classList = ClassLevel::create($classLevel);
                 $classList->update([
                     'class_code' => $this->codeGenerator('CC', ClassLevel::class),
                 ]);
@@ -70,6 +70,7 @@ class ContentController extends Controller
                 }
                 return $this->apiResponse([], 'Class Created Successfully', true, 201);
             } else {
+          
                 $class = ClassLevel::where('id', $request->id)->first();
                 if ($request->hasFile('icon')) {
                     ClassLevel::where('id', $request->id)->update([
@@ -77,7 +78,7 @@ class ContentController extends Controller
                     ]);
                 }
 
-                $class->update($class);
+                $class->update($classLevel);
                 return $this->apiResponse([], 'Class Updated Successfully', true, 200);
             }
         } catch (\Throwable $th) {
@@ -91,7 +92,24 @@ class ContentController extends Controller
 
     public function subjectList()
     {
-        $subjectList = Subject::select('id', 'name', 'name_bn', 'class_level_id', 'subject_code', 'price', 'is_free', 'icon', 'color_code', 'sequence', 'is_active')->get();
+        $subjectList = Subject::leftJoin('class_levels', 'class_levels.id', '=', 'subjects.class_level_id')->
+        select(
+            'subjects.id',
+            'subjects.name',
+            'subjects.name_bn',
+            'subjects.class_level_id',
+            'subjects.subject_code',
+            'subjects.price',
+            'subjects.is_free',
+            'subjects.icon',
+            'subjects.color_code',
+            'subjects.sequence',
+            'subjects.is_active',
+            'class_levels.name as class_name',
+            'class_levels.name_bn as class_name_bn'
+        )
+
+       ->get();
         return $this->apiResponse($subjectList, 'Subject List Successful', true, 200);
     }
 
@@ -139,7 +157,23 @@ class ContentController extends Controller
 
     public function chapterList()
     {
-        $chapterList = Chapter::select('id', 'name', 'name_bn', 'class_level_id', 'subject_id', 'chapter_code', 'price', 'is_free', 'icon', 'color_code', 'sequence', 'is_active')->get();
+        $chapterList = Chapter::leftJoin('subjects', 'subjects.id', '=', 'chapters.subject_id')
+        ->select(
+            'chapters.id',
+            'chapters.name',
+            'chapters.name_bn',
+            'chapters.subject_id',
+            'chapters.chapter_code',
+            'chapters.price',
+            'chapters.is_free',
+            'chapters.icon',
+            'chapters.color_code',
+            'chapters.sequence',
+            'chapters.is_active',
+            'subjects.name as subject_name',
+            'subjects.name_bn as subject_name_bn'
+        )
+        ->get();
         return $this->apiResponse($chapterList, 'Chapter List Successful', true, 200);
     }
 

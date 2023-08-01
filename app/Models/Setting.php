@@ -20,7 +20,8 @@ class Setting extends Model
         'contact_no',
         'logo',
         'color_theme',
-        'is_active'
+        'is_active',
+        'organization_id'
     ];
 
     protected $casts = [
