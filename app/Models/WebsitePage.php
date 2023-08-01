@@ -14,5 +14,6 @@ class WebsitePage extends Model
         'page_title',
         'page_details',
         'page_banner',
+        'organization_id',
     ];
 }

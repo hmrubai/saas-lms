@@ -15,5 +15,6 @@ class WebsiteSetting extends Model
         'contact_number',
         'hotline_number',
         'email',
+        'organization_id',
     ];
 }

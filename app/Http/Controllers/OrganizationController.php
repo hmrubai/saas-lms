@@ -2,23 +2,26 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Traits\HelperTrait;
 use Exception;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Models\Organization;
 use App\Models\Setting;
+use App\Models\WebsiteSetting;
 use Illuminate\Support\Facades\Validator;
 
 class OrganizationController extends Controller
 {
+    use HelperTrait;
     public function organizationList(Request $request)
     {
-        $organization_list = Organization::select('id', 'name', 'slug', 'details', 'address', 'email', 'contact_no', 'logo', 'contact_person','is_active')->where('is_active', true)->get();
+        $organization_list = Organization::select('id', 'name', 'slug', 'details', 'address', 'email', 'contact_no', 'logo', 'contact_person', 'is_active')->where('is_active', true)->get();
 
         foreach ($organization_list as $item) {
             $item->settings = Setting::where('organization_slug', $item->slug)->first();
         }
-        
+
         return response()->json([
             'status' => true,
             'message' => 'List Successful',
@@ -26,30 +29,29 @@ class OrganizationController extends Controller
         ], 200);
     }
 
-    public function saveOrUpdateOrganization (Request $request)
+    public function saveOrUpdateOrganization(Request $request)
     {
         try {
-            $validateUser = Validator::make($request->all(), 
-            [
-                'name' => 'required',
-                'slug' => 'required'
-            ]);
-
-            if($validateUser->fails()){
+            $validateUser = Validator::make(
+                $request->all(),
+                [
+                    'name' => 'required',
+                    'slug' => 'required'
+                ]
+            );
+            if ($validateUser->fails()) {
                 return response()->json([
                     'status' => false,
                     'message' => 'validation error',
                     'data' => $validateUser->errors()
                 ], 422);
             }
-
             $user_id = $request->user()->id;
-
-            if($request->id){
+            if ($request->id) {
 
                 $logo_image = null;
                 $logo_url = null;
-                if($request->hasFile('logo')){
+                if ($request->hasFile('logo')) {
                     $image = $request->file('logo');
                     $time = time();
                     $logo_image = "logo_image_" . $time . '.' . $image->getClientOriginalExtension();
@@ -76,7 +78,20 @@ class OrganizationController extends Controller
                     "is_active" => $request->is_active
                 ]);
 
-                if($request->hasFile('logo')){
+                $webSetting = WebsiteSetting::where('organization_id', $request->id)->first();
+                $webSetting->update([
+                    "contact_number" => $request->contact_no,
+                    "hotline_number" => $request->hotline_number,
+                    "email" => $request->email,
+                ]);
+
+                if ($request->hasFile('banner')) {
+                    WebsiteSetting::where('organization_id', $request->id)->update([
+                        'banner' => $this->imageUpload($request,'banner','banner',$webSetting->banner),
+                    ]);
+                }
+
+                if ($request->hasFile('logo')) {
                     Organization::where('id', $request->id)->update([
                         'logo' => $logo_url
                     ]);
@@ -91,11 +106,10 @@ class OrganizationController extends Controller
                     'message' => 'Organization has been updated successfully',
                     'data' => []
                 ], 200);
-
             } else {
                 $logo_image = null;
                 $logo_url = null;
-                if($request->hasFile('logo')){
+                if ($request->hasFile('logo')) {
                     $image = $request->file('logo');
                     $time = time();
                     $logo_image = "logo_image_" . $time . '.' . $image->getClientOriginalExtension();
@@ -129,11 +143,26 @@ class OrganizationController extends Controller
                         "is_active" => $request->is_active
                     ]);
 
-                    if($request->hasFile('logo')){
+                    $webSetting = WebsiteSetting::create([
+                        "organization_id" => $organization->id,
+                        "contact_number" => $request->contact_no,
+                        "hotline_number" => $request->hotline_number,
+                        "email" => $request->email,
+                    ]);
+
+
+
+                    if ($request->hasFile('banner')) {
+                        $webSetting->update([
+                            'banner' => $this->imageUpload($request, 'banner', 'banner'),
+                        ]);
+                    }
+
+                    if ($request->hasFile('logo')) {
                         $organization->update([
                             'logo' => $logo_url
                         ]);
-                        
+
                         $settings->update([
                             'logo' => $logo_url
                         ]);
@@ -143,7 +172,7 @@ class OrganizationController extends Controller
                         'message' => 'Organization has been created successfully',
                         'data' => []
                     ], 200);
-                }else{
+                } else {
                     return response()->json([
                         'status' => false,
                         'message' => 'Organization already Exist!',
@@ -151,7 +180,6 @@ class OrganizationController extends Controller
                     ], 200);
                 }
             }
-
         } catch (Exception $e) {
             return response()->json([
                 'status' => false,
@@ -161,18 +189,20 @@ class OrganizationController extends Controller
         }
     }
 
-    public function updateSettings (Request $request)
+    public function updateSettings(Request $request)
     {
         try {
-            $validateUser = Validator::make($request->all(), 
-            [
-                'id' => 'required',
-                'host_url' => 'required',
-                'asset_host' => 'required',
-                'color_theme' => 'required'
-            ]);
+            $validateUser = Validator::make(
+                $request->all(),
+                [
+                    'id' => 'required',
+                    'host_url' => 'required',
+                    'asset_host' => 'required',
+                    'color_theme' => 'required'
+                ]
+            );
 
-            if($validateUser->fails()){
+            if ($validateUser->fails()) {
                 return response()->json([
                     'status' => false,
                     'message' => 'validation error',
@@ -194,8 +224,6 @@ class OrganizationController extends Controller
                 'message' => 'Settings has been updated successfully',
                 'data' => []
             ], 200);
-            
-
         } catch (Exception $e) {
             return response()->json([
                 'status' => false,
@@ -204,6 +232,4 @@ class OrganizationController extends Controller
             ], 200);
         }
     }
-
-
 }
