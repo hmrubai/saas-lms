@@ -359,6 +359,36 @@ class MasterSettingsController extends Controller
         ], 200);
     }
 
+    public function websiteMenuList (Request $request)
+    {
+        $menus = Category::orderBy('sequence', 'ASC')->get();
+        foreach ($menus as $item) {
+            $sub_menu = [];
+
+            if($item->is_course){
+                $courses = Course::where('category_id', $item->id)->get();
+                foreach ($courses as $course) {
+                    array_push($sub_menu, ['sub_menu_id' => $course->id, 'sub_menu' => $course->title, 'sub_menu_bn' => $course->title_bn]);
+                }
+            }
+
+            if($item->is_content){
+                $content_list = Content::where('category_id', $item->id)->get();
+                foreach ($content_list as $content) {
+                    array_push($sub_menu, ['sub_menu_id' => $content->id, 'sub_menu' => $content->title, 'sub_menu_bn' => $content->title_bn]);
+                }
+            }
+            
+            $item->sub_menu = $sub_menu;
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => 'List Successful',
+            'data' => $menus
+        ], 200);
+    }
+
     public function saveOrUpdateMenu(Request $request)
     {
         try {

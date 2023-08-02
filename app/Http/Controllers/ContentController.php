@@ -41,6 +41,33 @@ class ContentController extends Controller
         return $this->apiResponse($subjectList, 'Chapter List Successful', true, 200);
     }
 
+    public function scriptListByChapterID(Request $request)
+    {
+        $chapter_id = $request->chapter_id;
+        $scriptList = ChapterScript::select('id', 'title', 'title_bn', 'chapter_id')->where('chapter_id', $chapter_id)->get();
+        return $this->apiResponse($scriptList, 'Script List Successful', true, 200);
+    }
+
+    public function videoListByChapterID(Request $request)
+    {
+        $chapter_id = $request->chapter_id;
+        $videoList = ChapterVideo::select('id', 'title', 'title_bn', 'chapter_id')->where('chapter_id', $chapter_id)->get();
+        return $this->apiResponse($videoList, 'Video List Successful', true, 200);
+    }
+
+    public function quizListByChapterID(Request $request)
+    {
+        $chapter_id = $request->chapter_id;
+        $quizList = ChapterQuiz::select('id', 'title', 'title_bn', 'chapter_id')->where('chapter_id', $chapter_id)->get();
+        return $this->apiResponse($quizList, 'Quiz List Successful', true, 200);
+    }
+
+
+
+
+
+
+
     public function classList()
     {
         $classList = ClassLevel::select('id', 'name', 'name_bn', 'class_code', 'price', 'is_free', 'icon', 'color_code', 'sequence', 'is_active')->get();
@@ -650,7 +677,7 @@ class ContentController extends Controller
 
     public function allContentList(Request $request)
     {
-        $menus = Category::all();
+        $menus = Category::where('is_content', true)->get();
         foreach ($menus as $item) {
             if($item->is_content){
                 $content_list = Content::where('category_id', $item->id)->get();

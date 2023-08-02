@@ -44,7 +44,6 @@ Route::get('settings-by-slug/{slug}', [MasterSettingsController::class, 'setting
 Route::get('class-list', [ContentController::class, 'classList']);
 
 Route::group(['prefix' => 'mobile'], function () {
-    // Package 
     Route::get('menu-list', [MasterSettingsController::class, 'mobileMenuList']);
     Route::get('course-list-by-id/{menu_id}', [MasterSettingsController::class, 'courseListByID']);
     Route::get('all-course-list', [CourseController::class, 'allCourseList']);
@@ -52,6 +51,9 @@ Route::group(['prefix' => 'mobile'], function () {
     Route::get('course-details-by-id/{course_id}', [CourseController::class, 'courseDetailsByID']);
 });
 
+Route::group(['prefix' => 'website'], function () {
+    Route::get('menu-list', [MasterSettingsController::class, 'websiteMenuList']);
+});
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {
@@ -75,14 +77,23 @@ Route::middleware('auth:sanctum')->group(function () {
     //USER ROUTES
     Route::post('update-tags', [StudentController::class, 'updateInterests']);
 
-    //Content Routes 
+
+    // common routes
+
+    Route::get('admin/subject-by-class-id/{class_id}', [ContentController::class, 'subjectListByClassID']);
+    Route::get('admin/chapter-by-subject-id/{subject_id}', [ContentController::class, 'chapterListBySubjectID']);
+    Route::get('admin/script-list-by-chapter-id/{chapter_id}', [ContentController::class, 'scriptListByChapterID']);
+    Route::get('admin/video-list-by-chapter-id/{chapter_id}', [ContentController::class, 'videoListByChapterID']);
+    Route::get('admin/quiz-list-by-chapter-id/{chapter_id}', [ContentController::class, 'quizListByChapterID']);
+
+
+    //admin Content Routes 
     Route::get('admin/class-list', [ContentController::class, 'classList']);
     Route::post('admin/class-save-or-update', [ContentController::class, 'saveOrUpdateClass']);
     Route::get('admin/subject-list', [ContentController::class, 'subjectList']);
     Route::post('admin/subject-save-or-update', [ContentController::class, 'saveOrUpdateSubject']);
 
-    Route::get('admin/subject-by-class-id/{class_id}', [ContentController::class, 'subjectListByClassID']);
-    Route::get('admin/chapter-by-subject-id/{subject_id}', [ContentController::class, 'chapterListBySubjectID']);
+
 
     Route::get('admin/chapter-list', [ContentController::class, 'chapterList']);
     Route::post('admin/chapter-save-or-update', [ContentController::class, 'saveOrUpdateChapter']);
@@ -101,9 +112,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('admin/excel-question-upload', [ContentController::class, 'excelQuestionUpload']);
     Route::delete('admin/delete-question/{id}', [ContentController::class, 'deleteQuestion']);
 
-    //Website 
+    //admin Website 
     Route::post('admin/website-page-save-or-update', [MasterSettingsController::class, 'websitePageSaveOrUpdate']);
     Route::get('admin/website-page-list/{id}', [MasterSettingsController::class, 'websitePageList']);
+
+    //admin Course 
+
+    Route::get('admin/course-list', [CourseController::class, 'courseList']);
+    Route::post('admin/course-save-or-update', [CourseController::class, 'saveOrUpdateCourse']);
+    Route::post('admin/course-outline-save-or-update', [CourseController::class, 'saveOrUpdateCourseOutline']);
+    Route::get('admin/course-outline-list/{id}', [CourseController::class, 'courseOutlineList']);
 
 
     
