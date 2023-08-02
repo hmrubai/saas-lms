@@ -173,7 +173,7 @@ class CourseController extends Controller
 
     public function saveOrUpdateCourseOutline(Request $request)
     {
-        
+
         try {
             $course = [
                 'title' => $request->title,
@@ -191,8 +191,8 @@ class CourseController extends Controller
             ];
 
             if (empty($request->id)) {
-             CourseOutline::create($course);
-        
+                CourseOutline::create($course);
+
                 return $this->apiResponse([], 'Course Outline Created Successfully', true, 201);
             } else {
                 $class = CourseOutline::where('id', $request->id)->first();
@@ -208,38 +208,37 @@ class CourseController extends Controller
         }
     }
 
-    public function courseOutlineList(Request $request,$id){
-        $courseOutlineList = CourseOutline::where('course_id',$id)->orderBy('sequence', 'ASC')
-        ->leftJoin('class_levels', 'class_levels.id', 'course_outlines.class_level_id')
-        ->leftJoin('subjects', 'subjects.id', 'course_outlines.subject_id')
-        ->leftJoin('chapters', 'chapters.id', 'course_outlines.chapter_id')
-        ->leftJoin('chapter_scripts', 'chapter_scripts.id', 'course_outlines.chapter_script_id')
-        ->leftJoin('chapter_videos', 'chapter_videos.id', 'course_outlines.chapter_video_id')
-        ->leftJoin('chapter_quizzes', 'chapter_quizzes.id', 'course_outlines.chapter_quiz_id')
-        ->leftJoin('courses', 'courses.id', 'course_outlines.course_id')
-        ->select(
-            'course_outlines.title',
-            'course_outlines.title_bn',
-            'course_outlines.id',
-            'course_outlines.course_id',
-            'course_outlines.class_level_id',
-            'course_outlines.subject_id',
-            'course_outlines.chapter_id',
-            'course_outlines.chapter_script_id',
-            'course_outlines.chapter_video_id',
-            'course_outlines.chapter_quiz_id',
-            'course_outlines.is_free',
-            'course_outlines.sequence',
-            'course_outlines.is_active',
-            'class_levels.name as class_level_name',
-            'subjects.name as subject_name',
-        
-        )
-        
-        ->get();
+    public function courseOutlineList(Request $request)
+    {
+        $id = $request->id ? $request->id : 0;
+        $courseOutlineList = CourseOutline::leftJoin('class_levels', 'class_levels.id', 'course_outlines.class_level_id')
+            ->leftJoin('subjects', 'subjects.id', 'course_outlines.subject_id')
+            ->leftJoin('chapters', 'chapters.id', 'course_outlines.chapter_id')
+            ->leftJoin('chapter_scripts', 'chapter_scripts.id', 'course_outlines.chapter_script_id')
+            ->leftJoin('chapter_videos', 'chapter_videos.id', 'course_outlines.chapter_video_id')
+            ->leftJoin('chapter_quizzes', 'chapter_quizzes.id', 'course_outlines.chapter_quiz_id')
+            ->leftJoin('courses', 'courses.id', 'course_outlines.course_id')
+            ->select(
+                'course_outlines.title',
+                'course_outlines.title_bn',
+                'course_outlines.id',
+                'course_outlines.course_id',
+                'course_outlines.class_level_id',
+                'course_outlines.subject_id',
+                'course_outlines.chapter_id',
+                'course_outlines.chapter_script_id',
+                'course_outlines.chapter_video_id',
+                'course_outlines.chapter_quiz_id',
+                'course_outlines.is_free',
+                'course_outlines.sequence',
+                'course_outlines.is_active',
+                'class_levels.name as class_level_name',
+                'subjects.name as subject_name',
+            )
+            ->when($id, function ($query, $id) {
+                return $query->where('course_outlines.course_id', $id);
+            })
+            ->get();
         return $this->apiResponse($courseOutlineList, 'Course Outline List', true, 200);
-
     }
-
-
 }
