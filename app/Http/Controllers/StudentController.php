@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
+use App\Models\User;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use App\Models\StudentInformation;
@@ -48,10 +49,20 @@ class StudentController extends Controller
 
             Log::debug('Student Service: Tag Updated!');
 
+            $user = User::where('id', $user_id)->first();
+
+            $response_user = [
+                'name' => $user->name, 
+                'username'=> $user->username, 
+                'interests' => explode(',',$student->interests),
+                'user_type' => $user->user_type, 
+                'token' => $user->createToken("API TOKEN")->plainTextToken
+            ];
+    
             return response()->json([
                 'status' => true,
                 'message' => 'Tags updated successful',
-                'data' => []
+                'data' => $response_user
             ], 200);
 
         } catch (\Throwable $th) {
@@ -68,7 +79,7 @@ class StudentController extends Controller
         $student = StudentInformation::where('user_id', $user_id)->first();
         return response()->json([
             'status' => true,
-            'message' => 'Tags updated successful',
+            'message' => 'Successful',
             'data' => $student
         ], 200);
     }

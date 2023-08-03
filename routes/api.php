@@ -67,7 +67,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('update-interest', [AuthController::class, 'updateInterest']);
 
     Route::group(['prefix' => 'mobile'], function () {
-        Route::get('student-details', [StudentController::class, 'studentDetails']);
+        Route::get('student-profile', [StudentController::class, 'studentDetails']);
     });
     
     //Menu Settings
