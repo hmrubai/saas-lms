@@ -20,6 +20,7 @@ class Category extends Model
         'is_course',
         'is_content',
         'icon',
+        'sequence',
         'is_active'
     ];
 
