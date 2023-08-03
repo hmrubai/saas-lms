@@ -11,7 +11,7 @@ use App\Http\Controllers\SchoolController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\ContentController;
 use App\Http\Controllers\PaymentController;
-use App\Http\Controllers\CorrectionController;
+use App\Http\Controllers\MentorController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\OrganizationController;
@@ -49,6 +49,8 @@ Route::group(['prefix' => 'mobile'], function () {
     Route::get('all-course-list', [CourseController::class, 'allCourseList']);
     Route::get('all-content-list', [ContentController::class, 'allContentList']);
     Route::get('course-details-by-id/{course_id}', [CourseController::class, 'courseDetailsByID']);
+    Route::get('all-mentor-list', [MentorController::class, 'allMentorList']);
+    Route::get('mentor-details-by-id/{mentor_id}', [MentorController::class, 'mentorDetailsByID']);
 });
 
 Route::group(['prefix' => 'website'], function () {
@@ -62,7 +64,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('get-profile', [AuthController::class, 'getProfile']);
     Route::post('profile-update', [AuthController::class, 'updateUser']);
-
+    Route::post('update-interest', [AuthController::class, 'updateInterest']);
+    
     //Menu Settings
     Route::get('admin/menu-list', [MasterSettingsController::class, 'adminMenuList']);
     Route::post('admin/menu-save-or-update', [MasterSettingsController::class, 'saveOrUpdateMenu']);
