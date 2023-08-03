@@ -62,4 +62,14 @@ class StudentController extends Controller
             ], 500);
         }
     }
+
+    public function studentDetails(Request $request){
+        $user_id = $request->user()->id;
+        $student = StudentInformation::where('user_id', $user_id)->first();
+        return response()->json([
+            'status' => true,
+            'message' => 'Tags updated successful',
+            'data' => $student
+        ], 200);
+    }
 }
