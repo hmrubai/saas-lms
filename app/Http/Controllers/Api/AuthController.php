@@ -204,7 +204,9 @@ class AuthController extends Controller
             $interests = [];
             if($user->user_type == 'Student'){
                 $interest = StudentInformation::where('user_id', $user->id)->first();
-                $interests = explode(",",$interest->interests);
+                if($interest->interests){
+                    $interests = explode(",",$interest->interests);
+                }
             }
 
             $response_user = [
@@ -337,23 +339,54 @@ class AuthController extends Controller
         }
     }
 
+    public function updateInterest(Request $request){
+        $user_id = $request->user()->id;
+
+        if(sizeof($request->interests)){
+            return response()->json([
+                'status' => false,
+                'message' => 'Check Details',
+                'data' => []
+            ], 409);
+        }
+
+        $user = User::where('id', $user_id)->first();
+        
+        if($user->user_type == "Student"){
+            $student = StudentInformation::where('user_id', $user_id)->first();
+            $interest_list = explode(',',$student->interests);
+
+            foreach ($request->interests as $item) {
+                if (!in_array($item, $interest_list)){
+                    array_push($interest_list, $item); 
+                }
+            }
+
+            $student->update([
+                'interests' => implode(',', $interest_list)
+            ]);
+        }
+
+        $response_user = [
+            'name' => $user->name, 
+            'username'=> $user->username, 
+            'interests' => explode(',',$student->interests),
+            'user_type' => $user->user_type, 
+            'token' => $user->createToken("API TOKEN")->plainTextToken
+        ];
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Registration Successful',
+            'data' => $response_user
+        ], 200);
+        
+    }
+
     public function updateUser(Request $request)
     {
         $user_id = $request->user()->id;
         try {
-            // $validateUser = Validator::make($request->all(), 
-            // [
-            //     'name' => 'required'
-            // ]);
-
-            // if($validateUser->fails()){
-            //     return response()->json([
-            //         'status' => false,
-            //         'message' => 'validation error',
-            //         'data' => $validateUser->errors()
-            //     ], 401);
-            // }
-
             if(!$request->name && !$request->contact_no && !$request->country_id && !$request->address && !$request->institution && !$request->education && !$request->hasFile('image')){
                 return response()->json([
                     'status' => false,
@@ -372,6 +405,13 @@ class AuthController extends Controller
                 $image->move($destinationProfile, $profile_image);
                 $profile_url = $destinationProfile . '/' . $profile_image;
             }
+
+            $user = User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'contact_no' => $request->contact_no,
+                'address' => $request->address,
+            ]);
 
             if($request->name){
                 User::where('id', $user_id)->update([
