@@ -105,7 +105,6 @@ class CourseController extends Controller
     }
 
 
-    // Admin Panel api
     public function saveOrUpdateCourse(Request $request)
     {
         try {
@@ -116,8 +115,6 @@ class CourseController extends Controller
                 'gp_product_id' => $request->gp_product_id,
                 'youtube_url' => $request->youtube_url,
                 'description' => $request->description,
-                // 'thumbnail' => $request->thumbnail,
-                // 'icon' => $request->icon,
                 'number_of_enrolled'    => $request->number_of_enrolled,
                 'regular_price' => $request->regular_price,
                 'sale_price'    => $request->sale_price,
@@ -158,7 +155,7 @@ class CourseController extends Controller
                 'status' => false,
                 'message' => $th->getMessage(),
                 'data' => []
-            ], 200);
+            ], 500);
         }
     }
 
@@ -173,7 +170,6 @@ class CourseController extends Controller
 
     public function saveOrUpdateCourseOutline(Request $request)
     {
-
         try {
             $course = [
                 'title' => $request->title,
@@ -234,11 +230,29 @@ class CourseController extends Controller
                 'course_outlines.is_active',
                 'class_levels.name as class_level_name',
                 'subjects.name as subject_name',
+                'chapters.name as chapter_name',
+                'chapter_scripts.title as chapter_script_title',
+                'chapter_videos.title as chapter_video_title',
+                'chapter_quizzes.title as chapter_quiz_title',
+                'courses.title as course_title'
             )
             ->when($id, function ($query, $id) {
                 return $query->where('course_outlines.course_id', $id);
             })
             ->get();
         return $this->apiResponse($courseOutlineList, 'Course Outline List', true, 200);
+    }
+    public function courseOutlineDelete(Request $request)
+    {
+        try {
+            CourseOutline::where('id', $request->id)->delete();
+            return $this->apiResponse([], 'Course Outline Deleted Successfully', true, 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'message' => $th->getMessage(),
+                'data' => []
+            ], 500);
+        }
     }
 }

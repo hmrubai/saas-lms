@@ -120,11 +120,21 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('admin/course-list', [CourseController::class, 'courseList']);
     Route::post('admin/course-save-or-update', [CourseController::class, 'saveOrUpdateCourse']);
+
     Route::post('admin/course-outline-save-or-update', [CourseController::class, 'saveOrUpdateCourseOutline']);
     Route::get('admin/course-outline-list/{id}', [CourseController::class, 'courseOutlineList']);
+    Route::delete('admin/delete-course-outline/{id}', [CourseController::class, 'courseOutlineDelete']);
+
+    Route::get('admin/content-list', [ContentController::class, 'contentList']);
+    Route::post('admin/content-save-or-update', [ContentController::class, 'saveOrUpdateContent']);
+
+    Route::post('admin/content-outline-save-or-update', [ContentController::class, 'saveOrUpdateContentOutline']);
+
+    Route::get('admin/course-outline-list/{id}', [ContentController::class, 'contentOutlineList']);
+
+    Route::delete('admin/delete-course-outline/{id}', [ContentController::class, 'courseOutlineDelete']);
 
 
-    
 
 
 

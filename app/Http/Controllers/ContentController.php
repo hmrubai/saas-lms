@@ -100,7 +100,7 @@ class ContentController extends Controller
                 }
                 return $this->apiResponse([], 'Class Created Successfully', true, 201);
             } else {
-          
+
                 $class = ClassLevel::where('id', $request->id)->first();
                 if ($request->hasFile('icon')) {
                     ClassLevel::where('id', $request->id)->update([
@@ -122,8 +122,7 @@ class ContentController extends Controller
 
     public function subjectList()
     {
-        $subjectList = Subject::leftJoin('class_levels', 'class_levels.id', '=', 'subjects.class_level_id')->
-        select(
+        $subjectList = Subject::leftJoin('class_levels', 'class_levels.id', '=', 'subjects.class_level_id')->select(
             'subjects.id',
             'subjects.name',
             'subjects.name_bn',
@@ -139,7 +138,7 @@ class ContentController extends Controller
             'class_levels.name_bn as class_name_bn'
         )
 
-       ->get();
+            ->get();
         return $this->apiResponse($subjectList, 'Subject List Successful', true, 200);
     }
 
@@ -188,22 +187,22 @@ class ContentController extends Controller
     public function chapterList()
     {
         $chapterList = Chapter::leftJoin('subjects', 'subjects.id', '=', 'chapters.subject_id')
-        ->select(
-            'chapters.id',
-            'chapters.name',
-            'chapters.name_bn',
-            'chapters.subject_id',
-            'chapters.chapter_code',
-            'chapters.price',
-            'chapters.is_free',
-            'chapters.icon',
-            'chapters.color_code',
-            'chapters.sequence',
-            'chapters.is_active',
-            'subjects.name as subject_name',
-            'subjects.name_bn as subject_name_bn'
-        )
-        ->get();
+            ->select(
+                'chapters.id',
+                'chapters.name',
+                'chapters.name_bn',
+                'chapters.subject_id',
+                'chapters.chapter_code',
+                'chapters.price',
+                'chapters.is_free',
+                'chapters.icon',
+                'chapters.color_code',
+                'chapters.sequence',
+                'chapters.is_active',
+                'subjects.name as subject_name',
+                'subjects.name_bn as subject_name_bn'
+            )
+            ->get();
         return $this->apiResponse($chapterList, 'Chapter List Successful', true, 200);
     }
 
@@ -559,7 +558,7 @@ class ContentController extends Controller
             return $this->apiResponse([], $th->getMessage(), false, 500);
         }
     }
-    
+
     public function excelQuestionUpload(Request $request)
     {
         try {
@@ -679,22 +678,22 @@ class ContentController extends Controller
     {
         $menus = Category::where('is_content', true)->get();
         foreach ($menus as $item) {
-            if($item->is_content){
+            if ($item->is_content) {
                 $content_list = Content::where('category_id', $item->id)->get();
                 $item->contents = $content_list;
 
                 foreach ($content_list as $content) {
                     $content->content_outline = ContentOutline::select(
-                        'content_outlines.*', 
-                        'class_levels.name as class_name', 
+                        'content_outlines.*',
+                        'class_levels.name as class_name',
                         'subjects.name as subject_name',
                         'chapters.name as chapter_name'
                     )
-                    ->where('content_outlines.content_id', $content->id)
-                    ->leftJoin('class_levels', 'class_levels.id', 'content_outlines.class_level_id')
-                    ->leftJoin('subjects', 'subjects.id', 'content_outlines.subject_id')
-                    ->leftJoin('chapters', 'chapters.id', 'content_outlines.chapter_id')
-                    ->get();
+                        ->where('content_outlines.content_id', $content->id)
+                        ->leftJoin('class_levels', 'class_levels.id', 'content_outlines.class_level_id')
+                        ->leftJoin('subjects', 'subjects.id', 'content_outlines.subject_id')
+                        ->leftJoin('chapters', 'chapters.id', 'content_outlines.chapter_id')
+                        ->get();
                 }
             }
         }
@@ -706,4 +705,134 @@ class ContentController extends Controller
         ], 200);
     }
 
+    public function saveOrUpdateContent(Request $request)
+    {
+        try {
+            $content = [
+                'title' => $request->title,
+                'title_bn' => $request->title_bn,
+                'category_id' => $request->category_id,
+                'gp_product_id' => $request->gp_product_id,
+                'youtube_url' => $request->youtube_url,
+                'description' => $request->description,
+                'number_of_enrolled'    => $request->number_of_enrolled,
+                'regular_price' => $request->regular_price,
+                'sale_price'    => $request->sale_price,
+                'discount_percentage'   => $request->discount_percentage,
+                'rating'    => $request->rating,
+                'is_active' => $request->is_active,
+                'is_free'   => $request->is_free,
+                'sequence'  => $request->sequence,
+                'appeared_from' => $request->appeared_from,
+                'appeared_to'  => $request->appeared_to,
+            ];
+
+            if (empty($request->id)) {
+                $courseList = Content::create($content);
+                if ($request->hasFile('icon')) {
+                    $courseList->update([
+                        'icon' => $this->imageUpload($request, 'icon', 'icon'),
+                        'thumbnail' => $this->imageUpload($request, 'thumbnail', 'thumbnail'),
+                    ]);
+                }
+                return $this->apiResponse([], 'Content Created Successfully', true, 201);
+            } else {
+
+                $class = Content::where('id', $request->id)->first();
+                if ($request->hasFile('icon')) {
+                    Content::where('id', $request->id)->update([
+                        'icon' => $this->imageUpload($request, 'icon', 'icon', $class->icon),
+                        'thumbnail' => $this->imageUpload($request, 'thumbnail', 'thumbnail', $class->thumbnail)
+                    ]);
+                }
+
+                $class->update($content);
+                return $this->apiResponse([], 'Content Updated Successfully', true, 200);
+            }
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'message' => $th->getMessage(),
+                'data' => []
+            ], 500);
+        }
+    }
+
+    public function contentList()
+    {
+        $courseList = Content::leftJoin('categories', 'categories.id', 'contents.category_id')
+            ->select(
+                'contents.*',
+                'categories.name as category_name',
+            )
+            ->get();
+        return $this->apiResponse($courseList, 'Content List', true, 200);
+    }
+
+    public function saveOrUpdateContentOutline(Request $request)
+    {
+        try {
+            $Content = [
+                'title' => $request->title,
+                'title_bn' => $request->title_bn,
+                'content_id' => $request->content_id,
+                'class_level_id' => $request->class_level_id,
+                'subject_id'    => $request->subject_id,
+                'chapter_id'   => $request->chapter_id,
+                'chapter_script_id' => $request->chapter_script_id,
+                'chapter_video_id' => $request->chapter_video_id,
+                'chapter_quiz_id' => $request->chapter_quiz_id,
+                'is_free'  => $request->is_free,
+                'color_code' => $request->color_code,
+                'sequence' => $request->sequence,
+                'is_active ' => $request->is_active,
+            ];
+
+            if (empty($request->id)) {
+                $contentList = ContentOutline::create($Content);
+                if ($request->hasFile('icon')) {
+                    $contentList->update([
+                        'icon' => $this->imageUpload($request, 'icon', 'icon'),
+                    ]);
+                }
+                return $this->apiResponse([], 'Content Outline Created Successfully', true, 201);
+            } else {
+                $content = ContentOutline::where('id', $request->id)->first();
+                $content->update($Content);
+                if ($request->hasFile('icon')) {
+                    $content->update([
+                        'icon' => $this->imageUpload($request, 'icon', 'icon', $content->icon),
+                    ]);
+                }
+                return $this->apiResponse([], 'Content Outline Updated Successfully', true, 200);
+            }
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'message' => $th->getMessage(),
+                'data' => []
+            ], 500);
+        }
+    }
+
+    public function contentOutlineList(Request $request)
+    {
+        $id = $request->id ? $request->id : 0;
+        $contentOutlineList = ContentOutline::leftJoin('contents', 'contents.id', 'content_outlines.content_id')
+            ->leftJoin('class_levels', 'class_levels.id', 'content_outlines.class_level_id')
+            ->leftJoin('subjects', 'subjects.id', 'content_outlines.subject_id')
+            ->leftJoin('chapters', 'chapters.id', 'content_outlines.chapter_id')
+            ->select(
+                'content_outlines.*',
+                'contents.title as content_name',
+                'class_levels.name as class_level_name',
+                'subjects.name as subject_name',
+                'chapters.name as chapter_name',
+            )
+            ->when($id, function ($query, $id) {
+                return $query->where('content_outlines.content_id', $id);
+            })
+            ->get();
+        return $this->apiResponse($contentOutlineList, 'Content Outline List', true, 200);
+    }
 }
