@@ -206,8 +206,11 @@ class CourseController extends Controller
 
     public function courseOutlineList(Request $request)
     {
-        $id = $request->id ? $request->id : 0;
-        $courseOutlineList = CourseOutline::leftJoin('class_levels', 'class_levels.id', 'course_outlines.class_level_id')
+        $id = $request->id;
+        $courseOutlineList = CourseOutline::where(
+            'course_id',
+            $id
+        )->leftJoin('class_levels', 'class_levels.id', 'course_outlines.class_level_id')
             ->leftJoin('subjects', 'subjects.id', 'course_outlines.subject_id')
             ->leftJoin('chapters', 'chapters.id', 'course_outlines.chapter_id')
             ->leftJoin('chapter_scripts', 'chapter_scripts.id', 'course_outlines.chapter_script_id')
@@ -236,9 +239,8 @@ class CourseController extends Controller
                 'chapter_quizzes.title as chapter_quiz_title',
                 'courses.title as course_title'
             )
-            ->when($id, function ($query, $id) {
-                return $query->where('course_outlines.course_id', $id);
-            })
+
+
             ->get();
         return $this->apiResponse($courseOutlineList, 'Course Outline List', true, 200);
     }
@@ -253,6 +255,68 @@ class CourseController extends Controller
                 'message' => $th->getMessage(),
                 'data' => []
             ], 500);
+        }
+    }
+
+    public function faqList(Request $request)
+    {
+        $id = $request->id;
+        $faqList = CourseFaq::where(
+            'course_id',
+            $id
+        )->leftJoin('courses', 'courses.id', 'course_faqs.course_id')
+            ->select(
+                'course_faqs.title',
+                'course_faqs.answer',
+                'course_faqs.id',
+                'course_faqs.course_id',
+                'course_faqs.is_active',
+                'courses.title as course_title'
+            )
+            ->get();
+        return $this->apiResponse($faqList, 'FAQ List', true, 200);
+    }
+
+    public function saveOrUpdateFaq(Request $request)
+    {
+
+        try {
+
+            if (empty($request->id)) {
+
+                $faqArr = json_decode($request->faq, true);
+                if ($faqArr) {
+                    $faq = [];
+                    foreach ($faqArr as $key => $value) {
+                        $faq[] = [
+                            'title' => $value['title'],
+                            'answer' => $value['answer'],
+                            'course_id' => $value['course_id'],
+                            'is_active' => $value['is_active'],
+                        ];
+                    }
+                    CourseFaq::insert($faq);
+                }
+                return $this->apiResponse([], 'Course FAQ Created Successfully', true, 201);
+
+            } else {
+
+                $faq= CourseFaq::where('id', $request->id)->first();
+                $faq->update($request->all());
+                return $this->apiResponse([], 'Course FAQ Updated Successfully', true, 200);
+            }
+        } catch (\Throwable $th) {
+            return $this->apiResponse([], $th->getMessage(), false, 500);
+        }
+    }
+
+    public function faqDelete(Request $request)
+    {
+        try {
+            CourseFaq::where('id', $request->id)->delete();
+            return $this->apiResponse([], 'Course FAQ Deleted Successfully', true, 200);
+        } catch (\Throwable $th) {
+            return $this->apiResponse([], $th->getMessage(), false, 500);
         }
     }
 }

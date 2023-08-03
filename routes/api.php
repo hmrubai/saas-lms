@@ -65,7 +65,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('get-profile', [AuthController::class, 'getProfile']);
     Route::post('profile-update', [AuthController::class, 'updateUser']);
     Route::post('update-interest', [AuthController::class, 'updateInterest']);
-    
+
     //Menu Settings
     Route::get('admin/menu-list', [MasterSettingsController::class, 'adminMenuList']);
     Route::post('admin/menu-save-or-update', [MasterSettingsController::class, 'saveOrUpdateMenu']);
@@ -126,17 +126,20 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('admin/course-outline-save-or-update', [CourseController::class, 'saveOrUpdateCourseOutline']);
     Route::get('admin/course-outline-list/{id}', [CourseController::class, 'courseOutlineList']);
-    Route::delete('admin/delete-course-outline/{id}', [CourseController::class, 'courseOutlineDelete']);
 
+    Route::delete('admin/delete-course-outline/{id}', [CourseController::class, 'courseOutlineDelete']);
     Route::get('admin/content-list', [ContentController::class, 'contentList']);
     Route::post('admin/content-save-or-update', [ContentController::class, 'saveOrUpdateContent']);
-
     Route::post('admin/content-outline-save-or-update', [ContentController::class, 'saveOrUpdateContentOutline']);
-
-    Route::get('admin/course-outline-list/{id}', [ContentController::class, 'contentOutlineList']);
+    Route::get('admin/content-outline-list/{id}', [ContentController::class, 'contentOutlineList']);
 
     Route::delete('admin/delete-course-outline/{id}', [ContentController::class, 'courseOutlineDelete']);
+    Route::delete('admin/delete-content-outline/{id}', [ContentController::class, 'contentOutlineDelete']);
 
+
+    Route::post('admin/faq-save-or-update', [CourseController::class, 'saveOrUpdateFaq']);
+    Route::get('admin/faq-list/{id}', [CourseController::class, 'faqList']);
+    Route::delete('admin/delete-faq/{id}', [CourseController::class, 'faqDelete']);
 
 
 

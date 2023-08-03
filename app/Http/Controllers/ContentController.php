@@ -835,4 +835,17 @@ class ContentController extends Controller
             ->get();
         return $this->apiResponse($contentOutlineList, 'Content Outline List', true, 200);
     }
+    public function contentOutlineDelete(Request $request)
+    {
+        try {
+            contentOutline::where('id', $request->id)->delete();
+            return $this->apiResponse([], 'Content Outline Deleted Successfully', true, 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'message' => $th->getMessage(),
+                'data' => []
+            ], 500);
+        }
+    }
 }
