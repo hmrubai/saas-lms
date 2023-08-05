@@ -156,7 +156,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('admin/delete-routine/{id}', [CourseController::class, 'routineDelete']);
 
     Route::post('admin/mentor-save-or-update', [CourseController::class, 'saveOrUpdateMentor']);
-    Route::get('admin/course-mentor-list', [CourseController::class, 'courseMentorList']);
+    Route::get('admin/course-mentor-assign-list/{id}', [CourseController::class, 'mentorAssignList']);
 
     Route::post('admin/mentor-save-or-update', [MentorController::class, 'mentorSaveOrUpdate']);
     Route::post('admin/student-save-or-update', [StudentController::class, 'studentSaveOrUpdate']);
