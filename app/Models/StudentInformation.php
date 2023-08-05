@@ -28,6 +28,7 @@ class StudentInformation extends Model
         'religion',
         'marital_status',
         'date_of_birth',
+        'profession',
         'current_address',
         'permanent_address',
         'interests',
@@ -38,12 +39,11 @@ class StudentInformation extends Model
         'birth_certificate_no',
         'passport_no',
         'image',
+        'intro_video',
         'status',
         'is_foreigner',
         'is_active',
         'rating',
-      
- 
     ];
 
     protected $casts = [
