@@ -673,11 +673,11 @@ class CourseController extends Controller
     }
 
 
-    public function saveOrUpdateMentor(Request $request)
+    public function saveOrUpdateAssignMentor(Request $request)
     {
         try {
             if (empty($request->id)) {
-                $mentorArr = json_decode($request->routine, true);
+                $mentorArr = json_decode($request->mentorArr, true);
                 if ($mentorArr) {
                     $mentor = [];
                     foreach ($mentorArr as $key => $value) {
@@ -721,6 +721,15 @@ class CourseController extends Controller
         return $this->apiResponse($mentorList, 'Routine List', true, 200);
     }
 
+    public function mentorAssignDelete(Request $request)
+    {
+        try {
+            CourseMentor::where('id', $request->id)->delete();
+            return $this->apiResponse([], 'Course Mentor Deleted Successfully', true, 200);
+        } catch (\Throwable $th) {
+            return $this->apiResponse([], $th->getMessage(), false, 500);
+        }
+    }
 
 
 }
