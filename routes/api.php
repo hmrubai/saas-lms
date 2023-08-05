@@ -141,6 +141,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('admin/faq-list/{id}', [CourseController::class, 'faqList']);
     Route::delete('admin/delete-faq/{id}', [CourseController::class, 'faqDelete']);
 
+    Route::post('admin/feature-save-or-update', [CourseController::class, 'saveOrUpdateFeature']);
+    Route::get('admin/feature-list/{id}', [CourseController::class, 'featureList']);
+    Route::delete('admin/delete-feature/{id}', [CourseController::class, 'featureDelete']);
+
+    Route::post('admin/routine-save-or-update', [CourseController::class, 'saveOrUpdateRoutine']);
+    Route::get('admin/routine-list/{id}', [CourseController::class, 'routineList']);
+    Route::delete('admin/delete-routine/{id}', [CourseController::class, 'routineDelete']);
+
+
+
 
 
 

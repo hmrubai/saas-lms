@@ -2,17 +2,18 @@
 
 namespace App\Http\Controllers;
 
-
+use App\Http\Traits\HelperTrait;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
-
+use Illuminate\Support\Facades\Hash;
 use Exception;
 use App\Models\User;
 use App\Models\MentorInformation;
 use Illuminate\Http\Request;
-
+use Illuminate\Support\Facades\Validator;
 class MentorController extends Controller
 {
+    use HelperTrait;
     public function allMentorList(Request $request)
     {
         $mentorList = MentorInformation::where('is_active', true)->get();
@@ -28,7 +29,7 @@ class MentorController extends Controller
     {
         $mentor_id = $request->mentor_id ? $request->mentor_id : 0;
 
-        if(!$mentor_id){
+        if (!$mentor_id) {
             return response()->json([
                 'status' => false,
                 'message' => 'Please, attach Mentor ID',
@@ -43,5 +44,123 @@ class MentorController extends Controller
             'message' => 'Successful',
             'data' => $mentor
         ], 200);
+    }
+
+
+    public function mentorSaveOrUpdate(Request $request)
+    {
+        try {
+
+            $validateUser = Validator::make($request->all(), 
+            [
+                'name' => 'required',
+                'organization_slug' => 'required',
+                'username' => 'required|unique:users',
+                'password' => 'required'
+            ]);
+
+            if($validateUser->fails()){
+                return response()->json([
+                    'status' => false,
+                    'message' => 'validation error',
+                    'data' => $validateUser->errors()
+                ], 422);
+            }
+
+            if($request->email){
+                $is_exist = User::where('email', $request->email)->first();
+                if (!empty($is_exist)){
+                    return response()->json([
+                        'status' => true,
+                        'message' => 'Email address already been used! Please use another email',
+                        'data' => []
+                    ], 422);
+                }
+            }
+
+            if($request->contact_no){
+                $is_exist = User::where('contact_no', $request->contact_no)->first();
+                if (!empty($is_exist)){
+                    return response()->json([
+                        'status' => true,
+                        'message' => 'Contact No already been used! Please use another number',
+                        'data' => []
+                    ], 422);
+                }
+            }
+
+            $mentor=[
+             
+                // 'name'=>$request->name,
+                // 'email'=>$request->email,
+                // 'username'=>$request->username,
+                // 'contact_no'=>$request->contact_no,
+                'mentor_code'=>$request->mentor_code,
+                'organization_slug'=>$request->organization_slug,
+                'device_id'=>$request->device_id,
+                'referral_code'=>$request->referral_code,
+                'referred_code'=>$request->referred_code,
+                'alternative_contact_no'=> $request->alternative_contact_no ,
+                'gender'=>$request->gender,
+                'bio'=>$request->bio,
+                'father_name'=>$request->father_name,
+                'mother_name'=>$request->mother_name,
+                'religion'=>$request->religion,
+                'marital_status'=>$request->marital_status,
+                'date_of_birth'=>$request->date_of_birth,
+                'profession'=>$request->profession,
+                'current_address'=>$request->current_address,
+                'permanent_address'=>$request->permanent_address,
+                'division_id'=>$request->division_id,
+                'district_id'=>$request->district_id,
+                'city_id'=>$request->city_id,
+                'area_id'=>$request->area_id,
+                'nid_no'=>$request->nid_no,
+                'birth_certificate_no'=>$request->birth_certificate_no,
+                'passport_no'=>$request->passport_no,
+                'image'=>$request->image,
+                'intro_video'=>$request->intro_video,
+                'status'=>$request->status,
+                'is_foreigner'=>$request->is_foreigner,
+                'is_life_couch'=>$request->is_life_couch,
+                'is_host_staff'=>$request->is_host_staff,
+                'is_host_certified'=>$request->is_host_certified,
+                'is_active'=>$request->is_active,
+                'rating'=>$request->rating,
+                'approval_date'=>$request->approval_date,
+                'host_rank_number'=>$request->host_rank_number,
+
+            ];
+
+            if(empty($request->id)){
+                $user = User::create([
+                    'name' => $request->name,
+                    'email' => $request->email,
+                    'username' => $request->username,
+                    'contact_no' => $request->contact_no,
+                    'organization_slug' => $request->organization_slug,
+                    'address' => $request->address,
+                    'user_type' => "Expert",
+                    'password' => Hash::make($request->password)
+                ]);
+                if ($request->hasFile('image')) {
+                    $user->update([
+                        'image' => $this->imageUpload($request, 'image', 'image'),
+                    ]);
+                }
+
+                $mentor = MentorInformation::create();
+
+
+
+
+
+            }else{
+
+            }
+       
+        } catch (\Throwable $th) {
+            return $this->returnResponse($th->getMessage(), 'Something went wrong', false, 500);
+        }
     }
 }
