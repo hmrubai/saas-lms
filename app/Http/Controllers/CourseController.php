@@ -45,17 +45,42 @@ class CourseController extends Controller
                         'course_outlines.*',
                         'class_levels.name as class_name',
                         'subjects.name as subject_name',
-                        'chapters.name as chapter_name'
+                        'chapters.name as chapter_name',
+                        'chapter_videos.title as video_title',
+                        'chapter_videos.title_bn as video_title_bn',
+                        'chapter_videos.author_name as video_author_name',
+                        'chapter_videos.author_details as video_author_details',
+                        'chapter_videos.raw_url as video_raw_url',
+                        'chapter_videos.s3_url as video_s3_url',
+                        'chapter_videos.youtube_url as video_youtube_url',
+                        'chapter_videos.download_url as video_download_url',
+                        'chapter_videos.duration as video_duration',
+                        'chapter_videos.thumbnail as video_thumbnail',
+                        'chapter_videos.is_free as video_is_free',
+                        'chapter_scripts.title as script_title',
+                        'chapter_scripts.title_bn as script_title_bn',
+                        'chapter_scripts.raw_url as script_raw_url',
+                        'chapter_scripts.is_free as script_is_free',
+                        'chapter_quizzes.title as quiz_title',
+                        'chapter_quizzes.title_bn as quiz_title_bn',
+                        'chapter_quizzes.duration as quiz_duration',
+                        'chapter_quizzes.is_free as quiz_is_free',
                     )
-                        ->where('course_outlines.course_id', $course->id)
-                        ->leftJoin('class_levels', 'class_levels.id', 'course_outlines.class_level_id')
-                        ->leftJoin('subjects', 'subjects.id', 'course_outlines.subject_id')
-                        ->leftJoin('chapters', 'chapters.id', 'course_outlines.chapter_id')
-                        ->get();
+                    ->where('course_outlines.course_id', $course->id)
+                    ->leftJoin('class_levels', 'class_levels.id', 'course_outlines.class_level_id')
+                    ->leftJoin('subjects', 'subjects.id', 'course_outlines.subject_id')
+                    ->leftJoin('chapters', 'chapters.id', 'course_outlines.chapter_id')
+                    ->leftJoin('chapter_videos', 'chapter_videos.id', 'course_outlines.chapter_video_id')
+                    ->leftJoin('chapter_scripts', 'chapter_scripts.id', 'course_outlines.chapter_script_id')
+                    ->leftJoin('chapter_quizzes', 'chapter_quizzes.id', 'course_outlines.chapter_quiz_id')
+                    ->get();
 
                     $course->course_routine = CourseClassRoutine::where('course_id', $course->id)->get();
                     $course->course_feature = CourseFeature::where('course_id', $course->id)->get();
-                    $course->course_mentor = CourseMentor::where('course_id', $course->id)->get();
+                    $course->course_mentor = CourseMentor::select('course_mentors.*', 'mentor_informations.name', 'mentor_informations.education', 'mentor_informations.institute')
+                        ->where('course_mentors.course_id', $course->id)
+                        ->leftJoin('mentor_informations', 'mentor_informations.id', 'course_mentors.mentor_id')    
+                        ->get();
                     $course->course_faq = CourseFaq::where('course_id', $course->id)->get();
                 }
             }
@@ -98,12 +123,14 @@ class CourseController extends Controller
                 'chapter_videos.duration as video_duration',
                 'chapter_videos.thumbnail as video_thumbnail',
                 'chapter_videos.is_free as video_is_free',
-                
-
-                // 'chapter_scripts.title as script_title',
-                // 'chapter_scripts.title_bn as script_title_bn',
-                // 'chapter_scripts.author_name as script_author_name',
-                // 'chapter_scripts.author_details as script_author_details',
+                'chapter_scripts.title as script_title',
+                'chapter_scripts.title_bn as script_title_bn',
+                'chapter_scripts.raw_url as script_raw_url',
+                'chapter_scripts.is_free as script_is_free',
+                'chapter_quizzes.title as quiz_title',
+                'chapter_quizzes.title_bn as quiz_title_bn',
+                'chapter_quizzes.duration as quiz_duration',
+                'chapter_quizzes.is_free as quiz_is_free',
             )
             ->where('course_outlines.course_id', $course_id)
             ->leftJoin('class_levels', 'class_levels.id', 'course_outlines.class_level_id')
@@ -112,7 +139,6 @@ class CourseController extends Controller
             ->leftJoin('chapter_videos', 'chapter_videos.id', 'course_outlines.chapter_video_id')
             ->leftJoin('chapter_scripts', 'chapter_scripts.id', 'course_outlines.chapter_script_id')
             ->leftJoin('chapter_quizzes', 'chapter_quizzes.id', 'course_outlines.chapter_quiz_id')
-            
             ->get();
 
         $course->course_routine = CourseClassRoutine::where('course_id', $course_id)->get();
@@ -162,17 +188,42 @@ class CourseController extends Controller
                         'course_outlines.*',
                         'class_levels.name as class_name',
                         'subjects.name as subject_name',
-                        'chapters.name as chapter_name'
+                        'chapters.name as chapter_name',
+                        'chapter_videos.title as video_title',
+                        'chapter_videos.title_bn as video_title_bn',
+                        'chapter_videos.author_name as video_author_name',
+                        'chapter_videos.author_details as video_author_details',
+                        'chapter_videos.raw_url as video_raw_url',
+                        'chapter_videos.s3_url as video_s3_url',
+                        'chapter_videos.youtube_url as video_youtube_url',
+                        'chapter_videos.download_url as video_download_url',
+                        'chapter_videos.duration as video_duration',
+                        'chapter_videos.thumbnail as video_thumbnail',
+                        'chapter_videos.is_free as video_is_free',
+                        'chapter_scripts.title as script_title',
+                        'chapter_scripts.title_bn as script_title_bn',
+                        'chapter_scripts.raw_url as script_raw_url',
+                        'chapter_scripts.is_free as script_is_free',
+                        'chapter_quizzes.title as quiz_title',
+                        'chapter_quizzes.title_bn as quiz_title_bn',
+                        'chapter_quizzes.duration as quiz_duration',
+                        'chapter_quizzes.is_free as quiz_is_free',
                     )
                     ->where('course_outlines.course_id', $course->id)
                     ->leftJoin('class_levels', 'class_levels.id', 'course_outlines.class_level_id')
                     ->leftJoin('subjects', 'subjects.id', 'course_outlines.subject_id')
                     ->leftJoin('chapters', 'chapters.id', 'course_outlines.chapter_id')
+                    ->leftJoin('chapter_videos', 'chapter_videos.id', 'course_outlines.chapter_video_id')
+                    ->leftJoin('chapter_scripts', 'chapter_scripts.id', 'course_outlines.chapter_script_id')
+                    ->leftJoin('chapter_quizzes', 'chapter_quizzes.id', 'course_outlines.chapter_quiz_id')
                     ->get();
 
                 $course->course_routine = CourseClassRoutine::where('course_id', $course->id)->get();
                 $course->course_feature = CourseFeature::where('course_id', $course->id)->get();
-                $course->course_mentor = CourseMentor::where('course_id', $course->id)->get();
+                $course->course_mentor = CourseMentor::select('course_mentors.*', 'mentor_informations.name', 'mentor_informations.education', 'mentor_informations.institute')
+                    ->where('course_mentors.course_id', $course->id)
+                    ->leftJoin('mentor_informations', 'mentor_informations.id', 'course_mentors.mentor_id')    
+                    ->get();
                 $course->course_faq = CourseFaq::where('course_id', $course->id)->get();
             }
         }
@@ -218,24 +269,60 @@ class CourseController extends Controller
 
         $courses = Course::where('id', $course_id)->first();
 
+        $is_exist = CourseParticipant::where('item_id', $course_id)->where('user_id', $user_id)->where('item_type', 'Course')->first();
+        if(!empty($is_exist)){
+            $courses->is_purchased = true;
+        }else{
+            $courses->is_purchased = false;
+        }
+
         $courses->course_outline = CourseOutline::select(
             'course_outlines.*',
             'class_levels.name as class_name',
             'subjects.name as subject_name',
-            'chapters.name as chapter_name'
+            'chapters.name as chapter_name',
+            'chapter_videos.title as video_title',
+            'chapter_videos.title_bn as video_title_bn',
+            'chapter_videos.author_name as video_author_name',
+            'chapter_videos.author_details as video_author_details',
+            'chapter_videos.raw_url as video_raw_url',
+            'chapter_videos.s3_url as video_s3_url',
+            'chapter_videos.youtube_url as video_youtube_url',
+            'chapter_videos.download_url as video_download_url',
+            'chapter_videos.duration as video_duration',
+            'chapter_videos.thumbnail as video_thumbnail',
+            'chapter_videos.is_free as video_is_free',
+            'chapter_scripts.title as script_title',
+            'chapter_scripts.title_bn as script_title_bn',
+            'chapter_scripts.raw_url as script_raw_url',
+            'chapter_scripts.is_free as script_is_free',
+            'chapter_quizzes.title as quiz_title',
+            'chapter_quizzes.title_bn as quiz_title_bn',
+            'chapter_quizzes.duration as quiz_duration',
+            'chapter_quizzes.is_free as quiz_is_free',
         )
-            ->where('course_outlines.course_id', $course_id)
-            ->leftJoin('class_levels', 'class_levels.id', 'course_outlines.class_level_id')
-            ->leftJoin('subjects', 'subjects.id', 'course_outlines.subject_id')
-            ->leftJoin('chapters', 'chapters.id', 'course_outlines.chapter_id')
-            ->get();
+        ->where('course_outlines.course_id', $course_id)
+        ->leftJoin('class_levels', 'class_levels.id', 'course_outlines.class_level_id')
+        ->leftJoin('subjects', 'subjects.id', 'course_outlines.subject_id')
+        ->leftJoin('chapters', 'chapters.id', 'course_outlines.chapter_id')
+        ->leftJoin('chapter_videos', 'chapter_videos.id', 'course_outlines.chapter_video_id')
+        ->leftJoin('chapter_scripts', 'chapter_scripts.id', 'course_outlines.chapter_script_id')
+        ->leftJoin('chapter_quizzes', 'chapter_quizzes.id', 'course_outlines.chapter_quiz_id')
+        ->get();
 
         $courses->course_routine = CourseClassRoutine::where('course_id', $course_id)->get();
         $courses->course_feature = CourseFeature::where('course_id', $course_id)->get();
-        $courses->course_mentor = CourseMentor::where('course_id', $course_id)->get();
+        $courses->course_mentor = CourseMentor::select('course_mentors.*', 'mentor_informations.name', 'mentor_informations.education', 'mentor_informations.institute')
+            ->where('course_mentors.course_id', $course_id)
+            ->leftJoin('mentor_informations', 'mentor_informations.id', 'course_mentors.mentor_id')    
+            ->get();
         $courses->course_faq = CourseFaq::where('course_id', $course_id)->get();
         
-        //CourseParticipant
+        return response()->json([
+            'status' => true,
+            'message' => 'Successful',
+            'data' => $courses
+        ], 200);
     }
 
     public function saveOrUpdateCourse(Request $request)

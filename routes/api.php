@@ -51,6 +51,7 @@ Route::group(['prefix' => 'mobile'], function () {
     Route::get('course-details-by-id/{course_id}', [CourseController::class, 'courseDetailsByID']);
     Route::get('all-mentor-list', [MentorController::class, 'allMentorList']);
     Route::get('mentor-details-by-id/{mentor_id}', [MentorController::class, 'mentorDetailsByID']);
+    //Route::get('course-details-by-user/{course_id}', [CourseController::class, 'courseDetailsByUserID']);
 });
 
 Route::group(['prefix' => 'website'], function () {
@@ -70,6 +71,10 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::group(['prefix' => 'mobile'], function () {
         Route::get('student-profile', [StudentController::class, 'studentDetails']);
+    });
+
+    Route::group(['prefix' => 'website'], function () {
+        Route::post('purchase-course', [PaymentController::class, 'purchaseCourse']);
     });
     
     //Menu Settings

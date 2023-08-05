@@ -8,6 +8,8 @@ use Exception;
 use App\Models\User;
 use App\Models\Package;
 use App\Models\Payment;
+use App\Models\Course;
+use App\Models\CourseParticipant;
 use App\Models\PaymentDetail;
 use App\Models\TopicConsume;
 use App\Models\PackageType;
@@ -15,6 +17,40 @@ use Illuminate\Http\Request;
 
 class PaymentController extends Controller
 {
+
+    public function purchaseCourse (Request $request)
+    {
+        $user_id = $request->user()->id;
+        $course_id = $request->course_id ? $request->course_id : 0;
+
+        if (!$course_id) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Please, attach menu ID',
+                'data' => []
+            ], 422);
+        }
+
+        $course = Course::where('id', $course_id)->orderBy('sequence', 'ASC')->first();
+
+        CourseParticipant::create([
+            "item_id" => $course->id,
+            "user_id" => $user_id,
+            "item_price" => $course->sale_price,
+            "paid_amount" => $course->sale_price,
+            "discount" => 0,
+            "item_type" => 'Course',
+            "is_trial_taken" => 0,
+            "trial_expiry_date" => null
+        ]);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Payment Successful!',
+            'data' => []
+        ], 200);
+    }
+
     public function makePaymentMobile (Request $request)
     {
         $user_id = $request->user()->id;
