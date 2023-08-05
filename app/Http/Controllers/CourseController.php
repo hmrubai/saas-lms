@@ -13,6 +13,7 @@ use App\Models\CourseClassRoutine;
 use App\Models\CourseFeature;
 use App\Models\CourseMentor;
 use App\Models\CourseFaq;
+use App\Models\MentorInformation;
 use Illuminate\Http\Request;
 
 class CourseController extends Controller
@@ -145,7 +146,7 @@ class CourseController extends Controller
         $course->course_feature = CourseFeature::where('course_id', $course_id)->get();
         $course->course_mentor = CourseMentor::select('course_mentors.*', 'mentor_informations.name', 'mentor_informations.education', 'mentor_informations.institute')
             ->where('course_mentors.course_id', $course_id)
-            ->leftJoin('mentor_informations', 'mentor_informations.id', 'course_mentors.mentor_id')    
+            ->leftJoin('mentor_informations', 'mentor_informations.id', 'course_mentors.mentor_id')
             ->get();
 
         $course->course_faq = CourseFaq::where('course_id', $course_id)->get();
@@ -426,8 +427,11 @@ class CourseController extends Controller
 
     public function courseOutlineList(Request $request)
     {
-        $id = $request->id ? $request->id : 0;
-        $courseOutlineList = CourseOutline::leftJoin('class_levels', 'class_levels.id', 'course_outlines.class_level_id')
+        $id = $request->id;
+        $courseOutlineList = CourseOutline::where(
+            'course_id',
+            $id
+        )->leftJoin('class_levels', 'class_levels.id', 'course_outlines.class_level_id')
             ->leftJoin('subjects', 'subjects.id', 'course_outlines.subject_id')
             ->leftJoin('chapters', 'chapters.id', 'course_outlines.chapter_id')
             ->leftJoin('chapter_scripts', 'chapter_scripts.id', 'course_outlines.chapter_script_id')
@@ -456,9 +460,8 @@ class CourseController extends Controller
                 'chapter_quizzes.title as chapter_quiz_title',
                 'courses.title as course_title'
             )
-            ->when($id, function ($query, $id) {
-                return $query->where('course_outlines.course_id', $id);
-            })
+
+
             ->get();
         return $this->apiResponse($courseOutlineList, 'Course Outline List', true, 200);
     }
@@ -473,6 +476,216 @@ class CourseController extends Controller
                 'message' => $th->getMessage(),
                 'data' => []
             ], 500);
+        }
+    }
+
+    public function faqList(Request $request)
+    {
+        $id = $request->id;
+        $faqList = CourseFaq::where(
+            'course_id',
+            $id
+        )->leftJoin('courses', 'courses.id', 'course_faqs.course_id')
+            ->select(
+                'course_faqs.title',
+                'course_faqs.answer',
+                'course_faqs.id',
+                'course_faqs.course_id',
+                'course_faqs.is_active',
+                'courses.title as course_title'
+            )
+            ->get();
+        return $this->apiResponse($faqList, 'FAQ List', true, 200);
+    }
+
+    public function saveOrUpdateFaq(Request $request)
+    {
+
+        try {
+
+            if (empty($request->id)) {
+
+                $faqArr = json_decode($request->faq, true);
+                if ($faqArr) {
+                    $faq = [];
+                    foreach ($faqArr as $key => $value) {
+                        $faq[] = [
+                            'title' => $value['title'],
+                            'answer' => $value['answer'],
+                            'course_id' => $value['course_id'],
+                            'is_active' => $value['is_active'],
+                        ];
+                    }
+                    CourseFaq::insert($faq);
+                }
+                return $this->apiResponse([], 'Course FAQ Created Successfully', true, 201);
+            } else {
+
+                $faq = CourseFaq::where('id', $request->id)->first();
+                $faq->update($request->all());
+                return $this->apiResponse([], 'Course FAQ Updated Successfully', true, 200);
+            }
+        } catch (\Throwable $th) {
+            return $this->apiResponse([], $th->getMessage(), false, 500);
+        }
+    }
+
+    public function faqDelete(Request $request)
+    {
+        try {
+            CourseFaq::where('id', $request->id)->delete();
+            return $this->apiResponse([], 'Course FAQ Deleted Successfully', true, 200);
+        } catch (\Throwable $th) {
+            return $this->apiResponse([], $th->getMessage(), false, 500);
+        }
+    }
+
+    public function saveOrUpdateFeature(Request $request)
+    {
+
+        try {
+
+            if (empty($request->id)) {
+
+                $featureArr = json_decode($request->feature, true);
+                if ($featureArr) {
+                    $feature = [];
+                    foreach ($featureArr as $key => $value) {
+                        $feature[] = [
+                            'title' => $value['title'],
+                            'title_bn' => $value['title_bn'],
+                            'course_id' => $value['course_id'],
+                        ];
+                    }
+                    CourseFeature::insert($feature);
+                }
+                return $this->apiResponse([], 'Course feature Created Successfully', true, 201);
+            } else {
+
+                $feature = CourseFeature::where('id', $request->id)->first();
+                $feature->update($request->all());
+                return $this->apiResponse([], 'Course feature Updated Successfully', true, 200);
+            }
+        } catch (\Throwable $th) {
+            return $this->apiResponse([], $th->getMessage(), false, 500);
+        }
+    }
+
+    public function featureList(Request $request)
+    {
+        $id = $request->id;
+        $featureList = CourseFeature::where(
+            'course_id',
+            $id
+        )->leftJoin('courses', 'courses.id', 'course_features.course_id')
+            ->select(
+                'course_features.title',
+                'course_features.title_bn',
+                'course_features.id',
+                'course_features.course_id',
+                'courses.title as course_title'
+            )
+            ->get();
+        return $this->apiResponse($featureList, 'Feature List', true, 200);
+    }
+
+    public function featureDelete(Request $request)
+    {
+        try {
+            CourseFeature::where('id', $request->id)->delete();
+            return $this->apiResponse([], 'Course Feature Deleted Successfully', true, 200);
+        } catch (\Throwable $th) {
+            return $this->apiResponse([], $th->getMessage(), false, 500);
+        }
+    }
+
+    public function saveOrUpdateRoutine(Request $request)
+    {
+        try {
+            if (empty($request->id)) {
+                $routineArr = json_decode($request->routine, true);
+                if ($routineArr) {
+                    $routine = [];
+                    foreach ($routineArr as $key => $value) {
+                        $routine[] = [
+                            'day' => $value['day'],
+                            'class_title' => $value['class_title'],
+                            'course_id' => $value['course_id'],
+                            'is_note' => $value['is_note']
+                        ];
+                    }
+                    CourseClassRoutine::insert($routine);
+                }
+                return $this->apiResponse([], 'Course routine Created Successfully', true, 201);
+            } else {
+                $routine = CourseClassRoutine::where('id', $request->id)->first();
+                $routine->update($request->all());
+                return $this->apiResponse([], 'Course routine Updated Successfully', true, 200);
+            }
+        } catch (\Throwable $th) {
+            return $this->apiResponse([], $th->getMessage(), false, 500);
+        }
+    }
+    public function routineList(Request $request)
+    {
+        $id = $request->id;
+        $RoutineList = CourseClassRoutine::where(
+            'course_id',
+            $id
+        )->leftJoin('courses', 'courses.id', 'course_class_routines.course_id')
+            ->select(
+                'course_class_routines.day',
+                'course_class_routines.class_title',
+                'course_class_routines.is_note',
+                'course_class_routines.id',
+                'course_class_routines.course_id',
+                'courses.title as course_title'
+            )
+            ->get();
+        return $this->apiResponse($RoutineList, 'Routine List', true, 200);
+    }
+
+    public function routineDelete(Request $request)
+    {
+        try {
+            CourseClassRoutine::where('id', $request->id)->delete();
+            return $this->apiResponse([], 'Course Routine Deleted Successfully', true, 200);
+        } catch (\Throwable $th) {
+            return $this->apiResponse([], $th->getMessage(), false, 500);
+        }
+    }
+
+    public function courseMentorList(Request $request)
+    {
+        $mentorList = MentorInformation::latest()->get();
+        return $this->apiResponse($mentorList, 'Mentor List', true, 200);
+    }
+
+    public function assignMentorByCourse(Request $request,$id)
+    {
+        try {
+            $mentor = CourseMentor::where('course_id', $request->id)->first();
+            return $this->apiResponse($mentor, 'Mentor Assigned Successfully', true, 200);
+
+        } catch (\Throwable $th) {
+            return $this->apiResponse([], $th->getMessage(), false, 500);
+        }
+    }
+
+
+    public function saveOrUpdateMentor(Request $request)
+    {
+        try {
+            if (empty($request->id)) {
+                courseMenTor::create($request->all());
+                return $this->apiResponse([], 'Course Mentor Created Successfully', true, 201);
+            } else {
+                $mentor = courseMenTor::where('id', $request->id)->first();
+                $mentor->update($request->all());
+                return $this->apiResponse([], 'Course Mentor Updated Successfully', true, 200);
+            }
+        } catch (\Throwable $th) {
+            return $this->apiResponse([], $th->getMessage(), false, 500);
         }
     }
 }

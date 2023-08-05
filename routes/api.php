@@ -132,16 +132,35 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('admin/course-outline-save-or-update', [CourseController::class, 'saveOrUpdateCourseOutline']);
     Route::get('admin/course-outline-list/{id}', [CourseController::class, 'courseOutlineList']);
-    Route::delete('admin/delete-course-outline/{id}', [CourseController::class, 'courseOutlineDelete']);
 
+    Route::delete('admin/delete-course-outline/{id}', [CourseController::class, 'courseOutlineDelete']);
     Route::get('admin/content-list', [ContentController::class, 'contentList']);
     Route::post('admin/content-save-or-update', [ContentController::class, 'saveOrUpdateContent']);
-
     Route::post('admin/content-outline-save-or-update', [ContentController::class, 'saveOrUpdateContentOutline']);
-
-    Route::get('admin/course-outline-list/{id}', [ContentController::class, 'contentOutlineList']);
+    Route::get('admin/content-outline-list/{id}', [ContentController::class, 'contentOutlineList']);
 
     Route::delete('admin/delete-course-outline/{id}', [ContentController::class, 'courseOutlineDelete']);
+    Route::delete('admin/delete-content-outline/{id}', [ContentController::class, 'contentOutlineDelete']);
+
+
+    Route::post('admin/faq-save-or-update', [CourseController::class, 'saveOrUpdateFaq']);
+    Route::get('admin/faq-list/{id}', [CourseController::class, 'faqList']);
+    Route::delete('admin/delete-faq/{id}', [CourseController::class, 'faqDelete']);
+
+    Route::post('admin/feature-save-or-update', [CourseController::class, 'saveOrUpdateFeature']);
+    Route::get('admin/feature-list/{id}', [CourseController::class, 'featureList']);
+    Route::delete('admin/delete-feature/{id}', [CourseController::class, 'featureDelete']);
+
+    Route::post('admin/routine-save-or-update', [CourseController::class, 'saveOrUpdateRoutine']);
+    Route::get('admin/routine-list/{id}', [CourseController::class, 'routineList']);
+    Route::delete('admin/delete-routine/{id}', [CourseController::class, 'routineDelete']);
+
+    Route::post('admin/mentor-save-or-update', [CourseController::class, 'saveOrUpdateMentor']);
+    Route::get('admin/course-mentor-list', [CourseController::class, 'courseMentorList']);
+
+    Route::post('admin/mentor-save-or-update', [MentorController::class, 'mentorSaveOrUpdate']);
+    Route::post('admin/student-save-or-update', [StudentController::class, 'studentSaveOrUpdate']);
+
 
     
 });
