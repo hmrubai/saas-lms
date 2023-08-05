@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Traits\HelperTrait;
+use Auth;
 use Exception;
 use App\Models\User;
 use App\Models\Grade;

@@ -19,6 +19,8 @@ class MentorInformation extends Model
         'mentor_code',
         'organization_slug',
         'device_id',
+        'education',
+        'institute',
         'referral_code',
         'referred_code',
         'alternative_contact_no',
@@ -54,5 +56,9 @@ class MentorInformation extends Model
 
     protected $casts = [
         'is_active' => 'boolean',
+        'is_foreigner' => 'boolean',
+        'is_life_couch' => 'boolean',
+        'is_host_staff' => 'boolean',
+        'is_host_certified' => 'boolean',
     ];
 }

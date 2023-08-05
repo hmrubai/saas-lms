@@ -16,7 +16,7 @@ class CreateCourseMentorsTable extends Migration
         Schema::create('course_mentors', function (Blueprint $table) {
             $table->id();
             $table->bigInteger('course_id');
-            $table->bigInteger('montor_id');
+            $table->bigInteger('mentor_id');
             $table->boolean('is_active')->default(1);
             $table->timestamps();
         });
