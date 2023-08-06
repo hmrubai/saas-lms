@@ -194,13 +194,12 @@ class MentorController extends Controller
                 $mentorInfo->update($mentor);
                 return $this->apiResponse([], 'Mentor Created Successfully', true, 200);
             } else {
+                DB::beginTransaction();
                 $user = User::where('id', $request->user_id)->first();
                 $user->update([
                     'name' => $request->name,
                     'email' => $request->email,
-                    'username' => $request->username,
                     'contact_no' => $request->contact_no,
-                    'organization_slug' => $request->organization_slug,
                     'address' => $request->address,
                 ]);
 
@@ -213,18 +212,17 @@ class MentorController extends Controller
                 $mentorInfo = MentorInformation::where('id', $request->id)->first();
                 $mentorInfo->update([
                     'name' => $user->name,
-                    'user_id' => $user->id,
                     'email' => $user->email,
-                    'username' => $user->username,
                     'contact_no' => $user->contact_no,
-                    'organization_slug' => $user->organization_slug,
                     'address' => $user->address,
                     'image' => $user->image,
 
                 ]);
                 $mentorInfo->update($mentor);
+                DB::commit();
                 return $this->apiResponse([], 'Mentor Updated Successfully', true, 200);
             }
+            
         } catch (\Throwable $th) {
             return $this->apiResponse($th->getMessage(), 'Something went wrong', false, 500);
         }
