@@ -18,6 +18,8 @@ class StudentInformation extends Model
         'contact_no',
         'student_code',
         'organization_slug',
+        'education',
+        'institute',
         'device_id',
         'alternative_contact_no',
         'gender',
