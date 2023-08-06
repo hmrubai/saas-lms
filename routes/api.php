@@ -85,6 +85,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('update-link', [MentorController::class, 'updateZoomLink']);
 
         Route::get('student-course-list', [StudentController::class, 'myCourseList']);
+        Route::get('student-class-list', [CourseController::class, 'studentClassList']);
     });
     
     //Menu Settings
