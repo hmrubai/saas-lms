@@ -89,8 +89,6 @@ class StudentController extends Controller
 
     public function studentSaveOrUpdate(Request $request)
     {
-
-        
         $validateUser = Validator::make(
             $request->all(),
             [
@@ -180,7 +178,7 @@ class StudentController extends Controller
                         'image' => $this->imageUpload($request, 'image', 'image'),
                     ]);
                 }
-                $mentorInfo = StudentInformation::create(
+                $studentInfo = StudentInformation::create(
                     [
                         'name' => $user->name,
                         'user_id' => $user->id,
@@ -193,7 +191,7 @@ class StudentController extends Controller
                         'student_code'=>$this->codeGenerator('SC', StudentInformation::class)
                     ]
                 );
-                $mentorInfo->update($student);
+                $studentInfo->update($student);
                 DB::commit();
                 return $this->apiResponse([], 'Student Created Successfully', true, 200);
             } else {
@@ -202,9 +200,7 @@ class StudentController extends Controller
                 $user->update([
                     'name' => $request->name,
                     'email' => $request->email,
-                    'username' => $request->username,
                     'contact_no' => $request->contact_no,
-                    'organization_slug' => $request->organization_slug,
                     'address' => $request->address,
                 ]);
 
@@ -214,19 +210,16 @@ class StudentController extends Controller
                     ]);
                 }
 
-                $mentorInfo = StudentInformation::where('id', $request->id)->first();
-                $mentorInfo->update([
+                $studentInfo = StudentInformation::where('id', $request->id)->first();
+                $studentInfo->update([
                     'name' => $user->name,
-                    'user_id' => $user->id,
                     'email' => $user->email,
-                    'username' => $user->username,
                     'contact_no' => $user->contact_no,
-                    'organization_slug' => $user->organization_slug,
                     'address' => $user->address,
                     'image' => $user->image,
 
                 ]);
-                $mentorInfo->update($student);
+                $studentInfo->update($student);
                 DB::commit();
                 return $this->apiResponse([], 'Student Updated Successfully', true, 200);
             }
