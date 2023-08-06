@@ -266,4 +266,17 @@ class MentorController extends Controller
             return $this->apiResponse($th->getMessage(), 'Something went wrong', false, 500);
         }
     }
+
+    public function allMentorListAdmin(Request $request)
+    {
+        $mentorList = MentorInformation::latest()
+            ->get();
+
+
+        return response()->json([
+            'status' => true,
+            'message' => 'List Successful',
+            'data' => $mentorList
+        ], 200);
+    }
 }
