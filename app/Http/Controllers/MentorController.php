@@ -66,10 +66,10 @@ class MentorController extends Controller
         $ids = CourseMentor::where('mentor_id', $mentor->id)->pluck('course_id');
 
         $courses = Course::select('courses.*', 'categories.name as category_name')
-        ->whereIn('courses.id', $ids)
-        ->leftJoin('categories', 'categories.id', 'courses.id')
-        ->orderBy('courses.sequence', 'ASC')
-        ->get();
+            ->whereIn('courses.id', $ids)
+            ->leftJoin('categories', 'categories.id', 'courses.id')
+            ->orderBy('courses.sequence', 'ASC')
+            ->get();
 
         return response()->json([
             'status' => true,
@@ -120,8 +120,6 @@ class MentorController extends Controller
 
     public function mentorSaveOrUpdate(Request $request)
     {
-
-        
         $validateUser = Validator::make(
             $request->all(),
             [
@@ -193,7 +191,7 @@ class MentorController extends Controller
                         ], 422);
                     }
                 }
-    
+
                 if ($request->contact_no) {
                     $is_exist = User::where('contact_no', $request->contact_no)->first();
                     if (!empty($is_exist)) {
@@ -204,7 +202,7 @@ class MentorController extends Controller
                         ], 422);
                     }
                 }
-    
+
                 $user = User::create([
                     'name' => $request->name,
                     'email' => $request->email,
@@ -230,6 +228,7 @@ class MentorController extends Controller
                         'organization_slug' => $user->organization_slug,
                         'address' => $user->address,
                         'image' => $user->image,
+                        'mentor_code' => $this->codeGenerator('MC', MentorInformation::class),
                     ]
                 );
                 $mentorInfo->update($mentor);
@@ -263,7 +262,6 @@ class MentorController extends Controller
                 DB::commit();
                 return $this->apiResponse([], 'Mentor Updated Successfully', true, 200);
             }
-            
         } catch (\Throwable $th) {
             return $this->apiResponse($th->getMessage(), 'Something went wrong', false, 500);
         }

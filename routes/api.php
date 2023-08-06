@@ -33,6 +33,7 @@ Route::get('district-list/{division_id}', [LocationController::class, 'districtL
 Route::get('upazila-list/{district_id}', [LocationController::class, 'upazilaListByID']);
 Route::get('area-list/{upazilla_id}', [LocationController::class, 'unionListByID']);
 
+
 Route::get('menu-list', [MasterSettingsController::class, 'adminMenuList']);
 
 //Tags
@@ -173,7 +174,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
     Route::post('admin/mentor-save-or-update', [MentorController::class, 'mentorSaveOrUpdate']);
+    Route::get('admin/all-mentor-list-admin', [MentorController::class, 'allMentorListAdmin']);
     Route::post('admin/student-save-or-update', [StudentController::class, 'studentSaveOrUpdate']);
+
 
 
     

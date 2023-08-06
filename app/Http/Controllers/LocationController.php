@@ -25,7 +25,7 @@ class LocationController extends Controller
 
     public function districtListByID(Request $request)
     {
-        $division_id = $request->division_id;
+        $division_id = $request->division_id? $request->division_id : 0;
         $district = District::where('division_id', $division_id)->get();
 
         return response()->json([
@@ -37,7 +37,7 @@ class LocationController extends Controller
 
     public function upazilaListByID(Request $request)
     {
-        $district_id = $request->district_id;
+        $district_id = $request->district_id? $request->district_id : 0;
         $upazila = Upazila::where('district_id', $district_id)->get();
 
         return response()->json([
@@ -49,7 +49,7 @@ class LocationController extends Controller
 
     public function unionListByID(Request $request)
     {
-        $upazilla_id = $request->upazilla_id;
+        $upazilla_id = $request->upazilla_id? $request->upazilla_id : 0;
         $union = Union::where('upazilla_id', $upazilla_id)->get();
 
         return response()->json([
