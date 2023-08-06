@@ -21,8 +21,6 @@ class MentorInformation extends Model
         'mentor_code',
         'organization_slug',
         'device_id',
-        'education',
-        'institute',
         'referral_code',
         'referred_code',
         'alternative_contact_no',
