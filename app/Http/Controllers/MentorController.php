@@ -3,10 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\Http\Traits\HelperTrait;
+use Exception;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Exception;
+
+use App\Models\Course;
+use App\Models\Category;
+use App\Models\Content;
+use App\Models\ContentOutline;
+use App\Models\CourseOutline;
+use App\Models\CourseParticipant;
+use App\Models\CourseClassRoutine;
+use App\Models\CourseFeature;
+use App\Models\CourseMentor;
+use App\Models\CourseFaq;
 use App\Models\User;
 use App\Models\MentorInformation;
 use Illuminate\Http\Request;
@@ -47,6 +58,24 @@ class MentorController extends Controller
         ], 200);
     }
 
+    public function myCourseList(Request $request)
+    {
+        $user_id = $request->user()->id;
+        $mentor = MentorInformation::where('user_id', $user_id)->first();
+        $ids = CourseMentor::where('mentor_id', $mentor->id)->pluck('course_id');
+
+        $courses = Course::select('courses.*', 'categories.name as category_name')
+        ->whereIn('courses.id', $ids)
+        ->leftJoin('categories', 'categories.id', 'courses.id')
+        ->orderBy('courses.sequence', 'ASC')
+        ->get();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Successful',
+            'data' => $courses
+        ], 200);
+    }
 
     public function mentorSaveOrUpdate(Request $request)
     {

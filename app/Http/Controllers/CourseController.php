@@ -13,6 +13,8 @@ use App\Models\CourseClassRoutine;
 use App\Models\CourseFeature;
 use App\Models\CourseMentor;
 use App\Models\CourseFaq;
+use App\Models\ClassSchedule;
+use App\Models\CourseStudentMapping;
 use App\Models\MentorInformation;
 use Illuminate\Http\Request;
 
@@ -323,6 +325,99 @@ class CourseController extends Controller
             'status' => true,
             'message' => 'Successful',
             'data' => $courses
+        ], 200);
+    }
+
+    public function mentorStudentList(Request $request){
+        $user_id = $request->user()->id;
+        $mentor = MentorInformation::where('user_id', $user_id)->first();
+
+        $student = CourseStudentMapping::select(
+            'course_student_mappings.id as mapping_id',
+            'courses.title as course_title', 
+            'mentor_informations.name as mentor_name', 
+            'student_informations.name as student_name', 
+            'student_informations.contact_no as student_contact_no'
+        )
+        ->where('course_student_mappings.mentor_id', $mentor->id)
+        ->leftJoin('courses', 'courses.id', 'course_student_mappings.course_id')
+        ->leftJoin('mentor_informations', 'mentor_informations.id', 'course_student_mappings.mentor_id') 
+        ->leftJoin('student_informations', 'student_informations.id', 'course_student_mappings.student_id') 
+        ->get();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Successful',
+            'data' => $student
+        ], 200);
+    }
+
+    public function mentorClassScheduleList(Request $request)
+    {
+        $mapping_id = $request->mapping_id ? $request->mapping_id : 0;
+
+        if (!$mapping_id) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Please, attach Class ID',
+                'data' => []
+            ], 422);
+        }
+
+        $class = ClassSchedule::select(
+            'class_schedules.*',
+            'courses.title as course_title', 
+            'mentor_informations.name as mentor_name', 
+            'student_informations.name as student_name', 
+            'student_informations.contact_no as student_contact_no'
+        )
+        ->where('class_schedules.course_student_mapping_id', $mapping_id)
+        ->leftJoin('courses', 'courses.id', 'class_schedules.course_id')
+        ->leftJoin('mentor_informations', 'mentor_informations.id', 'class_schedules.mentor_id') 
+        ->leftJoin('student_informations', 'student_informations.id', 'class_schedules.student_id') 
+        ->get();
+
+        foreach ($class as $item) 
+        {
+            $isToday = date('Ymd') == date('Ymd', strtotime($item->schedule_datetime));
+
+            if($isToday) {
+                $item->can_join = true;
+            }else{
+                $item->can_join = false;
+            }
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Successful',
+            'data' => $class
+        ], 200);
+    }
+
+    public function mentorCompletedClassList(Request $request)
+    {
+        $user_id = $request->user()->id;
+        $mentor = MentorInformation::where('user_id', $user_id)->first();
+        
+        $class = ClassSchedule::select(
+            'class_schedules.*',
+            'courses.title as course_title', 
+            'mentor_informations.name as mentor_name', 
+            'student_informations.name as student_name', 
+            'student_informations.contact_no as student_contact_no'
+        )
+        ->where('class_schedules.mentor_id', $mentor->id)
+        ->where('class_schedules.has_completed', true)
+        ->leftJoin('courses', 'courses.id', 'class_schedules.course_id')
+        ->leftJoin('mentor_informations', 'mentor_informations.id', 'class_schedules.mentor_id') 
+        ->leftJoin('student_informations', 'student_informations.id', 'class_schedules.student_id') 
+        ->get();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Successful',
+            'data' => $class
         ], 200);
     }
 
