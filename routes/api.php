@@ -79,6 +79,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('mentor-student-list', [CourseController::class, 'mentorStudentList']);
         Route::get('mentor-schedule-list/{mapping_id}', [CourseController::class, 'mentorClassScheduleList']);
         Route::get('mentor-completed-class-list', [CourseController::class, 'mentorCompletedClassList']);
+        Route::get('mentor-ongoing-class-list', [CourseController::class, 'mentorOngoingClassList']);
     });
     
     //Menu Settings

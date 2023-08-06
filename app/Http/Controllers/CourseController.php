@@ -421,6 +421,46 @@ class CourseController extends Controller
         ], 200);
     }
 
+    public function mentorOngoingClassList(Request $request)
+    {
+        $user_id = $request->user()->id;
+        $mentor = MentorInformation::where('user_id', $user_id)->first();
+        
+        $class = ClassSchedule::select(
+            'class_schedules.*',
+            'courses.title as course_title', 
+            'mentor_informations.name as mentor_name', 
+            'student_informations.name as student_name', 
+            'student_informations.contact_no as student_contact_no'
+        )
+        ->where('class_schedules.mentor_id', $mentor->id)
+        ->where('class_schedules.has_completed', false)
+        ->leftJoin('courses', 'courses.id', 'class_schedules.course_id')
+        ->leftJoin('mentor_informations', 'mentor_informations.id', 'class_schedules.mentor_id') 
+        ->leftJoin('student_informations', 'student_informations.id', 'class_schedules.student_id') 
+        ->get();
+
+        $class_list = [];
+
+        foreach ($class as $item) 
+        {
+            $isToday = date('Ymd') == date('Ymd', strtotime($item->schedule_datetime));
+
+            if($isToday) {
+                $item->can_join = true;
+                array_push($class_list, $item);
+            }else{
+                $item->can_join = false;
+            }
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Successful',
+            'data' => $class_list
+        ], 200);
+    }
+
     public function saveOrUpdateCourse(Request $request)
     {
         try {
