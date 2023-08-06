@@ -6,6 +6,7 @@ use App\Http\Traits\HelperTrait;
 use App\Models\Course;
 use App\Models\Category;
 use App\Models\Content;
+use App\Models\MentorZoomLink;
 use App\Models\ContentOutline;
 use App\Models\CourseOutline;
 use App\Models\CourseParticipant;
@@ -425,6 +426,8 @@ class CourseController extends Controller
     {
         $user_id = $request->user()->id;
         $mentor = MentorInformation::where('user_id', $user_id)->first();
+
+        $zoomLink = MentorZoomLink::where('mentor_id', $mentor->id)->first();
         
         $class = ClassSchedule::select(
             'class_schedules.*',
@@ -446,6 +449,12 @@ class CourseController extends Controller
         {
             $isToday = date('Ymd') == date('Ymd', strtotime($item->schedule_datetime));
 
+            if(!empty($zoomLink)){
+                $item->join_link = $zoomLink->live_link;
+            }else{
+                $item->join_link = null;
+            }
+            
             if($isToday) {
                 $item->can_join = true;
                 array_push($class_list, $item);

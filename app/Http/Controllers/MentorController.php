@@ -78,21 +78,43 @@ class MentorController extends Controller
         ], 200);
     }
 
-    public function updateZoomLink(Request $request){
+    public function updateZoomLink(Request $request)
+    {
         $user_id = $request->user()->id;
         $mentor = MentorInformation::where('user_id', $user_id)->first();
 
         $zoomLink = MentorZoomLink::where('mentor_id', $mentor->id)->first();
+        
         if(!empty($zoomLink)){
-            MentorZoomLink::where('id', $zoomLink->id)->update($request->all());
+            MentorZoomLink::where('id', $zoomLink->id)->update([
+                'live_link' => $request->live_link,
+            ]);
         }else{
-            MentorZoomLink::create($request->all());
+            MentorZoomLink::create([
+                'mentor_id' => $mentor->id,
+                'live_link' => $request->live_link,
+                'is_active' => true
+            ]);
         }
 
         return response()->json([
             'status' => true,
-            'message' => 'Link has been created successfully',
+            'message' => 'Link has been updated successfully',
             'data' => []
+        ], 200);
+    }
+
+    public function getZoomLink(Request $request)
+    {
+        $user_id = $request->user()->id;
+        $mentor = MentorInformation::where('user_id', $user_id)->first();
+
+        $zoomLink = MentorZoomLink::where('mentor_id', $mentor->id)->first();
+        
+        return response()->json([
+            'status' => true,
+            'message' => 'Link has been created successfully',
+            'data' => $zoomLink
         ], 200);
     }
 
