@@ -24,6 +24,7 @@ class MentorInformation extends Model
         'referral_code',
         'referred_code',
         'alternative_contact_no',
+        'blood_group',
         'gender',
         'bio',
         'father_name',

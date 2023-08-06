@@ -3,16 +3,18 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-
-use App\Models\User;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use App\Http\Traits\HelperTrait;
-use App\Models\StudentInformation;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+
+use App\Models\User;
+use App\Models\Course;
+use App\Models\CourseParticipant;
+use App\Models\StudentInformation;
 
 class StudentController extends Controller
 {
@@ -84,6 +86,25 @@ class StudentController extends Controller
             'status' => true,
             'message' => 'Successful',
             'data' => $student
+        ], 200);
+    }
+
+    public function myCourseList(Request $request)
+    {
+        $user_id = $request->user()->id;
+        $student = StudentInformation::where('user_id', $user_id)->first();
+        $ids = CourseParticipant::where('user_id', $user_id)->where('item_type', 'Course')->pluck('item_id');
+
+        $courses = Course::select('courses.*', 'categories.name as category_name')
+        ->whereIn('courses.id', $ids)
+        ->leftJoin('categories', 'categories.id', 'courses.id')
+        ->orderBy('courses.sequence', 'ASC')
+        ->get();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Successful',
+            'data' => $courses
         ], 200);
     }
 

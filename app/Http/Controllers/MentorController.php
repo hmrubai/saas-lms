@@ -13,6 +13,7 @@ use App\Models\Category;
 use App\Models\Content;
 use App\Models\ContentOutline;
 use App\Models\CourseOutline;
+use App\Models\MentorZoomLink;
 use App\Models\CourseParticipant;
 use App\Models\CourseClassRoutine;
 use App\Models\CourseFeature;
@@ -77,18 +78,45 @@ class MentorController extends Controller
         ], 200);
     }
 
-    public function allMentorListAdmin(Request $request)
+    public function updateZoomLink(Request $request)
     {
-        $mentorList = MentorInformation::latest()
-            ->get();
+        $user_id = $request->user()->id;
+        $mentor = MentorInformation::where('user_id', $user_id)->first();
+
+        $zoomLink = MentorZoomLink::where('mentor_id', $mentor->id)->first();
+        
+        if(!empty($zoomLink)){
+            MentorZoomLink::where('id', $zoomLink->id)->update([
+                'live_link' => $request->live_link,
+            ]);
+        }else{
+            MentorZoomLink::create([
+                'mentor_id' => $mentor->id,
+                'live_link' => $request->live_link,
+                'is_active' => true
+            ]);
+        }
 
         return response()->json([
             'status' => true,
-            'message' => 'List Successful',
-            'data' => $mentorList
+            'message' => 'Link has been updated successfully',
+            'data' => []
         ], 200);
     }
 
+    public function getZoomLink(Request $request)
+    {
+        $user_id = $request->user()->id;
+        $mentor = MentorInformation::where('user_id', $user_id)->first();
+
+        $zoomLink = MentorZoomLink::where('mentor_id', $mentor->id)->first();
+        
+        return response()->json([
+            'status' => true,
+            'message' => 'Link has been created successfully',
+            'data' => $zoomLink
+        ], 200);
+    }
 
     public function mentorSaveOrUpdate(Request $request)
     {

@@ -6,6 +6,7 @@ use App\Http\Traits\HelperTrait;
 use App\Models\Course;
 use App\Models\Category;
 use App\Models\Content;
+use App\Models\MentorZoomLink;
 use App\Models\ContentOutline;
 use App\Models\CourseOutline;
 use App\Models\CourseParticipant;
@@ -16,6 +17,7 @@ use App\Models\CourseFaq;
 use App\Models\ClassSchedule;
 use App\Models\CourseStudentMapping;
 use App\Models\MentorInformation;
+use App\Models\StudentInformation;
 use Illuminate\Http\Request;
 
 class CourseController extends Controller
@@ -418,6 +420,79 @@ class CourseController extends Controller
             'status' => true,
             'message' => 'Successful',
             'data' => $class
+        ], 200);
+    }
+
+    public function studentClassList(Request $request)
+    {
+        $user_id = $request->user()->id;
+        $student = StudentInformation::where('user_id', $user_id)->first();
+        
+        $class = ClassSchedule::select(
+            'class_schedules.*',
+            'courses.title as course_title', 
+            'mentor_informations.name as mentor_name', 
+            'student_informations.name as student_name', 
+            'student_informations.contact_no as student_contact_no'
+        )
+        ->where('class_schedules.student_id', $student->id)
+        ->leftJoin('courses', 'courses.id', 'class_schedules.course_id')
+        ->leftJoin('mentor_informations', 'mentor_informations.id', 'class_schedules.mentor_id') 
+        ->leftJoin('student_informations', 'student_informations.id', 'class_schedules.student_id') 
+        ->get();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Successful',
+            'data' => $class
+        ], 200);
+    }
+
+    public function mentorOngoingClassList(Request $request)
+    {
+        $user_id = $request->user()->id;
+        $mentor = MentorInformation::where('user_id', $user_id)->first();
+
+        $zoomLink = MentorZoomLink::where('mentor_id', $mentor->id)->first();
+        
+        $class = ClassSchedule::select(
+            'class_schedules.*',
+            'courses.title as course_title', 
+            'mentor_informations.name as mentor_name', 
+            'student_informations.name as student_name', 
+            'student_informations.contact_no as student_contact_no'
+        )
+        ->where('class_schedules.mentor_id', $mentor->id)
+        ->where('class_schedules.has_completed', false)
+        ->leftJoin('courses', 'courses.id', 'class_schedules.course_id')
+        ->leftJoin('mentor_informations', 'mentor_informations.id', 'class_schedules.mentor_id') 
+        ->leftJoin('student_informations', 'student_informations.id', 'class_schedules.student_id') 
+        ->get();
+
+        $class_list = [];
+
+        foreach ($class as $item) 
+        {
+            $isToday = date('Ymd') == date('Ymd', strtotime($item->schedule_datetime));
+
+            if(!empty($zoomLink)){
+                $item->join_link = $zoomLink->live_link;
+            }else{
+                $item->join_link = null;
+            }
+            
+            if($isToday) {
+                $item->can_join = true;
+                array_push($class_list, $item);
+            }else{
+                $item->can_join = false;
+            }
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Successful',
+            'data' => $class_list
         ], 200);
     }
 
