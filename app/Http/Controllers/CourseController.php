@@ -768,19 +768,63 @@ class CourseController extends Controller
     }
 
 
-    public function saveOrUpdateMentor(Request $request)
+    public function saveOrUpdateAssignMentor(Request $request)
     {
         try {
             if (empty($request->id)) {
-                courseMenTor::create($request->all());
-                return $this->apiResponse([], 'Course Mentor Created Successfully', true, 201);
+                $mentorArr = json_decode($request->mentorArr, true);
+                if ($mentorArr) {
+                    $mentor = [];
+                    foreach ($mentorArr as $key => $value) {
+                        $mentor[] = [
+                            'course_id' => $value['course_id'],
+                            'mentor_id' => $value['mentor_id'],
+                            'is_active' => $value['is_active'],
+                        ];
+                    }
+                    CourseMentor::insert($mentor);
+                }
+                return $this->apiResponse([], 'Course mentor Created Successfully', true, 201);
             } else {
-                $mentor = courseMenTor::where('id', $request->id)->first();
+                $mentor = CourseMentor::where('id', $request->id)->first();
                 $mentor->update($request->all());
-                return $this->apiResponse([], 'Course Mentor Updated Successfully', true, 200);
+                return $this->apiResponse([], 'Course mentor Updated Successfully', true, 200);
             }
         } catch (\Throwable $th) {
             return $this->apiResponse([], $th->getMessage(), false, 500);
         }
     }
+
+    public function mentorAssignList(Request $request)
+    {
+        $id = $request->id;
+        $mentorList = CourseMentor::where(
+            'course_id',
+            $id
+        )->leftJoin('courses', 'courses.id', 'course_mentors.course_id')
+            ->leftJoin('mentor_informations', 'mentor_informations.id', 'course_mentors.mentor_id')
+            ->select(
+                'course_mentors.id',
+                'course_mentors.course_id',
+                'course_mentors.mentor_id',
+                'course_mentors.is_active',
+                'courses.title as course_title',
+                'mentor_informations.name as mentor_name'
+            )
+            ->get();
+
+        return $this->apiResponse($mentorList, 'Routine List', true, 200);
+    }
+
+    public function mentorAssignDelete(Request $request)
+    {
+        try {
+            CourseMentor::where('id', $request->id)->delete();
+            return $this->apiResponse([], 'Course Mentor Deleted Successfully', true, 200);
+        } catch (\Throwable $th) {
+            return $this->apiResponse([], $th->getMessage(), false, 500);
+        }
+    }
+
+
 }
