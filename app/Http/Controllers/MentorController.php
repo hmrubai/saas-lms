@@ -13,6 +13,7 @@ use App\Models\Category;
 use App\Models\Content;
 use App\Models\ContentOutline;
 use App\Models\CourseOutline;
+use App\Models\MentorZoomLink;
 use App\Models\CourseParticipant;
 use App\Models\CourseClassRoutine;
 use App\Models\CourseFeature;
@@ -74,6 +75,24 @@ class MentorController extends Controller
             'status' => true,
             'message' => 'Successful',
             'data' => $courses
+        ], 200);
+    }
+
+    public function updateZoomLink(Request $request){
+        $user_id = $request->user()->id;
+        $mentor = MentorInformation::where('user_id', $user_id)->first();
+
+        $zoomLink = MentorZoomLink::where('mentor_id', $mentor->id)->first();
+        if(!empty($zoomLink)){
+            MentorZoomLink::where('id', $zoomLink->id)->update($request->all());
+        }else{
+            MentorZoomLink::create($request->all());
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Link has been created successfully',
+            'data' => []
         ], 200);
     }
 
