@@ -670,9 +670,7 @@ class CourseController extends Controller
 
     public function saveOrUpdateFaq(Request $request)
     {
-
         try {
-
             if (empty($request->id)) {
 
                 $faqArr = json_decode($request->faq, true);

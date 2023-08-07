@@ -187,7 +187,7 @@ class ContentController extends Controller
     public function chapterList()
     {
         $chapterList = Chapter::leftJoin('subjects', 'subjects.id', '=', 'chapters.subject_id')
-        ->leftJoin('class_levels', 'class_levels.id', '=', 'chapters.class_level_id')
+            ->leftJoin('class_levels', 'class_levels.id', '=', 'chapters.class_level_id')
             ->select(
                 'chapters.id',
                 'chapters.name',
@@ -265,7 +265,7 @@ class ContentController extends Controller
         }
     }
 
-    public function videoChapterList()
+    public function videoChapterList(Request $request)
     {
         $videoChapterList = ChapterVideo::leftJoin('class_levels', 'class_levels.id', '=', 'chapter_videos.class_level_id')
             ->leftJoin('subjects', 'subjects.id', '=', 'chapter_videos.subject_id')
@@ -299,7 +299,10 @@ class ContentController extends Controller
                 'chapters.name_bn as chapter_name_bn',
                 'chapter_videos.thumbnail'
             )
+
             ->get();
+
+           
         return $this->apiResponse($videoChapterList, 'Video Chapter List Successful', true, 200);
     }
 
@@ -366,7 +369,7 @@ class ContentController extends Controller
                 "class_level_id" => $request->class_level_id,
                 "subject_id" => $request->subject_id,
                 "chapter_id" => $request->chapter_id,
-                "raw_url" => $request->raw_url,
+                "s3_url" => $request->s3_url,
                 "price" => $request->price,
                 "rating" => $request->rating,
                 "is_free" => $request->is_free,
@@ -379,6 +382,13 @@ class ContentController extends Controller
                 $script->update([
                     "script_code" => $this->codeGenerator('CSC', ChapterScript::class),
                 ]);
+
+                if ($request->hasFile('raw_url')) {
+                    $script->update([
+                        'raw_url' => $this->imageUpload($request, 'raw_url', 'content'),
+                    ]);
+                }
+
                 if ($request->hasFile('thumbnail')) {
                     $script->update([
                         'thumbnail' => $this->imageUpload($request, 'thumbnail', 'thumbnail'),
@@ -390,6 +400,12 @@ class ContentController extends Controller
                 if ($request->hasFile('thumbnail')) {
                     ChapterScript::where('id', $request->id)->update([
                         'thumbnail' => $this->imageUpload($request, 'thumbnail', 'thumbnail', $script->thumbnail)
+                    ]);
+                }
+
+                if ($request->hasFile('raw_url')) {
+                    ChapterScript::where('id', $request->id)->update([
+                        'raw_url' => $this->imageUpload($request, 'raw_url', 'content', $script->raw_url),
                     ]);
                 }
                 $script->update($scripts);
@@ -415,6 +431,7 @@ class ContentController extends Controller
                 'chapter_scripts.script_code',
                 'chapter_scripts.description',
                 'chapter_scripts.raw_url',
+                'chapter_scripts.s3_url',
                 'chapter_scripts.price',
                 'chapter_scripts.rating',
                 'chapter_scripts.is_free',

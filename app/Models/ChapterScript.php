@@ -19,6 +19,7 @@ class ChapterScript extends Model
         'subject_id',
         'chapter_id',
         'raw_url',
+        's3_url',
         'thumbnail',
         'price',
         'rating',
