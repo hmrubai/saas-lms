@@ -176,6 +176,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('admin/mentor-save-or-update', [MentorController::class, 'mentorSaveOrUpdate']);
     Route::get('admin/all-mentor-list-admin', [MentorController::class, 'allMentorListAdmin']);
     Route::post('admin/student-save-or-update', [StudentController::class, 'studentSaveOrUpdate']);
+    Route::get('admin/all-student-list-admin', [StudentController::class, 'allStudentAdmin']);
 
 
 

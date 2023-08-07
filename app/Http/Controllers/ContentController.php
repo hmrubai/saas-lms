@@ -187,11 +187,13 @@ class ContentController extends Controller
     public function chapterList()
     {
         $chapterList = Chapter::leftJoin('subjects', 'subjects.id', '=', 'chapters.subject_id')
+        ->leftJoin('class_levels', 'class_levels.id', '=', 'chapters.class_level_id')
             ->select(
                 'chapters.id',
                 'chapters.name',
                 'chapters.name_bn',
                 'chapters.subject_id',
+                'chapters.class_level_id',
                 'chapters.chapter_code',
                 'chapters.price',
                 'chapters.is_free',
@@ -200,7 +202,10 @@ class ContentController extends Controller
                 'chapters.sequence',
                 'chapters.is_active',
                 'subjects.name as subject_name',
-                'subjects.name_bn as subject_name_bn'
+                'subjects.name_bn as subject_name_bn',
+                'class_levels.name as class_name',
+                'class_levels.name_bn as class_name_bn'
+
             )
             ->get();
         return $this->apiResponse($chapterList, 'Chapter List Successful', true, 200);

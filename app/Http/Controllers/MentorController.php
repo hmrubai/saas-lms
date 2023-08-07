@@ -120,26 +120,6 @@ class MentorController extends Controller
 
     public function mentorSaveOrUpdate(Request $request)
     {
-        $validateUser = Validator::make(
-            $request->all(),
-            [
-                'name' => 'required',
-                'organization_slug' => 'required',
-                'username' => 'required|unique:users,username,' . $request->user_id,
-                'email' => 'required|email|unique:users,email,' . $request->user_id,
-                'contact_no' => 'unique:users,contact_no,' . $request->user_id,
-                'password' => 'required'
-            ]
-        );
-
-        if ($validateUser->fails()) {
-            return response()->json([
-                'status' => false,
-                'message' => 'validation error',
-                'data' => $validateUser->errors()
-            ], 422);
-        }
-
         try {
             $mentor = [
                 'education' => $request->education,
@@ -179,6 +159,27 @@ class MentorController extends Controller
                 'nid_no' => $request->nid_no,
 
             ];
+
+            if (empty($request->id)) {
+                $validateUser = Validator::make(
+                    $request->all(),
+                    [
+                        'name' => 'required',
+                        'organization_slug' => 'required',
+                        'username' => 'required|unique:users,username,',
+                        'email' => 'unique:users,email,' ,
+                        'contact_no' =>'unique:users,contact_no,',
+                        'password' => 'required'
+                    ]
+                );
+        
+                if ($validateUser->fails()) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'validation error',
+                        'data' => $validateUser->errors()
+                    ], 422);
+                }
 
             if (empty($request->id)) {
                 if ($request->email) {
@@ -234,6 +235,22 @@ class MentorController extends Controller
                 $mentorInfo->update($mentor);
                 return $this->apiResponse([], 'Mentor Created Successfully', true, 200);
             } else {
+                $validateUser = Validator::make(
+                    $request->all(),
+                    [
+                        'name' => 'required',
+                        'email' => 'unique:users,email,' . $request->user_id,
+                        'contact_no' => 'unique:users,contact_no,' . $request->user_id,
+                    ]
+                );
+        
+                if ($validateUser->fails()) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'validation error',
+                        'data' => $validateUser->errors()
+                    ], 422);
+                }
                 DB::beginTransaction();
                 $user = User::where('id', $request->user_id)->first();
                 $user->update([
@@ -261,22 +278,14 @@ class MentorController extends Controller
                 $mentorInfo->update($mentor);
                 DB::commit();
                 return $this->apiResponse([], 'Mentor Updated Successfully', true, 200);
-            }
+            }}
         } catch (\Throwable $th) {
             return $this->apiResponse($th->getMessage(), 'Something went wrong', false, 500);
         }
     }
-
     public function allMentorListAdmin(Request $request)
     {
-        $mentorList = MentorInformation::latest()
-            ->get();
-
-
-        return response()->json([
-            'status' => true,
-            'message' => 'List Successful',
-            'data' => $mentorList
-        ], 200);
+        $mentorList = MentorInformation::latest()->get();
+        return  $this->apiResponse($mentorList, 'Mentor List', true, 200);
     }
 }
