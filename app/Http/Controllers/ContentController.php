@@ -416,8 +416,12 @@ class ContentController extends Controller
         }
     }
 
-    public function scriptChapterList()
+    public function scriptChapterList(Request $request)
     {
+        $class= $request->query('class_id');
+        $subject= $request->query('subject_id');
+        $chapter= $request->query('chapter_id');
+    
         $scriptChapterList = ChapterScript::leftJoin('class_levels', 'class_levels.id', '=', 'chapter_scripts.class_level_id')
             ->leftJoin('subjects', 'subjects.id', '=', 'chapter_scripts.subject_id')
             ->leftJoin('chapters', 'chapters.id', '=', 'chapter_scripts.chapter_id')
@@ -445,6 +449,15 @@ class ContentController extends Controller
                 'chapters.name_bn as chapter_name_bn',
                 'chapter_scripts.thumbnail'
             )
+            ->when($class, function ($query, $class) {
+                return $query->where('chapter_scripts.class_level_id', $class);
+            })
+            ->when($subject, function ($query, $subject) {
+                return $query->where('chapter_scripts.subject_id', $subject);
+            })
+            ->when($chapter, function ($query, $chapter) {
+                return $query->where('chapter_scripts.chapter_id', $chapter);
+            })
             ->get();
         return $this->apiResponse($scriptChapterList, 'Script Chapter List Successful', true, 200);
     }
