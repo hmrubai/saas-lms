@@ -144,15 +144,15 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('admin/course-outline-save-or-update', [CourseController::class, 'saveOrUpdateCourseOutline']);
     Route::get('admin/course-outline-list/{id}', [CourseController::class, 'courseOutlineList']);
-
     Route::delete('admin/delete-course-outline/{id}', [CourseController::class, 'courseOutlineDelete']);
+
+
     Route::get('admin/content-list', [ContentController::class, 'contentList']);
     Route::post('admin/content-save-or-update', [ContentController::class, 'saveOrUpdateContent']);
     Route::post('admin/content-outline-save-or-update', [ContentController::class, 'saveOrUpdateContentOutline']);
     Route::get('admin/content-outline-list/{id}', [ContentController::class, 'contentOutlineList']);
-
-    Route::delete('admin/delete-course-outline/{id}', [ContentController::class, 'courseOutlineDelete']);
     Route::delete('admin/delete-content-outline/{id}', [ContentController::class, 'contentOutlineDelete']);
+  
 
 
     Route::post('admin/faq-save-or-update', [CourseController::class, 'saveOrUpdateFaq']);
@@ -176,6 +176,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('admin/mentor-save-or-update', [MentorController::class, 'mentorSaveOrUpdate']);
     Route::get('admin/all-mentor-list-admin', [MentorController::class, 'allMentorListAdmin']);
     Route::post('admin/student-save-or-update', [StudentController::class, 'studentSaveOrUpdate']);
+    Route::get('admin/all-student-list-admin', [StudentController::class, 'allStudentAdmin']);
 
 
 

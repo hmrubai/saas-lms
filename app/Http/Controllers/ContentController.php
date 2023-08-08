@@ -187,11 +187,13 @@ class ContentController extends Controller
     public function chapterList()
     {
         $chapterList = Chapter::leftJoin('subjects', 'subjects.id', '=', 'chapters.subject_id')
+            ->leftJoin('class_levels', 'class_levels.id', '=', 'chapters.class_level_id')
             ->select(
                 'chapters.id',
                 'chapters.name',
                 'chapters.name_bn',
                 'chapters.subject_id',
+                'chapters.class_level_id',
                 'chapters.chapter_code',
                 'chapters.price',
                 'chapters.is_free',
@@ -200,7 +202,10 @@ class ContentController extends Controller
                 'chapters.sequence',
                 'chapters.is_active',
                 'subjects.name as subject_name',
-                'subjects.name_bn as subject_name_bn'
+                'subjects.name_bn as subject_name_bn',
+                'class_levels.name as class_name',
+                'class_levels.name_bn as class_name_bn'
+
             )
             ->get();
         return $this->apiResponse($chapterList, 'Chapter List Successful', true, 200);
@@ -260,8 +265,11 @@ class ContentController extends Controller
         }
     }
 
-    public function videoChapterList()
+    public function videoChapterList(Request $request)
     {
+        $class= $request->query('class_id');
+        $subject= $request->query('subject_id');
+        $chapter= $request->query('chapter_id');
         $videoChapterList = ChapterVideo::leftJoin('class_levels', 'class_levels.id', '=', 'chapter_videos.class_level_id')
             ->leftJoin('subjects', 'subjects.id', '=', 'chapter_videos.subject_id')
             ->leftJoin('chapters', 'chapters.id', '=', 'chapter_videos.chapter_id')
@@ -294,7 +302,18 @@ class ContentController extends Controller
                 'chapters.name_bn as chapter_name_bn',
                 'chapter_videos.thumbnail'
             )
+            ->when($class, function ($query, $class) {
+                return $query->where('chapter_videos.class_level_id', $class);
+            })
+            ->when($subject, function ($query, $subject) {
+                return $query->where('chapter_videos.subject_id', $subject);
+            })
+            ->when($chapter, function ($query, $chapter) {
+                return $query->where('chapter_videos.chapter_id', $chapter);
+            })
             ->get();
+
+           
         return $this->apiResponse($videoChapterList, 'Video Chapter List Successful', true, 200);
     }
 
@@ -361,7 +380,7 @@ class ContentController extends Controller
                 "class_level_id" => $request->class_level_id,
                 "subject_id" => $request->subject_id,
                 "chapter_id" => $request->chapter_id,
-                "raw_url" => $request->raw_url,
+                "s3_url" => $request->s3_url,
                 "price" => $request->price,
                 "rating" => $request->rating,
                 "is_free" => $request->is_free,
@@ -374,6 +393,13 @@ class ContentController extends Controller
                 $script->update([
                     "script_code" => $this->codeGenerator('CSC', ChapterScript::class),
                 ]);
+
+                if ($request->hasFile('raw_url')) {
+                    $script->update([
+                        'raw_url' => $this->imageUpload($request, 'raw_url', 'content'),
+                    ]);
+                }
+
                 if ($request->hasFile('thumbnail')) {
                     $script->update([
                         'thumbnail' => $this->imageUpload($request, 'thumbnail', 'thumbnail'),
@@ -387,6 +413,12 @@ class ContentController extends Controller
                         'thumbnail' => $this->imageUpload($request, 'thumbnail', 'thumbnail', $script->thumbnail)
                     ]);
                 }
+
+                if ($request->hasFile('raw_url')) {
+                    ChapterScript::where('id', $request->id)->update([
+                        'raw_url' => $this->imageUpload($request, 'raw_url', 'content', $script->raw_url),
+                    ]);
+                }
                 $script->update($scripts);
                 return $this->apiResponse([], 'Chapter Script Updated Successfully', true, 200);
             }
@@ -395,8 +427,12 @@ class ContentController extends Controller
         }
     }
 
-    public function scriptChapterList()
+    public function scriptChapterList(Request $request)
     {
+        $class= $request->query('class_id');
+        $subject= $request->query('subject_id');
+        $chapter= $request->query('chapter_id');
+    
         $scriptChapterList = ChapterScript::leftJoin('class_levels', 'class_levels.id', '=', 'chapter_scripts.class_level_id')
             ->leftJoin('subjects', 'subjects.id', '=', 'chapter_scripts.subject_id')
             ->leftJoin('chapters', 'chapters.id', '=', 'chapter_scripts.chapter_id')
@@ -410,6 +446,7 @@ class ContentController extends Controller
                 'chapter_scripts.script_code',
                 'chapter_scripts.description',
                 'chapter_scripts.raw_url',
+                'chapter_scripts.s3_url',
                 'chapter_scripts.price',
                 'chapter_scripts.rating',
                 'chapter_scripts.is_free',
@@ -423,6 +460,15 @@ class ContentController extends Controller
                 'chapters.name_bn as chapter_name_bn',
                 'chapter_scripts.thumbnail'
             )
+            ->when($class, function ($query, $class) {
+                return $query->where('chapter_scripts.class_level_id', $class);
+            })
+            ->when($subject, function ($query, $subject) {
+                return $query->where('chapter_scripts.subject_id', $subject);
+            })
+            ->when($chapter, function ($query, $chapter) {
+                return $query->where('chapter_scripts.chapter_id', $chapter);
+            })
             ->get();
         return $this->apiResponse($scriptChapterList, 'Script Chapter List Successful', true, 200);
     }
@@ -462,8 +508,11 @@ class ContentController extends Controller
         }
     }
 
-    public function chapterQuizList()
+    public function chapterQuizList(Request $request)
     {
+        $class= $request->query('class_id');
+        $subject= $request->query('subject_id');
+        $chapter= $request->query('chapter_id');
         $chapterQuizList = ChapterQuiz::leftJoin('class_levels', 'class_levels.id', '=', 'chapter_quizzes.class_level_id')
             ->leftJoin('subjects', 'subjects.id', '=', 'chapter_quizzes.subject_id')
             ->leftJoin('chapters', 'chapters.id', '=', 'chapter_quizzes.chapter_id')
@@ -491,6 +540,15 @@ class ContentController extends Controller
                 'chapters.name as chapter_name',
                 'chapters.name_bn as chapter_name_bn',
             )
+            ->when($class, function ($query, $class) {
+                return $query->where('chapter_quizzes.class_level_id', $class);
+            })
+            ->when($subject, function ($query, $subject) {
+                return $query->where('chapter_quizzes.subject_id', $subject);
+            })
+            ->when($chapter, function ($query, $chapter) {
+                return $query->where('chapter_quizzes.chapter_id', $chapter);
+            })
             ->get();
         return $this->apiResponse($chapterQuizList, 'Chapter Quiz List Successful', true, 200);
     }
@@ -825,7 +883,7 @@ class ContentController extends Controller
             ->select(
                 'content_outlines.*',
                 'contents.title as content_name',
-                'class_levels.name as class_level_name',
+                'class_levels.name as class_name',
                 'subjects.name as subject_name',
                 'chapters.name as chapter_name',
             )

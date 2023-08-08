@@ -21,12 +21,14 @@ class CourseOutline extends Model
         'chapter_quiz_id',
         'is_free',
         'sequence',
-        'is_active'
+        'is_active',
+        'is_only_note'
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
-        'is_free' => 'boolean'
+        'is_free' => 'boolean',
+        'is_only_note' => 'boolean'
     ];
 
 }

@@ -110,31 +110,10 @@ class StudentController extends Controller
 
     public function studentSaveOrUpdate(Request $request)
     {
-        $validateUser = Validator::make(
-            $request->all(),
-            [
-                'name' => 'required',
-                'organization_slug' => 'required',
-                'username' => 'required|unique:users,username,' . $request->user_id,
-                'email' => 'required|email|unique:users,email,' . $request->user_id,
-                'contact_no' => 'unique:users,contact_no,' . $request->user_id,
-                'password' => 'required'
-            ]
-        );
-
-        if ($validateUser->fails()) {
-            return response()->json([
-                'status' => false,
-                'message' => 'validation error',
-                'data' => $validateUser->errors()
-            ], 422);
-        }
-      
         try {
             $student = [
                 'education' => $request->education,
                 'institute' => $request->institute,
-                'organization_slug'=>$request->organization_slug,
                 'device_id'=>$request->device_id,
                 'alternative_contact_no'=>$request->alternative_contact_no,
                 'gender'=>$request->gender,
@@ -160,7 +139,27 @@ class StudentController extends Controller
                 'rating' => $request->rating,
             ];
 
+          
             if (empty($request->id)) {
+                $validateUser = Validator::make(
+                    $request->all(),
+                    [
+                        'name' => 'required',
+                        'organization_slug' => 'required',
+                        'username' => 'required|unique:users,username,',
+                        'email' => 'unique:users,email,' ,
+                        'contact_no' =>'unique:users,contact_no,',
+                        'password' => 'required'
+                    ]
+                );
+        
+                if ($validateUser->fails()) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'validation error',
+                        'data' => $validateUser->errors()
+                    ], 422);
+                }
                 DB::beginTransaction();
                 if ($request->email) {
                     $is_exist = User::where('email', $request->email)->first();
@@ -216,6 +215,23 @@ class StudentController extends Controller
                 DB::commit();
                 return $this->apiResponse([], 'Student Created Successfully', true, 200);
             } else {
+                
+                $validateUser = Validator::make(
+                    $request->all(),
+                    [
+                        'name' => 'required',
+                        'email' => 'unique:users,email,' . $request->user_id,
+                        'contact_no' => 'unique:users,contact_no,' . $request->user_id,
+                    ]
+                );
+        
+                if ($validateUser->fails()) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'validation error',
+                        'data' => $validateUser->errors()
+                    ], 422);
+                }
                 DB::beginTransaction();
                 $user = User::where('id', $request->user_id)->first();
                 $user->update([
@@ -250,7 +266,11 @@ class StudentController extends Controller
         }
     }
 
+    public function allStudentAdmin(Request $request)
+    {
+        $students = StudentInformation::latest()
+        ->get();
+        return $this->apiResponse($students, 'All Student', true, 200);
 
-
-
+    }
 }
