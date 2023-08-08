@@ -267,6 +267,9 @@ class ContentController extends Controller
 
     public function videoChapterList(Request $request)
     {
+        $class= $request->query('class_id');
+        $subject= $request->query('subject_id');
+        $chapter= $request->query('chapter_id');
         $videoChapterList = ChapterVideo::leftJoin('class_levels', 'class_levels.id', '=', 'chapter_videos.class_level_id')
             ->leftJoin('subjects', 'subjects.id', '=', 'chapter_videos.subject_id')
             ->leftJoin('chapters', 'chapters.id', '=', 'chapter_videos.chapter_id')
@@ -299,7 +302,15 @@ class ContentController extends Controller
                 'chapters.name_bn as chapter_name_bn',
                 'chapter_videos.thumbnail'
             )
-
+            ->when($class, function ($query, $class) {
+                return $query->where('chapter_videos.class_level_id', $class);
+            })
+            ->when($subject, function ($query, $subject) {
+                return $query->where('chapter_videos.subject_id', $subject);
+            })
+            ->when($chapter, function ($query, $chapter) {
+                return $query->where('chapter_videos.chapter_id', $chapter);
+            })
             ->get();
 
            
@@ -497,8 +508,11 @@ class ContentController extends Controller
         }
     }
 
-    public function chapterQuizList()
+    public function chapterQuizList(Request $request)
     {
+        $class= $request->query('class_id');
+        $subject= $request->query('subject_id');
+        $chapter= $request->query('chapter_id');
         $chapterQuizList = ChapterQuiz::leftJoin('class_levels', 'class_levels.id', '=', 'chapter_quizzes.class_level_id')
             ->leftJoin('subjects', 'subjects.id', '=', 'chapter_quizzes.subject_id')
             ->leftJoin('chapters', 'chapters.id', '=', 'chapter_quizzes.chapter_id')
@@ -526,6 +540,15 @@ class ContentController extends Controller
                 'chapters.name as chapter_name',
                 'chapters.name_bn as chapter_name_bn',
             )
+            ->when($class, function ($query, $class) {
+                return $query->where('chapter_quizzes.class_level_id', $class);
+            })
+            ->when($subject, function ($query, $subject) {
+                return $query->where('chapter_quizzes.subject_id', $subject);
+            })
+            ->when($chapter, function ($query, $chapter) {
+                return $query->where('chapter_quizzes.chapter_id', $chapter);
+            })
             ->get();
         return $this->apiResponse($chapterQuizList, 'Chapter Quiz List Successful', true, 200);
     }
@@ -860,7 +883,7 @@ class ContentController extends Controller
             ->select(
                 'content_outlines.*',
                 'contents.title as content_name',
-                'class_levels.name as class_level_name',
+                'class_levels.name as class_name',
                 'subjects.name as subject_name',
                 'chapters.name as chapter_name',
             )

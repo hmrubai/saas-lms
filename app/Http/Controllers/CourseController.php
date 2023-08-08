@@ -561,6 +561,7 @@ class CourseController extends Controller
 
     public function saveOrUpdateCourseOutline(Request $request)
     {
+
         try {
             $course = [
                 'title' => $request->title,
@@ -575,6 +576,7 @@ class CourseController extends Controller
                 'is_free'  => $request->is_free,
                 'sequence' => $request->sequence,
                 'is_active ' => $request->is_active,
+                'is_only_note'=>$request->is_only_note
             ];
 
             if (empty($request->id)) {
@@ -622,7 +624,8 @@ class CourseController extends Controller
                 'course_outlines.is_free',
                 'course_outlines.sequence',
                 'course_outlines.is_active',
-                'class_levels.name as class_level_name',
+                'course_outlines.is_only_note',
+                'class_levels.name as class_name',
                 'subjects.name as subject_name',
                 'chapters.name as chapter_name',
                 'chapter_scripts.title as chapter_script_title',
