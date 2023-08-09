@@ -178,6 +178,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('admin/student-save-or-update', [StudentController::class, 'studentSaveOrUpdate']);
     Route::get('admin/all-student-list-admin', [StudentController::class, 'allStudentAdmin']);
 
+    Route::post('admin/student-mapping-save-or-update', [CourseController::class, 'saveOrUpdateStudentMapping']);
+    Route::get('admin/student-mapping-list', [CourseController::class, 'studentMappingList']);
+
 
 
     
