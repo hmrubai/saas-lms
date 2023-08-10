@@ -979,6 +979,7 @@ class CourseController extends Controller
         $courseList = Course::select(
             'courses.id',
             'courses.title',
+            
         )->latest()->get();
         return $this->apiResponse($courseList, 'Course List', true, 200);
     }

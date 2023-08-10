@@ -59,9 +59,6 @@ Route::group(['prefix' => 'website'], function () {
     Route::get('menu-list', [MasterSettingsController::class, 'websiteMenuList']);
     Route::get('course-list-by-id/{menu_id}', [CourseController::class, 'courseListByID']);
     Route::get('course-details-by-user/{user_id}/{course_id}', [CourseController::class, 'courseDetailsByUserID']);
-
-    //Test
-    Route::get('student-list-by-course-id/{course_id}', [StudentController::class, 'courseParticipantList']);
 });
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -186,6 +183,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('admin/student-mapping-list', [CourseController::class, 'studentMappingList']);
     Route::get('admin/course-list-for-mapping', [CourseController::class, 'courseListForStudentMapping']);
     Route::get('admin/mentor-list-by-course', [CourseController::class, 'mentorListByCourse']);
+    Route::get('student-Participant-list-by-course-id/{course_id}', [StudentController::class, 'courseParticipantList']);
 
 
 
