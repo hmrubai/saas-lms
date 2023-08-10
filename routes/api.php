@@ -170,6 +170,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('admin/mentor-assign-save-or-update', [CourseController::class, 'saveOrUpdateAssignMentor']);
     Route::get('admin/course-mentor-assign-list/{id}', [CourseController::class, 'mentorAssignList']);
     Route::get('admin/mentor-list', [CourseController::class, 'courseMentorList']);
+    Route::get('admin/student-list', [CourseController::class, 'courseStudentList']);
     Route::delete('admin/delete-mentor-assign/{id}', [CourseController::class, 'mentorAssignDelete']);
 
 
@@ -180,6 +181,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('admin/student-mapping-save-or-update', [CourseController::class, 'saveOrUpdateStudentMapping']);
     Route::get('admin/student-mapping-list', [CourseController::class, 'studentMappingList']);
+    Route::get('admin/course-list-for-mapping', [CourseController::class, 'courseListForStudentMapping']);
+    Route::get('admin/mentor-list-by-course', [CourseController::class, 'mentorListByCourse']);
 
 
 

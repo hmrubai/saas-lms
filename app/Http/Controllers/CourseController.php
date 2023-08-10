@@ -827,8 +827,28 @@ class CourseController extends Controller
 
     public function courseMentorList(Request $request)
     {
-        $mentorList = MentorInformation::latest()->get();
+        $mentorList = MentorInformation::select(
+            'mentor_informations.id',
+            'mentor_informations.name',
+            'mentor_informations.user_id',
+            'mentor_informations.email',
+            'mentor_informations.username',
+            'mentor_informations.contact_no',
+        )->latest()->get();
         return $this->apiResponse($mentorList, 'Mentor List', true, 200);
+    }
+    public function courseStudentList(Request $request)
+    {
+        $mentorList = StudentInformation
+            ::select(
+                'student_informations.id',
+                'student_informations.name',
+                'student_informations.user_id',
+                'student_informations.email',
+                'student_informations.username',
+                'student_informations.contact_no',
+            )->latest()->get();
+        return $this->apiResponse($mentorList, 'Student List', true, 200);
     }
 
     public function assignMentorByCourse(Request $request, $id)
@@ -883,7 +903,8 @@ class CourseController extends Controller
                 'course_mentors.mentor_id',
                 'course_mentors.is_active',
                 'courses.title as course_title',
-                'mentor_informations.name as mentor_name'
+                'mentor_informations.name as mentor_name',
+                'mentor_informations.email as mentor_email',
             )
             ->get();
 
@@ -922,13 +943,44 @@ class CourseController extends Controller
                 return $this->apiResponse([], 'Course studentMapping Created Successfully', true, 201);
             } else {
                 $studentMapping = CourseStudentMapping::where('id', $request->id)->first();
-                $studentMapping->update($request->all());
+                $studentMapping->update([
+                    'is_active' => $request->is_active,
+                ]);
                 return $this->apiResponse([], 'Course studentMapping Updated Successfully', true, 200);
             }
         } catch (\Throwable $th) {
             return $this->apiResponse([], $th->getMessage(), false, 500);
         }
     }
+
+
+    public function courseListForStudentMapping(Request $request)
+    {
+        $courseList = Course::select(
+            'courses.id',
+            'courses.title',
+        )->latest()->get();
+        return $this->apiResponse($courseList, 'Course List', true, 200);
+    }
+
+    public function mentorListByCourse(Request $request,$id)
+    {
+        $mentorList = CourseMentor::where('course_id', $id)
+        ->leftJoin('mentor_informations', 'mentor_informations.id', 'course_mentors.mentor_id')
+
+            ->select(
+                'course_mentors.id',
+                'course_mentors.course_id',
+                'course_mentors.mentor_id',
+                'course_mentors.is_active',
+                'mentor_informations.name as mentor_name'
+            )
+            ->get();
+        return $this->apiResponse($mentorList, 'Mentor List', true, 200);
+    }
+
+
+
     public function studentMappingList(Request $request)
     {
 
@@ -939,12 +991,13 @@ class CourseController extends Controller
                 'course_student_mappings.id',
                 'course_student_mappings.course_id',
                 'course_student_mappings.mentor_id',
+                'course_student_mappings.student_id',
                 'course_student_mappings.is_active',
                 'courses.title as course_title',
                 'mentor_informations.name as mentor_name',
                 'student_informations.name as student_name'
             )
-        
+
             ->get();
 
         return $this->apiResponse($studentMappingList, 'Student Mapping List', true, 200);
