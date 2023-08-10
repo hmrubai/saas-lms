@@ -59,6 +59,9 @@ Route::group(['prefix' => 'website'], function () {
     Route::get('menu-list', [MasterSettingsController::class, 'websiteMenuList']);
     Route::get('course-list-by-id/{menu_id}', [CourseController::class, 'courseListByID']);
     Route::get('course-details-by-user/{user_id}/{course_id}', [CourseController::class, 'courseDetailsByUserID']);
+
+    //Test
+    Route::get('student-list-by-course-id/{course_id}', [StudentController::class, 'courseParticipantList']);
 });
 
 Route::middleware('auth:sanctum')->group(function () {

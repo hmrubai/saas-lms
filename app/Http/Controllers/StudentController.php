@@ -97,7 +97,7 @@ class StudentController extends Controller
 
         $courses = Course::select('courses.*', 'categories.name as category_name')
         ->whereIn('courses.id', $ids)
-        ->leftJoin('categories', 'categories.id', 'courses.id')
+        ->leftJoin('categories', 'categories.id', 'courses.category_id')
         ->orderBy('courses.sequence', 'ASC')
         ->get();
 
@@ -272,5 +272,19 @@ class StudentController extends Controller
         ->get();
         return $this->apiResponse($students, 'All Student', true, 200);
 
+    }
+    
+    public function courseParticipantList(Request $request)
+    {
+        $course_id = $request->course_id ? $request->course_id : 0;
+
+        $user_ids = CourseParticipant::where('item_id', $course_id)->where('item_type', 'Course')->pluck('user_id');
+        $student_list = StudentInformation::whereIn("user_id", $user_ids)->get();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Successful',
+            'data' => $student_list
+        ], 200);
     }
 }

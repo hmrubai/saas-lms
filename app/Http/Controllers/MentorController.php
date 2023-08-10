@@ -67,7 +67,7 @@ class MentorController extends Controller
 
         $courses = Course::select('courses.*', 'categories.name as category_name')
             ->whereIn('courses.id', $ids)
-            ->leftJoin('categories', 'categories.id', 'courses.id')
+            ->leftJoin('categories', 'categories.id', 'courses.category_id')
             ->orderBy('courses.sequence', 'ASC')
             ->get();
 

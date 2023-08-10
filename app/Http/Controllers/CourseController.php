@@ -441,6 +441,26 @@ class CourseController extends Controller
             ->leftJoin('student_informations', 'student_informations.id', 'class_schedules.student_id')
             ->get();
 
+        //$class_list = [];
+
+        foreach ($class as $item) 
+        {
+            $isToday = date('Ymd') == date('Ymd', strtotime($item->schedule_datetime));
+
+            if(!empty($zoomLink)){
+                $item->join_link = $zoomLink->live_link;
+            }else{
+                $item->join_link = null;
+            }
+            
+            if($isToday) {
+                $item->can_join = true;
+                //array_push($class_list, $item);
+            }else{
+                $item->can_join = false;
+            }
+        }
+
         return response()->json([
             'status' => true,
             'message' => 'Successful',
