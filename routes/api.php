@@ -61,7 +61,7 @@ Route::group(['prefix' => 'website'], function () {
     Route::get('course-details-by-user/{user_id}/{course_id}', [CourseController::class, 'courseDetailsByUserID']);
 
     //Test
-    Route::get('student-list-by-course-id/{course_id}', [CourseController::class, 'courseParticipantList']);
+    Route::get('student-list-by-course-id/{course_id}', [StudentController::class, 'courseParticipantList']);
 });
 
 Route::middleware('auth:sanctum')->group(function () {

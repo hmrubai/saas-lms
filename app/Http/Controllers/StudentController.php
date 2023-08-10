@@ -273,4 +273,18 @@ class StudentController extends Controller
         return $this->apiResponse($students, 'All Student', true, 200);
 
     }
+    
+    public function courseParticipantList(Request $request)
+    {
+        $course_id = $request->course_id ? $request->course_id : 0;
+
+        $user_ids = CourseParticipant::where('item_id', $course_id)->where('item_type', 'Course')->pluck('user_id');
+        $student_list = StudentInformation::whereIn("user_id", $user_ids)->get();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Successful',
+            'data' => $student_list
+        ], 200);
+    }
 }
