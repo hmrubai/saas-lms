@@ -37,10 +37,10 @@ class ContentController extends Controller
     public function chapterListBySubjectID(Request $request)
     {
         $subject_id = $request->subject_id;
-        $subjectList = Chapter::select('id', 'name', 'name_bn', 'subject_id')->where('subject_id', $subject_id)->get();
+        $subjectList = Chapter::where('subject_id', $subject_id)->select('id', 'name', 'name_bn', 'subject_id')->get();
         return $this->apiResponse($subjectList, 'Chapter List Successful', true, 200);
     }
-
+ 
     public function scriptListByChapterID(Request $request)
     {
         $chapter_id = $request->chapter_id;
