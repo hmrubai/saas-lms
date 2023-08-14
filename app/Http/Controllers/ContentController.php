@@ -37,10 +37,10 @@ class ContentController extends Controller
     public function chapterListBySubjectID(Request $request)
     {
         $subject_id = $request->subject_id;
-        $subjectList = Chapter::where('subject_id', $subject_id)->select('id', 'name', 'name_bn', 'subject_id')->get();
+        $subjectList = Chapter::select('id', 'name', 'name_bn', 'subject_id')->where('subject_id', $subject_id)->get();
         return $this->apiResponse($subjectList, 'Chapter List Successful', true, 200);
     }
- 
+
     public function scriptListByChapterID(Request $request)
     {
         $chapter_id = $request->chapter_id;
@@ -61,12 +61,6 @@ class ContentController extends Controller
         $quizList = ChapterQuiz::select('id', 'title', 'title_bn', 'chapter_id')->where('chapter_id', $chapter_id)->get();
         return $this->apiResponse($quizList, 'Quiz List Successful', true, 200);
     }
-
-
-
-
-
-
 
     public function classList()
     {
@@ -136,9 +130,7 @@ class ContentController extends Controller
             'subjects.is_active',
             'class_levels.name as class_name',
             'class_levels.name_bn as class_name_bn'
-        )
-
-            ->get();
+        )->get();
         return $this->apiResponse($subjectList, 'Subject List Successful', true, 200);
     }
 

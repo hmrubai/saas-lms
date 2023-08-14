@@ -28,7 +28,6 @@ use App\Models\PaymentDetail;
 use App\Models\TopicConsume;
 use App\Models\WebsitePage;
 use Illuminate\Support\Facades\Validator;
-
 use Illuminate\Http\Request;
 use PhpParser\Node\Stmt\TryCatch;
 
@@ -509,8 +508,6 @@ class MasterSettingsController extends Controller
         ], 200);
     }
 
-
-
     public function saveOrUpdateTags(Request $request)
     {
         try {
@@ -654,8 +651,5 @@ class MasterSettingsController extends Controller
         Interest::where('id', $id)->delete();
         return $this->apiResponse([], 'Tags Deleted Successfully', true, 200);
     }
-
-
-
 
 }

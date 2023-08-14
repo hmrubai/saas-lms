@@ -19,6 +19,7 @@ use App\Models\CourseStudentMapping;
 use App\Models\MentorInformation;
 use App\Models\StudentInformation;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class CourseController extends Controller
 
@@ -443,20 +444,19 @@ class CourseController extends Controller
 
         //$class_list = [];
 
-        foreach ($class as $item) 
-        {
+        foreach ($class as $item) {
             $isToday = date('Ymd') == date('Ymd', strtotime($item->schedule_datetime));
 
-            if(!empty($zoomLink)){
+            if (!empty($zoomLink)) {
                 $item->join_link = $zoomLink->live_link;
-            }else{
+            } else {
                 $item->join_link = null;
             }
-            
-            if($isToday) {
+
+            if ($isToday) {
                 $item->can_join = true;
                 //array_push($class_list, $item);
-            }else{
+            } else {
                 $item->can_join = false;
             }
         }
@@ -580,7 +580,6 @@ class CourseController extends Controller
 
     public function saveOrUpdateCourseOutline(Request $request)
     {
-
         try {
             $course = [
                 'title' => $request->title,
@@ -732,7 +731,6 @@ class CourseController extends Controller
 
     public function saveOrUpdateFeature(Request $request)
     {
-
         try {
 
             if (empty($request->id)) {
@@ -885,6 +883,7 @@ class CourseController extends Controller
     public function saveOrUpdateAssignMentor(Request $request)
     {
         try {
+            DB::beginTransaction();
             if (empty($request->id)) {
                 $mentorArr = json_decode($request->mentorArr, true);
                 if ($mentorArr) {
@@ -898,6 +897,7 @@ class CourseController extends Controller
                     }
                     CourseMentor::insert($mentor);
                 }
+                DB::commit();
                 return $this->apiResponse([], 'Course mentor Created Successfully', true, 201);
             } else {
                 $mentor = CourseMentor::where('id', $request->id)->first();
@@ -905,6 +905,7 @@ class CourseController extends Controller
                 return $this->apiResponse([], 'Course mentor Updated Successfully', true, 200);
             }
         } catch (\Throwable $th) {
+            DB::rollBack();
             return $this->apiResponse([], $th->getMessage(), false, 500);
         }
     }
@@ -942,10 +943,10 @@ class CourseController extends Controller
         }
     }
 
-
     public function saveOrUpdateStudentMapping(Request $request)
     {
         try {
+            DB::beginTransaction();
             if (empty($request->id)) {
                 $mapping = json_decode($request->mapping, true);
                 if ($mapping) {
@@ -960,34 +961,37 @@ class CourseController extends Controller
                     }
                     CourseStudentMapping::insert($studentMapping);
                 }
+                DB::commit();
                 return $this->apiResponse([], 'Course studentMapping Created Successfully', true, 201);
             } else {
+
                 $studentMapping = CourseStudentMapping::where('id', $request->id)->first();
                 $studentMapping->update([
                     'is_active' => $request->is_active,
                 ]);
+
                 return $this->apiResponse([], 'Course studentMapping Updated Successfully', true, 200);
             }
         } catch (\Throwable $th) {
+            DB::rollBack();
             return $this->apiResponse([], $th->getMessage(), false, 500);
         }
     }
-
 
     public function courseListForStudentMapping(Request $request)
     {
         $courseList = Course::select(
             'courses.id',
             'courses.title',
-            
+
         )->latest()->get();
         return $this->apiResponse($courseList, 'Course List', true, 200);
     }
 
-    public function mentorListByCourse(Request $request,$id)
+    public function mentorListByCourse(Request $request, $id)
     {
         $mentorList = CourseMentor::where('course_id', $id)
-        ->leftJoin('mentor_informations', 'mentor_informations.id', 'course_mentors.mentor_id')
+            ->leftJoin('mentor_informations', 'mentor_informations.id', 'course_mentors.mentor_id')
 
             ->select(
                 'course_mentors.id',
@@ -999,9 +1003,7 @@ class CourseController extends Controller
             ->get();
         return $this->apiResponse($mentorList, 'Mentor List', true, 200);
     }
-
-
-
+    
     public function studentMappingList(Request $request)
     {
 
