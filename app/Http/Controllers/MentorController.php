@@ -120,6 +120,8 @@ class MentorController extends Controller
 
     public function mentorSaveOrUpdate(Request $request)
     {
+
+     
         try {
             $mentor = [
                 'education' => $request->education,
@@ -181,7 +183,8 @@ class MentorController extends Controller
                     ], 422);
                 }
 
-            if (empty($request->id)) {
+       
+
                 if ($request->email) {
                     $is_exist = User::where('email', $request->email)->first();
                     if (!empty($is_exist)) {
@@ -235,6 +238,7 @@ class MentorController extends Controller
                 $mentorInfo->update($mentor);
                 return $this->apiResponse([], 'Mentor Created Successfully', true, 200);
             } else {
+    
                 $validateUser = Validator::make(
                     $request->all(),
                     [
@@ -278,7 +282,9 @@ class MentorController extends Controller
                 $mentorInfo->update($mentor);
                 DB::commit();
                 return $this->apiResponse([], 'Mentor Updated Successfully', true, 200);
-            }}
+            }
+        
+        
         } catch (\Throwable $th) {
             return $this->apiResponse($th->getMessage(), 'Something went wrong', false, 500);
         }

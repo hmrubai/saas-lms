@@ -62,12 +62,6 @@ class ContentController extends Controller
         return $this->apiResponse($quizList, 'Quiz List Successful', true, 200);
     }
 
-
-
-
-
-
-
     public function classList()
     {
         $classList = ClassLevel::select('id', 'name', 'name_bn', 'class_code', 'price', 'is_free', 'icon', 'color_code', 'sequence', 'is_active')->get();
@@ -136,9 +130,7 @@ class ContentController extends Controller
             'subjects.is_active',
             'class_levels.name as class_name',
             'class_levels.name_bn as class_name_bn'
-        )
-
-            ->get();
+        )->get();
         return $this->apiResponse($subjectList, 'Subject List Successful', true, 200);
     }
 

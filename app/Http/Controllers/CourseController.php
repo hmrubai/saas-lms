@@ -19,6 +19,7 @@ use App\Models\CourseStudentMapping;
 use App\Models\MentorInformation;
 use App\Models\StudentInformation;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class CourseController extends Controller
 
@@ -71,20 +72,20 @@ class CourseController extends Controller
                         'chapter_quizzes.duration as quiz_duration',
                         'chapter_quizzes.is_free as quiz_is_free',
                     )
-                    ->where('course_outlines.course_id', $course->id)
-                    ->leftJoin('class_levels', 'class_levels.id', 'course_outlines.class_level_id')
-                    ->leftJoin('subjects', 'subjects.id', 'course_outlines.subject_id')
-                    ->leftJoin('chapters', 'chapters.id', 'course_outlines.chapter_id')
-                    ->leftJoin('chapter_videos', 'chapter_videos.id', 'course_outlines.chapter_video_id')
-                    ->leftJoin('chapter_scripts', 'chapter_scripts.id', 'course_outlines.chapter_script_id')
-                    ->leftJoin('chapter_quizzes', 'chapter_quizzes.id', 'course_outlines.chapter_quiz_id')
-                    ->get();
+                        ->where('course_outlines.course_id', $course->id)
+                        ->leftJoin('class_levels', 'class_levels.id', 'course_outlines.class_level_id')
+                        ->leftJoin('subjects', 'subjects.id', 'course_outlines.subject_id')
+                        ->leftJoin('chapters', 'chapters.id', 'course_outlines.chapter_id')
+                        ->leftJoin('chapter_videos', 'chapter_videos.id', 'course_outlines.chapter_video_id')
+                        ->leftJoin('chapter_scripts', 'chapter_scripts.id', 'course_outlines.chapter_script_id')
+                        ->leftJoin('chapter_quizzes', 'chapter_quizzes.id', 'course_outlines.chapter_quiz_id')
+                        ->get();
 
                     $course->course_routine = CourseClassRoutine::where('course_id', $course->id)->get();
                     $course->course_feature = CourseFeature::where('course_id', $course->id)->get();
                     $course->course_mentor = CourseMentor::select('course_mentors.*', 'mentor_informations.name', 'mentor_informations.education', 'mentor_informations.institute')
                         ->where('course_mentors.course_id', $course->id)
-                        ->leftJoin('mentor_informations', 'mentor_informations.id', 'course_mentors.mentor_id')    
+                        ->leftJoin('mentor_informations', 'mentor_informations.id', 'course_mentors.mentor_id')
                         ->get();
                     $course->course_faq = CourseFaq::where('course_id', $course->id)->get();
                 }
@@ -113,30 +114,30 @@ class CourseController extends Controller
         $course = Course::where('id', $course_id)->orderBy('sequence', 'ASC')->first();
 
         $course->course_outline = CourseOutline::select(
-                'course_outlines.*',
-                'class_levels.name as class_name',
-                'subjects.name as subject_name',
-                'chapters.name as chapter_name',
-                'chapter_videos.title as video_title',
-                'chapter_videos.title_bn as video_title_bn',
-                'chapter_videos.author_name as video_author_name',
-                'chapter_videos.author_details as video_author_details',
-                'chapter_videos.raw_url as video_raw_url',
-                'chapter_videos.s3_url as video_s3_url',
-                'chapter_videos.youtube_url as video_youtube_url',
-                'chapter_videos.download_url as video_download_url',
-                'chapter_videos.duration as video_duration',
-                'chapter_videos.thumbnail as video_thumbnail',
-                'chapter_videos.is_free as video_is_free',
-                'chapter_scripts.title as script_title',
-                'chapter_scripts.title_bn as script_title_bn',
-                'chapter_scripts.raw_url as script_raw_url',
-                'chapter_scripts.is_free as script_is_free',
-                'chapter_quizzes.title as quiz_title',
-                'chapter_quizzes.title_bn as quiz_title_bn',
-                'chapter_quizzes.duration as quiz_duration',
-                'chapter_quizzes.is_free as quiz_is_free',
-            )
+            'course_outlines.*',
+            'class_levels.name as class_name',
+            'subjects.name as subject_name',
+            'chapters.name as chapter_name',
+            'chapter_videos.title as video_title',
+            'chapter_videos.title_bn as video_title_bn',
+            'chapter_videos.author_name as video_author_name',
+            'chapter_videos.author_details as video_author_details',
+            'chapter_videos.raw_url as video_raw_url',
+            'chapter_videos.s3_url as video_s3_url',
+            'chapter_videos.youtube_url as video_youtube_url',
+            'chapter_videos.download_url as video_download_url',
+            'chapter_videos.duration as video_duration',
+            'chapter_videos.thumbnail as video_thumbnail',
+            'chapter_videos.is_free as video_is_free',
+            'chapter_scripts.title as script_title',
+            'chapter_scripts.title_bn as script_title_bn',
+            'chapter_scripts.raw_url as script_raw_url',
+            'chapter_scripts.is_free as script_is_free',
+            'chapter_quizzes.title as quiz_title',
+            'chapter_quizzes.title_bn as quiz_title_bn',
+            'chapter_quizzes.duration as quiz_duration',
+            'chapter_quizzes.is_free as quiz_is_free',
+        )
             ->where('course_outlines.course_id', $course_id)
             ->leftJoin('class_levels', 'class_levels.id', 'course_outlines.class_level_id')
             ->leftJoin('subjects', 'subjects.id', 'course_outlines.subject_id')
@@ -190,30 +191,30 @@ class CourseController extends Controller
 
             foreach ($courses as $course) {
                 $course->course_outline = CourseOutline::select(
-                        'course_outlines.*',
-                        'class_levels.name as class_name',
-                        'subjects.name as subject_name',
-                        'chapters.name as chapter_name',
-                        'chapter_videos.title as video_title',
-                        'chapter_videos.title_bn as video_title_bn',
-                        'chapter_videos.author_name as video_author_name',
-                        'chapter_videos.author_details as video_author_details',
-                        'chapter_videos.raw_url as video_raw_url',
-                        'chapter_videos.s3_url as video_s3_url',
-                        'chapter_videos.youtube_url as video_youtube_url',
-                        'chapter_videos.download_url as video_download_url',
-                        'chapter_videos.duration as video_duration',
-                        'chapter_videos.thumbnail as video_thumbnail',
-                        'chapter_videos.is_free as video_is_free',
-                        'chapter_scripts.title as script_title',
-                        'chapter_scripts.title_bn as script_title_bn',
-                        'chapter_scripts.raw_url as script_raw_url',
-                        'chapter_scripts.is_free as script_is_free',
-                        'chapter_quizzes.title as quiz_title',
-                        'chapter_quizzes.title_bn as quiz_title_bn',
-                        'chapter_quizzes.duration as quiz_duration',
-                        'chapter_quizzes.is_free as quiz_is_free',
-                    )
+                    'course_outlines.*',
+                    'class_levels.name as class_name',
+                    'subjects.name as subject_name',
+                    'chapters.name as chapter_name',
+                    'chapter_videos.title as video_title',
+                    'chapter_videos.title_bn as video_title_bn',
+                    'chapter_videos.author_name as video_author_name',
+                    'chapter_videos.author_details as video_author_details',
+                    'chapter_videos.raw_url as video_raw_url',
+                    'chapter_videos.s3_url as video_s3_url',
+                    'chapter_videos.youtube_url as video_youtube_url',
+                    'chapter_videos.download_url as video_download_url',
+                    'chapter_videos.duration as video_duration',
+                    'chapter_videos.thumbnail as video_thumbnail',
+                    'chapter_videos.is_free as video_is_free',
+                    'chapter_scripts.title as script_title',
+                    'chapter_scripts.title_bn as script_title_bn',
+                    'chapter_scripts.raw_url as script_raw_url',
+                    'chapter_scripts.is_free as script_is_free',
+                    'chapter_quizzes.title as quiz_title',
+                    'chapter_quizzes.title_bn as quiz_title_bn',
+                    'chapter_quizzes.duration as quiz_duration',
+                    'chapter_quizzes.is_free as quiz_is_free',
+                )
                     ->where('course_outlines.course_id', $course->id)
                     ->leftJoin('class_levels', 'class_levels.id', 'course_outlines.class_level_id')
                     ->leftJoin('subjects', 'subjects.id', 'course_outlines.subject_id')
@@ -227,7 +228,7 @@ class CourseController extends Controller
                 $course->course_feature = CourseFeature::where('course_id', $course->id)->get();
                 $course->course_mentor = CourseMentor::select('course_mentors.*', 'mentor_informations.name', 'mentor_informations.education', 'mentor_informations.institute')
                     ->where('course_mentors.course_id', $course->id)
-                    ->leftJoin('mentor_informations', 'mentor_informations.id', 'course_mentors.mentor_id')    
+                    ->leftJoin('mentor_informations', 'mentor_informations.id', 'course_mentors.mentor_id')
                     ->get();
                 $course->course_faq = CourseFaq::where('course_id', $course->id)->get();
             }
@@ -275,9 +276,9 @@ class CourseController extends Controller
         $courses = Course::where('id', $course_id)->first();
 
         $is_exist = CourseParticipant::where('item_id', $course_id)->where('user_id', $user_id)->where('item_type', 'Course')->first();
-        if(!empty($is_exist)){
+        if (!empty($is_exist)) {
             $courses->is_purchased = true;
-        }else{
+        } else {
             $courses->is_purchased = false;
         }
 
@@ -306,23 +307,23 @@ class CourseController extends Controller
             'chapter_quizzes.duration as quiz_duration',
             'chapter_quizzes.is_free as quiz_is_free',
         )
-        ->where('course_outlines.course_id', $course_id)
-        ->leftJoin('class_levels', 'class_levels.id', 'course_outlines.class_level_id')
-        ->leftJoin('subjects', 'subjects.id', 'course_outlines.subject_id')
-        ->leftJoin('chapters', 'chapters.id', 'course_outlines.chapter_id')
-        ->leftJoin('chapter_videos', 'chapter_videos.id', 'course_outlines.chapter_video_id')
-        ->leftJoin('chapter_scripts', 'chapter_scripts.id', 'course_outlines.chapter_script_id')
-        ->leftJoin('chapter_quizzes', 'chapter_quizzes.id', 'course_outlines.chapter_quiz_id')
-        ->get();
+            ->where('course_outlines.course_id', $course_id)
+            ->leftJoin('class_levels', 'class_levels.id', 'course_outlines.class_level_id')
+            ->leftJoin('subjects', 'subjects.id', 'course_outlines.subject_id')
+            ->leftJoin('chapters', 'chapters.id', 'course_outlines.chapter_id')
+            ->leftJoin('chapter_videos', 'chapter_videos.id', 'course_outlines.chapter_video_id')
+            ->leftJoin('chapter_scripts', 'chapter_scripts.id', 'course_outlines.chapter_script_id')
+            ->leftJoin('chapter_quizzes', 'chapter_quizzes.id', 'course_outlines.chapter_quiz_id')
+            ->get();
 
         $courses->course_routine = CourseClassRoutine::where('course_id', $course_id)->get();
         $courses->course_feature = CourseFeature::where('course_id', $course_id)->get();
         $courses->course_mentor = CourseMentor::select('course_mentors.*', 'mentor_informations.name', 'mentor_informations.education', 'mentor_informations.institute')
             ->where('course_mentors.course_id', $course_id)
-            ->leftJoin('mentor_informations', 'mentor_informations.id', 'course_mentors.mentor_id')    
+            ->leftJoin('mentor_informations', 'mentor_informations.id', 'course_mentors.mentor_id')
             ->get();
         $courses->course_faq = CourseFaq::where('course_id', $course_id)->get();
-        
+
         return response()->json([
             'status' => true,
             'message' => 'Successful',
@@ -330,22 +331,23 @@ class CourseController extends Controller
         ], 200);
     }
 
-    public function mentorStudentList(Request $request){
+    public function mentorStudentList(Request $request)
+    {
         $user_id = $request->user()->id;
         $mentor = MentorInformation::where('user_id', $user_id)->first();
 
         $student = CourseStudentMapping::select(
             'course_student_mappings.id as mapping_id',
-            'courses.title as course_title', 
-            'mentor_informations.name as mentor_name', 
-            'student_informations.name as student_name', 
+            'courses.title as course_title',
+            'mentor_informations.name as mentor_name',
+            'student_informations.name as student_name',
             'student_informations.contact_no as student_contact_no'
         )
-        ->where('course_student_mappings.mentor_id', $mentor->id)
-        ->leftJoin('courses', 'courses.id', 'course_student_mappings.course_id')
-        ->leftJoin('mentor_informations', 'mentor_informations.id', 'course_student_mappings.mentor_id') 
-        ->leftJoin('student_informations', 'student_informations.id', 'course_student_mappings.student_id') 
-        ->get();
+            ->where('course_student_mappings.mentor_id', $mentor->id)
+            ->leftJoin('courses', 'courses.id', 'course_student_mappings.course_id')
+            ->leftJoin('mentor_informations', 'mentor_informations.id', 'course_student_mappings.mentor_id')
+            ->leftJoin('student_informations', 'student_informations.id', 'course_student_mappings.student_id')
+            ->get();
 
         return response()->json([
             'status' => true,
@@ -368,24 +370,23 @@ class CourseController extends Controller
 
         $class = ClassSchedule::select(
             'class_schedules.*',
-            'courses.title as course_title', 
-            'mentor_informations.name as mentor_name', 
-            'student_informations.name as student_name', 
+            'courses.title as course_title',
+            'mentor_informations.name as mentor_name',
+            'student_informations.name as student_name',
             'student_informations.contact_no as student_contact_no'
         )
-        ->where('class_schedules.course_student_mapping_id', $mapping_id)
-        ->leftJoin('courses', 'courses.id', 'class_schedules.course_id')
-        ->leftJoin('mentor_informations', 'mentor_informations.id', 'class_schedules.mentor_id') 
-        ->leftJoin('student_informations', 'student_informations.id', 'class_schedules.student_id') 
-        ->get();
+            ->where('class_schedules.course_student_mapping_id', $mapping_id)
+            ->leftJoin('courses', 'courses.id', 'class_schedules.course_id')
+            ->leftJoin('mentor_informations', 'mentor_informations.id', 'class_schedules.mentor_id')
+            ->leftJoin('student_informations', 'student_informations.id', 'class_schedules.student_id')
+            ->get();
 
-        foreach ($class as $item) 
-        {
+        foreach ($class as $item) {
             $isToday = date('Ymd') == date('Ymd', strtotime($item->schedule_datetime));
 
-            if($isToday) {
+            if ($isToday) {
                 $item->can_join = true;
-            }else{
+            } else {
                 $item->can_join = false;
             }
         }
@@ -401,20 +402,20 @@ class CourseController extends Controller
     {
         $user_id = $request->user()->id;
         $mentor = MentorInformation::where('user_id', $user_id)->first();
-        
+
         $class = ClassSchedule::select(
             'class_schedules.*',
-            'courses.title as course_title', 
-            'mentor_informations.name as mentor_name', 
-            'student_informations.name as student_name', 
+            'courses.title as course_title',
+            'mentor_informations.name as mentor_name',
+            'student_informations.name as student_name',
             'student_informations.contact_no as student_contact_no'
         )
-        ->where('class_schedules.mentor_id', $mentor->id)
-        ->where('class_schedules.has_completed', true)
-        ->leftJoin('courses', 'courses.id', 'class_schedules.course_id')
-        ->leftJoin('mentor_informations', 'mentor_informations.id', 'class_schedules.mentor_id') 
-        ->leftJoin('student_informations', 'student_informations.id', 'class_schedules.student_id') 
-        ->get();
+            ->where('class_schedules.mentor_id', $mentor->id)
+            ->where('class_schedules.has_completed', true)
+            ->leftJoin('courses', 'courses.id', 'class_schedules.course_id')
+            ->leftJoin('mentor_informations', 'mentor_informations.id', 'class_schedules.mentor_id')
+            ->leftJoin('student_informations', 'student_informations.id', 'class_schedules.student_id')
+            ->get();
 
         return response()->json([
             'status' => true,
@@ -427,36 +428,35 @@ class CourseController extends Controller
     {
         $user_id = $request->user()->id;
         $student = StudentInformation::where('user_id', $user_id)->first();
-        
+
         $class = ClassSchedule::select(
             'class_schedules.*',
-            'courses.title as course_title', 
-            'mentor_informations.name as mentor_name', 
-            'student_informations.name as student_name', 
+            'courses.title as course_title',
+            'mentor_informations.name as mentor_name',
+            'student_informations.name as student_name',
             'student_informations.contact_no as student_contact_no'
         )
-        ->where('class_schedules.student_id', $student->id)
-        ->leftJoin('courses', 'courses.id', 'class_schedules.course_id')
-        ->leftJoin('mentor_informations', 'mentor_informations.id', 'class_schedules.mentor_id') 
-        ->leftJoin('student_informations', 'student_informations.id', 'class_schedules.student_id') 
-        ->get();
+            ->where('class_schedules.student_id', $student->id)
+            ->leftJoin('courses', 'courses.id', 'class_schedules.course_id')
+            ->leftJoin('mentor_informations', 'mentor_informations.id', 'class_schedules.mentor_id')
+            ->leftJoin('student_informations', 'student_informations.id', 'class_schedules.student_id')
+            ->get();
 
         //$class_list = [];
 
-        foreach ($class as $item) 
-        {
+        foreach ($class as $item) {
             $isToday = date('Ymd') == date('Ymd', strtotime($item->schedule_datetime));
 
-            if(!empty($zoomLink)){
+            if (!empty($zoomLink)) {
                 $item->join_link = $zoomLink->live_link;
-            }else{
+            } else {
                 $item->join_link = null;
             }
-            
-            if($isToday) {
+
+            if ($isToday) {
                 $item->can_join = true;
                 //array_push($class_list, $item);
-            }else{
+            } else {
                 $item->can_join = false;
             }
         }
@@ -474,37 +474,36 @@ class CourseController extends Controller
         $mentor = MentorInformation::where('user_id', $user_id)->first();
 
         $zoomLink = MentorZoomLink::where('mentor_id', $mentor->id)->first();
-        
+
         $class = ClassSchedule::select(
             'class_schedules.*',
-            'courses.title as course_title', 
-            'mentor_informations.name as mentor_name', 
-            'student_informations.name as student_name', 
+            'courses.title as course_title',
+            'mentor_informations.name as mentor_name',
+            'student_informations.name as student_name',
             'student_informations.contact_no as student_contact_no'
         )
-        ->where('class_schedules.mentor_id', $mentor->id)
-        ->where('class_schedules.has_completed', false)
-        ->leftJoin('courses', 'courses.id', 'class_schedules.course_id')
-        ->leftJoin('mentor_informations', 'mentor_informations.id', 'class_schedules.mentor_id') 
-        ->leftJoin('student_informations', 'student_informations.id', 'class_schedules.student_id') 
-        ->get();
+            ->where('class_schedules.mentor_id', $mentor->id)
+            ->where('class_schedules.has_completed', false)
+            ->leftJoin('courses', 'courses.id', 'class_schedules.course_id')
+            ->leftJoin('mentor_informations', 'mentor_informations.id', 'class_schedules.mentor_id')
+            ->leftJoin('student_informations', 'student_informations.id', 'class_schedules.student_id')
+            ->get();
 
         $class_list = [];
 
-        foreach ($class as $item) 
-        {
+        foreach ($class as $item) {
             $isToday = date('Ymd') == date('Ymd', strtotime($item->schedule_datetime));
 
-            if(!empty($zoomLink)){
+            if (!empty($zoomLink)) {
                 $item->join_link = $zoomLink->live_link;
-            }else{
+            } else {
                 $item->join_link = null;
             }
-            
-            if($isToday) {
+
+            if ($isToday) {
                 $item->can_join = true;
                 array_push($class_list, $item);
-            }else{
+            } else {
                 $item->can_join = false;
             }
         }
@@ -581,7 +580,6 @@ class CourseController extends Controller
 
     public function saveOrUpdateCourseOutline(Request $request)
     {
-
         try {
             $course = [
                 'title' => $request->title,
@@ -596,7 +594,7 @@ class CourseController extends Controller
                 'is_free'  => $request->is_free,
                 'sequence' => $request->sequence,
                 'is_active ' => $request->is_active,
-                'is_only_note'=>$request->is_only_note
+                'is_only_note' => $request->is_only_note
             ];
 
             if (empty($request->id)) {
@@ -733,7 +731,6 @@ class CourseController extends Controller
 
     public function saveOrUpdateFeature(Request $request)
     {
-
         try {
 
             if (empty($request->id)) {
@@ -848,16 +845,35 @@ class CourseController extends Controller
 
     public function courseMentorList(Request $request)
     {
-        $mentorList = MentorInformation::latest()->get();
+        $mentorList = MentorInformation::select(
+            'mentor_informations.id',
+            'mentor_informations.name',
+            'mentor_informations.user_id',
+            'mentor_informations.email',
+            'mentor_informations.username',
+            'mentor_informations.contact_no',
+        )->latest()->get();
         return $this->apiResponse($mentorList, 'Mentor List', true, 200);
     }
+    public function courseStudentList(Request $request)
+    {
+        $mentorList = StudentInformation
+            ::select(
+                'student_informations.id',
+                'student_informations.name',
+                'student_informations.user_id',
+                'student_informations.email',
+                'student_informations.username',
+                'student_informations.contact_no',
+            )->latest()->get();
+        return $this->apiResponse($mentorList, 'Student List', true, 200);
+    }
 
-    public function assignMentorByCourse(Request $request,$id)
+    public function assignMentorByCourse(Request $request, $id)
     {
         try {
             $mentor = CourseMentor::where('course_id', $request->id)->first();
             return $this->apiResponse($mentor, 'Mentor Assigned Successfully', true, 200);
-
         } catch (\Throwable $th) {
             return $this->apiResponse([], $th->getMessage(), false, 500);
         }
@@ -867,6 +883,7 @@ class CourseController extends Controller
     public function saveOrUpdateAssignMentor(Request $request)
     {
         try {
+            DB::beginTransaction();
             if (empty($request->id)) {
                 $mentorArr = json_decode($request->mentorArr, true);
                 if ($mentorArr) {
@@ -880,6 +897,7 @@ class CourseController extends Controller
                     }
                     CourseMentor::insert($mentor);
                 }
+                DB::commit();
                 return $this->apiResponse([], 'Course mentor Created Successfully', true, 201);
             } else {
                 $mentor = CourseMentor::where('id', $request->id)->first();
@@ -887,6 +905,7 @@ class CourseController extends Controller
                 return $this->apiResponse([], 'Course mentor Updated Successfully', true, 200);
             }
         } catch (\Throwable $th) {
+            DB::rollBack();
             return $this->apiResponse([], $th->getMessage(), false, 500);
         }
     }
@@ -905,12 +924,14 @@ class CourseController extends Controller
                 'course_mentors.mentor_id',
                 'course_mentors.is_active',
                 'courses.title as course_title',
-                'mentor_informations.name as mentor_name'
+                'mentor_informations.name as mentor_name',
+                'mentor_informations.email as mentor_email',
             )
             ->get();
 
-        return $this->apiResponse($mentorList, 'Routine List', true, 200);
+        return $this->apiResponse($mentorList, 'Mentor assign List', true, 200);
     }
+
 
     public function mentorAssignDelete(Request $request)
     {
@@ -922,5 +943,86 @@ class CourseController extends Controller
         }
     }
 
+    public function saveOrUpdateStudentMapping(Request $request)
+    {
+        try {
+            DB::beginTransaction();
+            if (empty($request->id)) {
+                $mapping = json_decode($request->mapping, true);
+                if ($mapping) {
+                    $studentMapping = [];
+                    foreach ($mapping as $key => $value) {
+                        $studentMapping[] = [
+                            'course_id' => $value['course_id'],
+                            'mentor_id' => $value['mentor_id'],
+                            'is_active' => $value['is_active'],
+                            'student_id' => $value['student_id'],
+                        ];
+                    }
+                    CourseStudentMapping::insert($studentMapping);
+                }
+                DB::commit();
+                return $this->apiResponse([], 'Course studentMapping Created Successfully', true, 201);
+            } else {
 
+                $studentMapping = CourseStudentMapping::where('id', $request->id)->first();
+                $studentMapping->update([
+                    'is_active' => $request->is_active,
+                ]);
+
+                return $this->apiResponse([], 'Course studentMapping Updated Successfully', true, 200);
+            }
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return $this->apiResponse([], $th->getMessage(), false, 500);
+        }
+    }
+
+    public function courseListForStudentMapping(Request $request)
+    {
+        $courseList = Course::select(
+            'courses.id',
+            'courses.title',
+
+        )->latest()->get();
+        return $this->apiResponse($courseList, 'Course List', true, 200);
+    }
+
+    public function mentorListByCourse(Request $request, $id)
+    {
+        $mentorList = CourseMentor::where('course_id', $id)
+            ->leftJoin('mentor_informations', 'mentor_informations.id', 'course_mentors.mentor_id')
+
+            ->select(
+                'course_mentors.id',
+                'course_mentors.course_id',
+                'course_mentors.mentor_id',
+                'course_mentors.is_active',
+                'mentor_informations.name as mentor_name'
+            )
+            ->get();
+        return $this->apiResponse($mentorList, 'Mentor List', true, 200);
+    }
+    
+    public function studentMappingList(Request $request)
+    {
+
+        $studentMappingList = CourseStudentMapping::leftJoin('courses', 'courses.id', 'course_student_mappings.course_id')
+            ->leftJoin('mentor_informations', 'mentor_informations.id', 'course_student_mappings.mentor_id')
+            ->leftJoin('student_informations', 'student_informations.id', 'course_student_mappings.student_id')
+            ->select(
+                'course_student_mappings.id',
+                'course_student_mappings.course_id',
+                'course_student_mappings.mentor_id',
+                'course_student_mappings.student_id',
+                'course_student_mappings.is_active',
+                'courses.title as course_title',
+                'mentor_informations.name as mentor_name',
+                'student_informations.name as student_name'
+            )
+
+            ->get();
+
+        return $this->apiResponse($studentMappingList, 'Student Mapping List', true, 200);
+    }
 }

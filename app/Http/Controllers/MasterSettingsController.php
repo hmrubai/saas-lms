@@ -28,7 +28,6 @@ use App\Models\PaymentDetail;
 use App\Models\TopicConsume;
 use App\Models\WebsitePage;
 use Illuminate\Support\Facades\Validator;
-
 use Illuminate\Http\Request;
 use PhpParser\Node\Stmt\TryCatch;
 
@@ -607,5 +606,50 @@ class MasterSettingsController extends Controller
         } catch (\Throwable $th) {
             return $this->apiResponse([], $th->getMessage(), false, 500);
         };
+    }   
+    
+    public function tagsListAdmin(Request $request)
+    {
+        $interest = Interest::get();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'List Successful',
+            'data' => $interest
+        ], 200);
     }
+
+    public function tagsSaveOrUpdateAdmin(Request $request)
+    {
+    try {
+            if (empty($request->id)) {
+                $tag = json_decode($request->tags, true);
+                if ($tag) {
+                    $tags = [];
+                    foreach ($tag as $key => $value) {
+                        $tags[] = [
+                            'tags' => $value,
+                        ];
+                    }
+                    Interest::insert($tags);
+                }
+                return $this->apiResponse([], 'Tags Created Successfully', true, 201);
+            } else {
+                $tags = Interest::where('id', $request->id)->first();
+                $tags->update([
+                    'tags' => $request->tags,
+                ]);
+                return $this->apiResponse([], 'Tags Updated Successfully', true, 200);
+            }
+        } catch (\Throwable $th) {
+            return $this->apiResponse([], $th->getMessage(), false, 500);
+        }
+    }
+
+    public function tagsDelete(Request $request,$id)
+    {
+        Interest::where('id', $id)->delete();
+        return $this->apiResponse([], 'Tags Deleted Successfully', true, 200);
+    }
+
 }
