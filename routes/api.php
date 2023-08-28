@@ -86,6 +86,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
         Route::get('student-course-list', [StudentController::class, 'myCourseList']);
         Route::get('student-class-list', [CourseController::class, 'studentClassList']);
+        Route::get('student-purchase-list', [StudentController::class, 'myPurchaseList']);
     });
 
 //All Admin Routes Start
