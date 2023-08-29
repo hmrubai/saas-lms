@@ -13,10 +13,8 @@ class PaymentDetail extends Model
 
     protected $fillable = [
         'user_id',
-        'school_id',
-        'package_id',
-        'package_type_id',
         'payment_id',
+        'item_id',
         'unit_price',
         'quantity',
         'total'

@@ -16,8 +16,8 @@ class CreatePaymentsTable extends Migration
         Schema::create('payments', function (Blueprint $table) {
             $table->id();
             $table->bigInteger('user_id');
-            $table->bigInteger('school_id')->nullable();;
-            $table->bigInteger('package_id');
+            $table->bigInteger('item_id');
+            $table->enum('item_type', ['Course', 'Content', 'Others'])->default('Course');
             $table->boolean('is_promo_applied')->default(0);
             $table->bigInteger('promo_id');
             $table->float('payable_amount')->default(0.00);

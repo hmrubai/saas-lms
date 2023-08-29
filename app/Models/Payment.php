@@ -13,8 +13,8 @@ class Payment extends Model
 
     protected $fillable = [
         'user_id',
-        'school_id',
-        'package_id',
+        'item_id',
+        'item_type',
         'is_promo_applied',
         'promo_id',
         'payable_amount',

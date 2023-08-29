@@ -44,6 +44,8 @@ class PaymentController extends Controller
             "trial_expiry_date" => null
         ]);
 
+        
+
         return response()->json([
             'status' => true,
             'message' => 'Payment Successful!',
