@@ -307,10 +307,13 @@ class StudentController extends Controller
         ->select('id', 'name', 'email', 'contact_no')
         ->get();
 
-        return response()->json([
-            'status' => true,
-            'message' => 'Successful',
-            'data' => $student_list
-        ], 200);
+        $course_name=Course::where('id',$course_id)->first()->title;
+
+        $data=[
+            'course_name'=>$course_name,
+            'student_list'=>$student_list
+        ];
+
+        return $this->apiResponse($data, 'Participant List', true, 200);
     }
 }

@@ -186,6 +186,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('course-list-for-mapping', [CourseController::class, 'courseListForStudentMapping']);
         Route::get('mentor-list-by-course', [CourseController::class, 'mentorListByCourse']);
         Route::get('student-Participant-list-by-course-id/{course_id}', [StudentController::class, 'courseParticipantList']);
+
     });
 });
 
