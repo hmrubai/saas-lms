@@ -33,6 +33,8 @@ class PaymentController extends Controller
 
         $course = Course::where('id', $course_id)->orderBy('sequence', 'ASC')->first();
 
+        
+
         CourseParticipant::create([
             "item_id" => $course->id,
             "user_id" => $user_id,
@@ -43,8 +45,6 @@ class PaymentController extends Controller
             "is_trial_taken" => 0,
             "trial_expiry_date" => null
         ]);
-
-        
 
         return response()->json([
             'status' => true,

@@ -150,8 +150,6 @@ class OrganizationController extends Controller
                         "email" => $request->email,
                     ]);
 
-
-
                     if ($request->hasFile('banner')) {
                         $webSetting->update([
                             'banner' => $this->imageUpload($request, 'banner', 'banner'),
@@ -187,6 +185,46 @@ class OrganizationController extends Controller
                 'data' => []
             ], 200);
         }
+    }
+
+    public function organizationDetailsByID(Request $request)
+    {
+        $organization_id = $request->organization_id ? $request->organization_id : 0;
+        if (!$organization_id) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Please, attach ID',
+                'data' => []
+            ], 422);
+        }
+
+        $organization = Organization::where('id', $organization_id)->first();
+
+        if(!$organization){
+            return response()->json([
+                'status' => false,
+                'message' => 'Organization information not found!',
+                'data' => []
+            ], 200);
+        }
+
+        $web_settings = WebsiteSetting::where('organization_id', $organization_id)->first();
+
+        if($web_settings){
+            $organization->banner = $web_settings->banner;
+            $organization->contact_number = $web_settings->contact_number;
+            $organization->hotline_number = $web_settings->hotline_number;
+        }else{
+            $organization->banner = null;
+            $organization->contact_number = null;
+            $organization->hotline_number = null;
+        }
+
+        return response()->json([
+            'status' => false,
+            'message' => 'Organization details!',
+            'data' => $organization
+        ], 200);
     }
 
     public function updateSettings(Request $request)
