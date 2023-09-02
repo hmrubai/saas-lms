@@ -92,99 +92,100 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     //All Admin Routes Start
-    Route::group(['prefix'=>'admin'],function () {
-    //Menu Settings
-    Route::get('menu-list', [MasterSettingsController::class, 'adminMenuList']);
-    Route::post('menu-save-or-update', [MasterSettingsController::class, 'saveOrUpdateMenu']);
+    Route::group(['prefix' => 'admin'], function () {
+        //Menu Settings
+        Route::get('menu-list', [MasterSettingsController::class, 'adminMenuList']);
+        Route::post('menu-save-or-update', [MasterSettingsController::class, 'saveOrUpdateMenu']);
 
-    //Organization
-    Route::post('organization-save-or-update', [OrganizationController::class, 'saveOrUpdateOrganization']);
-    Route::post('settings-update', [OrganizationController::class, 'updateSettings']);
+        //Organization
+        Route::get('organization-list', [OrganizationController::class, 'organizationListAdmin']);
+        Route::post('organization-save-or-update', [OrganizationController::class, 'saveOrUpdateOrganization']);
+        Route::post('settings-update', [OrganizationController::class, 'updateSettings']);
 
-    //Tags
-    Route::post('tag-save-or-update', [MasterSettingsController::class, 'saveOrUpdateTags']);
-    Route::post('tag-save-or-update-admin', [MasterSettingsController::class, 'tagsSaveOrUpdateAdmin']);
+        //Tags
+        Route::post('tag-save-or-update', [MasterSettingsController::class, 'saveOrUpdateTags']);
+        Route::post('tag-save-or-update-admin', [MasterSettingsController::class, 'tagsSaveOrUpdateAdmin']);
 
-    Route::delete('delete-tag/{id}', [MasterSettingsController::class, 'tagsDelete']);
-    Route::get('tag-list-admin', [MasterSettingsController::class, 'tagsListAdmin']);
+        Route::delete('delete-tag/{id}', [MasterSettingsController::class, 'tagsDelete']);
+        Route::get('tag-list-admin', [MasterSettingsController::class, 'tagsListAdmin']);
 
-    // common routes
-    Route::get('subject-by-class-id/{class_id}', [ContentController::class, 'subjectListByClassID']);
-    Route::get('chapter-by-subject-id/{subject_id}', [ContentController::class, 'chapterListBySubjectID']);
-    Route::get('script-list-by-chapter-id/{chapter_id}', [ContentController::class, 'scriptListByChapterID']);
-    Route::get('video-list-by-chapter-id/{chapter_id}', [ContentController::class, 'videoListByChapterID']);
-    Route::get('quiz-list-by-chapter-id/{chapter_id}', [ContentController::class, 'quizListByChapterID']);
+        // common routes
+        Route::get('subject-by-class-id/{class_id}', [ContentController::class, 'subjectListByClassID']);
+        Route::get('chapter-by-subject-id/{subject_id}', [ContentController::class, 'chapterListBySubjectID']);
+        Route::get('script-list-by-chapter-id/{chapter_id}', [ContentController::class, 'scriptListByChapterID']);
+        Route::get('video-list-by-chapter-id/{chapter_id}', [ContentController::class, 'videoListByChapterID']);
+        Route::get('quiz-list-by-chapter-id/{chapter_id}', [ContentController::class, 'quizListByChapterID']);
 
-    //Content Routes 
-    Route::get('class-list', [ContentController::class, 'classList']);
-    Route::post('class-save-or-update', [ContentController::class, 'saveOrUpdateClass']);
-    Route::get('subject-list', [ContentController::class, 'subjectList']);
-    Route::post('subject-save-or-update', [ContentController::class, 'saveOrUpdateSubject']);
+        //Content Routes 
+        Route::get('class-list', [ContentController::class, 'classList']);
+        Route::post('class-save-or-update', [ContentController::class, 'saveOrUpdateClass']);
+        Route::get('subject-list', [ContentController::class, 'subjectList']);
+        Route::post('subject-save-or-update', [ContentController::class, 'saveOrUpdateSubject']);
 
-    Route::get('chapter-list', [ContentController::class, 'chapterList']);
-    Route::post('chapter-save-or-update', [ContentController::class, 'saveOrUpdateChapter']);
-    Route::get('video-chapter-list', [ContentController::class, 'videoChapterList']);
-    Route::post('chapter-video-save-or-update', [ContentController::class, 'saveOrUpdateChapterVideo']);
+        Route::get('chapter-list', [ContentController::class, 'chapterList']);
+        Route::post('chapter-save-or-update', [ContentController::class, 'saveOrUpdateChapter']);
+        Route::get('video-chapter-list', [ContentController::class, 'videoChapterList']);
+        Route::post('chapter-video-save-or-update', [ContentController::class, 'saveOrUpdateChapterVideo']);
 
-    Route::get('chapter-script-list', [ContentController::class, 'scriptChapterList']);
-    Route::post('chapter-script-save-or-update', [ContentController::class, 'saveOrUpdateScript']);
+        Route::get('chapter-script-list', [ContentController::class, 'scriptChapterList']);
+        Route::post('chapter-script-save-or-update', [ContentController::class, 'saveOrUpdateScript']);
 
-    Route::post('chapter-quiz-save-or-update', [ContentController::class, 'saveOrUpdateQuiz']);
-    Route::get('chapter-quiz-list', [ContentController::class, 'chapterQuizList']);
+        Route::post('chapter-quiz-save-or-update', [ContentController::class, 'saveOrUpdateQuiz']);
+        Route::get('chapter-quiz-list', [ContentController::class, 'chapterQuizList']);
 
-    Route::get('question-set-list', [ContentController::class, 'questionSetList']);
-    Route::get('question-list-by-quiz/{id}', [ContentController::class, 'quizQuestionList']);
-    Route::post('chapter-quiz-question-save-or-update', [ContentController::class, 'saveOrUpdateQuizQuestion']);
-    Route::post('excel-question-upload', [ContentController::class, 'excelQuestionUpload']);
-    Route::delete('delete-question/{id}', [ContentController::class, 'deleteQuestion']);
+        Route::get('question-set-list', [ContentController::class, 'questionSetList']);
+        Route::get('question-list-by-quiz/{id}', [ContentController::class, 'quizQuestionList']);
+        Route::post('chapter-quiz-question-save-or-update', [ContentController::class, 'saveOrUpdateQuizQuestion']);
+        Route::post('excel-question-upload', [ContentController::class, 'excelQuestionUpload']);
+        Route::delete('delete-question/{id}', [ContentController::class, 'deleteQuestion']);
 
-    //Website 
-    Route::post('website-page-save-or-update', [MasterSettingsController::class, 'websitePageSaveOrUpdate']);
-    Route::get('website-page-list/{id}', [MasterSettingsController::class, 'websitePageList']);
+        //Website 
+        Route::post('website-page-save-or-update', [MasterSettingsController::class, 'websitePageSaveOrUpdate']);
+        Route::get('website-page-list/{id}', [MasterSettingsController::class, 'websitePageList']);
 
-    //Course 
-    Route::get('course-list', [CourseController::class, 'courseList']);
-    Route::post('course-save-or-update', [CourseController::class, 'saveOrUpdateCourse']);
+        //Course 
+        Route::get('course-list', [CourseController::class, 'courseList']);
+        Route::post('course-save-or-update', [CourseController::class, 'saveOrUpdateCourse']);
 
-    Route::post('course-outline-save-or-update', [CourseController::class, 'saveOrUpdateCourseOutline']);
-    Route::get('course-outline-list/{id}', [CourseController::class, 'courseOutlineList']);
-    Route::delete('delete-course-outline/{id}', [CourseController::class, 'courseOutlineDelete']);
+        Route::post('course-outline-save-or-update', [CourseController::class, 'saveOrUpdateCourseOutline']);
+        Route::get('course-outline-list/{id}', [CourseController::class, 'courseOutlineList']);
+        Route::delete('delete-course-outline/{id}', [CourseController::class, 'courseOutlineDelete']);
 
-    Route::get('content-list', [ContentController::class, 'contentList']);
-    Route::post('content-save-or-update', [ContentController::class, 'saveOrUpdateContent']);
-    Route::post('content-outline-save-or-update', [ContentController::class, 'saveOrUpdateContentOutline']);
-    Route::get('content-outline-list/{id}', [ContentController::class, 'contentOutlineList']);
-    Route::delete('delete-content-outline/{id}', [ContentController::class, 'contentOutlineDelete']);
-  
-    Route::post('faq-save-or-update', [CourseController::class, 'saveOrUpdateFaq']);
-    Route::get('faq-list/{id}', [CourseController::class, 'faqList']);
-    Route::delete('delete-faq/{id}', [CourseController::class, 'faqDelete']);
+        Route::get('content-list', [ContentController::class, 'contentList']);
+        Route::post('content-save-or-update', [ContentController::class, 'saveOrUpdateContent']);
+        Route::post('content-outline-save-or-update', [ContentController::class, 'saveOrUpdateContentOutline']);
+        Route::get('content-outline-list/{id}', [ContentController::class, 'contentOutlineList']);
+        Route::delete('delete-content-outline/{id}', [ContentController::class, 'contentOutlineDelete']);
 
-    Route::post('feature-save-or-update', [CourseController::class, 'saveOrUpdateFeature']);
-    Route::get('feature-list/{id}', [CourseController::class, 'featureList']);
-    Route::delete('delete-feature/{id}', [CourseController::class, 'featureDelete']);
+        Route::post('faq-save-or-update', [CourseController::class, 'saveOrUpdateFaq']);
+        Route::get('faq-list/{id}', [CourseController::class, 'faqList']);
+        Route::delete('delete-faq/{id}', [CourseController::class, 'faqDelete']);
 
-    Route::post('routine-save-or-update', [CourseController::class, 'saveOrUpdateRoutine']);
-    Route::get('routine-list/{id}', [CourseController::class, 'routineList']);
-    Route::delete('delete-routine/{id}', [CourseController::class, 'routineDelete']);
+        Route::post('feature-save-or-update', [CourseController::class, 'saveOrUpdateFeature']);
+        Route::get('feature-list/{id}', [CourseController::class, 'featureList']);
+        Route::delete('delete-feature/{id}', [CourseController::class, 'featureDelete']);
 
-    Route::post('mentor-assign-save-or-update', [CourseController::class, 'saveOrUpdateAssignMentor']);
-    Route::get('course-mentor-assign-list/{id}', [CourseController::class, 'mentorAssignList']);
-    Route::get('mentor-list', [CourseController::class, 'courseMentorList']);
-    Route::get('student-list', [CourseController::class, 'courseStudentList']);
-    Route::delete('delete-mentor-assign/{id}', [CourseController::class, 'mentorAssignDelete']);
+        Route::post('routine-save-or-update', [CourseController::class, 'saveOrUpdateRoutine']);
+        Route::get('routine-list/{id}', [CourseController::class, 'routineList']);
+        Route::delete('delete-routine/{id}', [CourseController::class, 'routineDelete']);
+
+        Route::post('mentor-assign-save-or-update', [CourseController::class, 'saveOrUpdateAssignMentor']);
+        Route::get('course-mentor-assign-list/{id}', [CourseController::class, 'mentorAssignList']);
+        Route::get('mentor-list', [CourseController::class, 'courseMentorList']);
+        Route::get('student-list', [CourseController::class, 'courseStudentList']);
+        Route::delete('delete-mentor-assign/{id}', [CourseController::class, 'mentorAssignDelete']);
 
 
-    Route::post('mentor-save-or-update', [MentorController::class, 'mentorSaveOrUpdate']);
-    Route::get('all-mentor-list-admin', [MentorController::class, 'allMentorListAdmin']);
-    Route::post('student-save-or-update', [StudentController::class, 'studentSaveOrUpdate']);
-    Route::get('all-student-list-admin', [StudentController::class, 'allStudentAdmin']);
+        Route::post('mentor-save-or-update', [MentorController::class, 'mentorSaveOrUpdate']);
+        Route::get('all-mentor-list-admin', [MentorController::class, 'allMentorListAdmin']);
+        Route::post('student-save-or-update', [StudentController::class, 'studentSaveOrUpdate']);
+        Route::get('all-student-list-admin', [StudentController::class, 'allStudentAdmin']);
 
-    Route::post('student-mapping-save-or-update', [CourseController::class, 'saveOrUpdateStudentMapping']);
-    Route::get('student-mapping-list', [CourseController::class, 'studentMappingList']);
-    Route::get('course-list-for-mapping', [CourseController::class, 'courseListForStudentMapping']);
-    Route::get('mentor-list-by-course', [CourseController::class, 'mentorListByCourse']);
-    Route::get('student-Participant-list-by-course-id/{course_id}', [StudentController::class, 'courseParticipantList']);
+        Route::post('student-mapping-save-or-update', [CourseController::class, 'saveOrUpdateStudentMapping']);
+        Route::get('student-mapping-list', [CourseController::class, 'studentMappingList']);
+        Route::get('course-list-for-mapping', [CourseController::class, 'courseListForStudentMapping']);
+        Route::get('mentor-list-by-course', [CourseController::class, 'mentorListByCourse']);
+        Route::get('student-Participant-list-by-course-id/{course_id}', [StudentController::class, 'courseParticipantList']);
     });
 });
 

@@ -16,10 +16,29 @@ class OrganizationController extends Controller
     use HelperTrait;
     public function organizationList(Request $request)
     {
-        $organization_list = Organization::select('id', 'name', 'slug', 'details', 'address', 'email', 'contact_no', 'logo', 'contact_person', 'is_active')->where('is_active', true)->get();
+        $organization_list = Organization::select('id', 'name', 'slug', 'details', 'address', 'email', 'contact_no', 'logo', 'contact_person', 'is_active',)->where('is_active', true)->get();
 
         foreach ($organization_list as $item) {
             $item->settings = Setting::where('organization_slug', $item->slug)->first();
+            $item->website_settings = WebsiteSetting::where('organization_id', $item->id)->first();
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => 'List Successful',
+            'data' => $organization_list
+        ], 200);
+    }
+    public function organizationListAdmin(Request $request)
+    {
+        $organization_list = Organization::select('id', 'name', 'slug', 'details', 'address', 'email', 'contact_no', 'logo', 'contact_person', 'is_active',)
+        ->where('is_active', true)
+        ->where('slug', auth()->user()->organization_slug)
+        ->get();
+
+        foreach ($organization_list as $item) {
+            $item->settings = Setting::where('organization_slug', $item->slug)->first();
+            $item->website_settings = WebsiteSetting::where('organization_id', $item->id)->first();
         }
 
         return response()->json([
