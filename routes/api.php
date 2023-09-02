@@ -57,6 +57,8 @@ Route::group(['prefix' => 'website'], function () {
     Route::get('menu-list', [MasterSettingsController::class, 'websiteMenuList']);
     Route::get('course-list-by-id/{menu_id}', [CourseController::class, 'courseListByID']);
     Route::get('course-details-by-user/{user_id}/{course_id}', [CourseController::class, 'courseDetailsByUserID']);
+
+    Route::get('organization-details-by-id/{organization_id}', [OrganizationController::class, 'organizationDetailsByID']);
 });
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -86,6 +88,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
         Route::get('student-course-list', [StudentController::class, 'myCourseList']);
         Route::get('student-class-list', [CourseController::class, 'studentClassList']);
+        Route::get('student-purchase-list', [StudentController::class, 'myPurchaseList']);
     });
 
     //All Admin Routes Start

@@ -108,6 +108,31 @@ class StudentController extends Controller
         ], 200);
     }
 
+    public function myPurchaseList(Request $request)
+    {
+        $user_id = $request->user()->id;
+        $student = StudentInformation::where('user_id', $user_id)->first();
+        $ids = CourseParticipant::where('user_id', $user_id)->where('item_type', 'Course')->pluck('item_id');
+
+        $courses = Course::select('courses.*', 'categories.name as category_name')
+        ->whereIn('courses.id', $ids)
+        ->leftJoin('categories', 'categories.id', 'courses.category_id')
+        ->orderBy('courses.sequence', 'ASC')
+        ->get();
+
+        foreach ($courses as $item) {
+            $payment_details = CourseParticipant::where('user_id', $user_id)->where('item_id', $item->id)->where('item_type', 'Course')->first();
+            $item->paid_amount = $payment_details->paid_amount ?? 0;
+            $item->discount = $payment_details->discount ?? 0;
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Successful',
+            'data' => $courses
+        ], 200);
+    }
+
     public function studentSaveOrUpdate(Request $request)
     {
         try {

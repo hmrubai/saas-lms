@@ -17,9 +17,7 @@ class CreatePaymentDetailsTable extends Migration
             $table->id();
             $table->bigInteger('payment_id');
             $table->bigInteger('user_id');
-            $table->bigInteger('school_id')->nullable();
-            $table->bigInteger('package_id');
-            $table->bigInteger('package_type_id');
+            $table->bigInteger('item_id');
             $table->float('unit_price')->default(0.00);
             $table->float('quantity')->default(0.00);
             $table->float('total')->default(0.00);
