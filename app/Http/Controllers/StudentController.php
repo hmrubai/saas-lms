@@ -306,7 +306,6 @@ class StudentController extends Controller
         $student_list = StudentInformation::whereIn("user_id", $user_ids)
         ->select('id', 'name', 'email', 'contact_no')
         ->get();
-
         $course_name=Course::where('id',$course_id)->first()->title;
 
         $data=[
@@ -316,4 +315,22 @@ class StudentController extends Controller
 
         return $this->apiResponse($data, 'Participant List', true, 200);
     }
+
+    public function courseParticipantPaymentList(Request $request){
+        $course_id = $request->course_id ? $request->course_id : 0;
+
+        $payment=CourseParticipant::leftJoin('users','users.id','course_participants.user_id')
+        ->leftJoin('courses','courses.id','course_participants.item_id')
+        ->where('item_type','Course')
+        ->when($course_id, function ($query, $course_id) {
+            return $query->where('item_id', $course_id);
+        })
+        ->select('course_participants.*','users.name','users.email','users.contact_no',
+        'courses.title as course_name')
+        ->get();
+
+        return $this->apiResponse($payment, 'Payment Successful', true, 200);
+    }
+
+
 }
