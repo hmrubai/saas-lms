@@ -361,7 +361,7 @@ class MasterSettingsController extends Controller
 
     public function websiteMenuList (Request $request)
     {
-        $menus = Category::orderBy('sequence', 'ASC')->get();
+        $menus = Category::orderBy('sequence', 'ASC')->where('is_active', true)->get();
         foreach ($menus as $item) {
             $sub_menu = [];
 

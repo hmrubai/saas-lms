@@ -505,6 +505,7 @@ class CourseController extends Controller
                 array_push($class_list, $item);
             } else {
                 $item->can_join = false;
+                //array_push($class_list, $item);
             }
         }
 
