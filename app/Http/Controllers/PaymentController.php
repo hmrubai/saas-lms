@@ -33,8 +33,6 @@ class PaymentController extends Controller
 
         $course = Course::where('id', $course_id)->orderBy('sequence', 'ASC')->first();
 
-        
-
         CourseParticipant::create([
             "item_id" => $course->id,
             "user_id" => $user_id,

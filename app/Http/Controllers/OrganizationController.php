@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use App\Models\Organization;
 use App\Models\Setting;
 use App\Models\WebsiteSetting;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
 class OrganizationController extends Controller
@@ -30,7 +31,7 @@ class OrganizationController extends Controller
         ], 200);
     }
     public function organizationListAdmin(Request $request)
-    {
+    {  
         $organization_list = Organization::select('id', 'name', 'slug', 'details', 'address', 'email', 'contact_no', 'logo', 'contact_person', 'is_active',)
         ->where('is_active', true)
         ->where('slug', auth()->user()->organization_slug)

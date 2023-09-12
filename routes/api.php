@@ -115,6 +115,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('script-list-by-chapter-id/{chapter_id}', [ContentController::class, 'scriptListByChapterID']);
         Route::get('video-list-by-chapter-id/{chapter_id}', [ContentController::class, 'videoListByChapterID']);
         Route::get('quiz-list-by-chapter-id/{chapter_id}', [ContentController::class, 'quizListByChapterID']);
+        Route::get('quiz-details-by-id/{id}', [ContentController::class, 'quizDetailsById']);
 
         //Content Routes 
         Route::get('class-list', [ContentController::class, 'classList']);
@@ -186,6 +187,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('course-list-for-mapping', [CourseController::class, 'courseListForStudentMapping']);
         Route::get('mentor-list-by-course', [CourseController::class, 'mentorListByCourse']);
         Route::get('student-Participant-list-by-course-id/{course_id}', [StudentController::class, 'courseParticipantList']);
+        Route::get('course-payment-list-by-course-id/{course_id}', [StudentController::class, 'courseParticipantPaymentList']);
+
     });
 });
 

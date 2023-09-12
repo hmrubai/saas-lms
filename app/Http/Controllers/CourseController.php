@@ -1004,7 +1004,7 @@ class CourseController extends Controller
             ->get();
         return $this->apiResponse($mentorList, 'Mentor List', true, 200);
     }
-    
+
     public function studentMappingList(Request $request)
     {
 

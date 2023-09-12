@@ -25,11 +25,13 @@ class ChapterQuiz extends Model
         'number_of_question',
         'is_free',
         'sequence',
+        'sufficient_question',
         'is_active',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
+        'sufficient_question' => 'boolean',
         'is_free' => 'boolean'
     ];
 }

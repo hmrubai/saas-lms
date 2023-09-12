@@ -176,7 +176,7 @@ class AuthController extends Controller
                     'status' => false,
                     'message' => 'validation error',
                     'data' => $validateUser->errors()
-                ], 401);
+                ], 403);
             }
 
             if(!Auth::attempt($request->only(['username', 'password']))){
@@ -184,7 +184,7 @@ class AuthController extends Controller
                     'status' => false,
                     'message' => 'Username & Password does not match with our record.',
                     'data' => []
-                ], 401);
+                ], 403);
             }
 
             $user = User::where('username', $request->username)->first();
@@ -194,7 +194,7 @@ class AuthController extends Controller
                     'status' => false,
                     'message' => 'Your account has been suspended. Please, contact to Administrator!',
                     'data' => []
-                ], 401);
+                ], 403);
             }
 
             Log::debug('Auth Service: Login Successfull! ' . $user->name);
