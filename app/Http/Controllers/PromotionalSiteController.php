@@ -15,10 +15,7 @@ class PromotionalSiteController extends Controller
             'email' => 'required',
             'phone' => 'required',
             'address' => 'required',
-            'occupation' => 'required',
             'organization_name' => 'required',
-            'organization_address' => 'required',
-            'nid_passport' => 'required',
         ]);
 
         if ($validator->fails()) {
@@ -38,7 +35,9 @@ class PromotionalSiteController extends Controller
     }
 
     public function clientList(){
-        $client_list = ConsumerRequest::select('*')->get();
+        $client_list = ConsumerRequest::select('*')
+        ->latest()
+        ->get();
         return response()->json([
             'status' => true,
             'message' => 'Client List Successful',
