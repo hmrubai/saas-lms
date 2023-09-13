@@ -588,7 +588,7 @@ class ContentController extends Controller
                 if($quizQuestion){
                     $quizQuestionCount = ChapterQuizQuestion::where('chapter_quiz_id', $request->chapter_quiz_id)->count();
                     $chapterQuizUpdate = ChapterQuiz::where('id', $request->chapter_quiz_id)->first();
-                    if( $chapterQuizUpdate->number_of_question <=$quizQuestionCount ){
+                    if( $chapterQuizUpdate->number_of_question <=$quizQuestionCount && $chapterQuizUpdate->sufficient_question == false){
                         ChapterQuiz::where('id', $request->chapter_quiz_id)->update([
                             "sufficient_question" => true,
                         ]);
@@ -655,10 +655,10 @@ class ContentController extends Controller
                 if ($quizQuestion) {
                     $quizQuestionCount = ChapterQuizQuestion::where('chapter_quiz_id', $request->chapter_quiz_id)->count();
                     $chapterQuizUpdate = ChapterQuiz::where('id', $request->chapter_quiz_id)->first();
-                    if( $chapterQuizUpdate->number_of_question <=$quizQuestionCount ){
+                    if( $chapterQuizUpdate->number_of_question <=$quizQuestionCount && $chapterQuizUpdate->sufficient_question == false ){
                         ChapterQuiz::where('id', $request->chapter_quiz_id)->update([
                             "sufficient_question" => true,
-                        ]);
+                        ]); 
                     }
                 }
             }
