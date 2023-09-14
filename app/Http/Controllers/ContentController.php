@@ -588,20 +588,29 @@ class ContentController extends Controller
                 }
                 if ($quizQuestion) {
                     $chapterQuizUpdate = ChapterQuiz::where('id', $request->chapter_quiz_id)->first();
-                    $set1 = ChapterQuizQuestion::where('chapter_quiz_id', $request->chapter_quiz_id)->where('question_set_id', 1)->count();
-                    $set2 = ChapterQuizQuestion::where('chapter_quiz_id', $request->chapter_quiz_id)->where('question_set_id', 2)->count();
-                    $set3 = ChapterQuizQuestion::where('chapter_quiz_id', $request->chapter_quiz_id)->where('question_set_id', 3)->count();
-
-                    if (
-                        $chapterQuizUpdate->number_of_question <= $set1 &&
-                        $chapterQuizUpdate->number_of_question <= $set2 &&
-                        $chapterQuizUpdate->number_of_question <= $set3 &&
-                        $chapterQuizUpdate->sufficient_question == false
-                    ) {
+                    $sets=QuizQuestionSet::get();
+                    $sufficientQuestion=false;
+                    foreach($sets as $set){
+                        $setCount=ChapterQuizQuestion::
+                        where('chapter_quiz_id', $request->chapter_quiz_id)
+                        ->where('class_level_id', $request->class_level_id)
+                        ->where('subject_id', $request->subject_id)
+                        ->where('chapter_id', $request->chapter_id)
+                        ->where('question_set_id', $set->id)
+                        ->count();
+                        if($chapterQuizUpdate->number_of_question <= $setCount){
+                            $sufficientQuestion=true;
+                        }else{
+                            $sufficientQuestion=false;
+                            break;
+                        }
+                    }
+                    
+                    if ($sufficientQuestion==true) {
                         ChapterQuiz::where('id', $request->chapter_quiz_id)->update([
                             "sufficient_question" => true,
                         ]);
-                    }
+                  }
                 }
                 return $this->apiResponse([], 'Chapter Quiz Question Created Successfully', true, 201);
             } else {
@@ -662,20 +671,29 @@ class ContentController extends Controller
                 $quizQuestion = ChapterQuizQuestion::insert($qtn);
                 if ($quizQuestion) {
                     $chapterQuizUpdate = ChapterQuiz::where('id', $request->chapter_quiz_id)->first();
-                    $set1 = ChapterQuizQuestion::where('chapter_quiz_id', $request->chapter_quiz_id)->where('question_set_id', 1)->count();
-                    $set2 = ChapterQuizQuestion::where('chapter_quiz_id', $request->chapter_quiz_id)->where('question_set_id', 2)->count();
-                    $set3 = ChapterQuizQuestion::where('chapter_quiz_id', $request->chapter_quiz_id)->where('question_set_id', 3)->count();
-
-                    if (
-                        $chapterQuizUpdate->number_of_question <= $set1 &&
-                        $chapterQuizUpdate->number_of_question <= $set2 &&
-                        $chapterQuizUpdate->number_of_question <= $set3 &&
-                        $chapterQuizUpdate->sufficient_question == false
-                    ) {
+                    $sets=QuizQuestionSet::get();
+                    $sufficientQuestion=false;
+                    foreach($sets as $set){
+                        $setCount=ChapterQuizQuestion::
+                        where('chapter_quiz_id', $request->chapter_quiz_id)
+                        ->where('class_level_id', $request->class_level_id)
+                        ->where('subject_id', $request->subject_id)
+                        ->where('chapter_id', $request->chapter_id)
+                        ->where('question_set_id', $set->id)
+                        ->count();
+                        if($chapterQuizUpdate->number_of_question <= $setCount){
+                            $sufficientQuestion=true;
+                        }else{
+                            $sufficientQuestion=false;
+                            break;
+                        }
+                    }
+                    
+                    if ($sufficientQuestion==true) {
                         ChapterQuiz::where('id', $request->chapter_quiz_id)->update([
                             "sufficient_question" => true,
                         ]);
-                    }
+                  }
                 }
             }
             DB::commit();
@@ -737,8 +755,6 @@ class ContentController extends Controller
     {
         try {
             $question = ChapterQuizQuestion::where('id', $request->id)->first();
-            $quizQuestionCount = ChapterQuizQuestion::where('chapter_quiz_id', $question->chapter_quiz_id)->count();
-
             if ($question->question_image != null) {
                 $this->deleteImage($question->question_image);
             }
@@ -760,7 +776,24 @@ class ContentController extends Controller
             $question->delete();
 
             $chapterQuizUpdate = ChapterQuiz::where('id', $question->chapter_quiz_id)->first();
-            if ($chapterQuizUpdate->number_of_question >= $quizQuestionCount) {
+            $sets=QuizQuestionSet::get();
+            $sufficientQuestion=false;
+            foreach($sets as $set){
+                $setCount=ChapterQuizQuestion::
+                where('chapter_quiz_id', $question->chapter_quiz_id)
+                ->where('class_level_id', $question->class_level_id)
+                ->where('subject_id', $question->subject_id)
+                ->where('chapter_id', $question->chapter_id)
+                ->where('question_set_id', $set->id)
+                ->count();
+                if($chapterQuizUpdate->number_of_question <= $setCount){
+                    $sufficientQuestion=true;
+                }else{
+                    $sufficientQuestion=false;
+                    break;
+                }
+            }    
+            if ($sufficientQuestion==false) {
                 ChapterQuiz::where('id', $question->chapter_quiz_id)->update([
                     "sufficient_question" => false,
                 ]);
