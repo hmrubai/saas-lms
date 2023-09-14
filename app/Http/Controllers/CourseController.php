@@ -6,6 +6,9 @@ use App\Http\Traits\HelperTrait;
 use App\Models\Course;
 use App\Models\Category;
 use App\Models\Content;
+use App\Models\ChapterQuiz;
+use App\Models\QuizQuestionSet;
+use App\Models\ChapterQuizQuestion;
 use App\Models\MentorZoomLink;
 use App\Models\ContentOutline;
 use App\Models\CourseOutline;
@@ -316,6 +319,22 @@ class CourseController extends Controller
             ->leftJoin('chapter_quizzes', 'chapter_quizzes.id', 'course_outlines.chapter_quiz_id')
             ->get();
 
+        foreach ($courses->course_outline as $item) {
+            $quiz = null;
+            if($item->chapter_quiz_id){
+                $set = QuizQuestionSet::inRandomOrder()->first();
+                $quiz = ChapterQuiz::where('id', $item->chapter_quiz_id)->first();
+
+                $quiz->questions = ChapterQuizQuestion::inRandomOrder()
+                ->where('chapter_quiz_id', $item->chapter_quiz_id)
+                ->where('question_set_id', $set->id)
+                ->limit($quiz->number_of_question)
+                ->get();
+            }
+            
+            $item->quiz_details = $quiz;
+        }
+
         $courses->course_routine = CourseClassRoutine::where('course_id', $course_id)->get();
         $courses->course_feature = CourseFeature::where('course_id', $course_id)->get();
         $courses->course_mentor = CourseMentor::select('course_mentors.*', 'mentor_informations.name', 'mentor_informations.education', 'mentor_informations.institute')
@@ -328,6 +347,45 @@ class CourseController extends Controller
             'status' => true,
             'message' => 'Successful',
             'data' => $courses
+        ], 200);
+    }
+
+    public function chapterQuizDetails(Request $request)
+    {
+        $chapter_quiz_id = $request->quiz_id ? $request->quiz_id : 0; 
+
+        if (!$chapter_quiz_id) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Please, attach Quiz ID',
+                'data' => []
+            ], 422);
+        }
+
+        if($chapter_quiz_id){
+            $set = QuizQuestionSet::inRandomOrder()->first();
+            $quiz_details = ChapterQuiz::where('chapter_quizzes.id', $chapter_quiz_id)
+                ->select('chapter_quizzes.*',
+                    'class_levels.name as class_name',
+                    'subjects.name as subject_name',
+                    'chapters.name as chapter_name',
+                )
+                ->leftJoin('class_levels', 'class_levels.id', 'chapter_quizzes.class_level_id')
+                ->leftJoin('subjects', 'subjects.id', 'chapter_quizzes.subject_id')
+                ->leftJoin('chapters', 'chapters.id', 'chapter_quizzes.chapter_id')
+                ->first();
+
+            $quiz_details->questions = ChapterQuizQuestion::inRandomOrder()
+                ->where('chapter_quiz_id', $chapter_quiz_id)
+                ->where('question_set_id', $set->id)
+                ->limit($quiz_details->number_of_question)
+                ->get();
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Quiz Details',
+            'data' => $quiz_details
         ], 200);
     }
 
