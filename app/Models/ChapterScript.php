@@ -28,8 +28,6 @@ class ChapterScript extends Model
         'is_active'
     ];
 
-    
-
     protected $casts = [
         'is_active' => 'boolean',
         'is_free' => 'boolean'

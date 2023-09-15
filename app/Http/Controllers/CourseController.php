@@ -9,6 +9,8 @@ use App\Models\Content;
 use App\Models\ChapterQuiz;
 use App\Models\QuizQuestionSet;
 use App\Models\ChapterQuizQuestion;
+use App\Models\ChapterQuizResult;
+use App\Models\ChapterQuizResultAnswer;
 use App\Models\MentorZoomLink;
 use App\Models\ContentOutline;
 use App\Models\CourseOutline;
@@ -331,7 +333,7 @@ class CourseController extends Controller
                 ->limit($quiz->number_of_question)
                 ->get();
             }
-            
+
             $item->quiz_details = $quiz;
         }
 
@@ -387,6 +389,128 @@ class CourseController extends Controller
             'message' => 'Quiz Details',
             'data' => $quiz_details
         ], 200);
+    }
+
+    public function startQuiz(Request $request)
+    {
+        $user_id = $request->user()->id;
+        $course_id = $request->course_id ? $request->course_id : 0;
+        $chapter_quiz_id = $request->chapter_quiz_id ? $request->chapter_quiz_id : 0; 
+
+        if (!$course_id || !$chapter_quiz_id) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Please, attach ID',
+                'data' => []
+            ], 422);
+        }
+
+        $result = ChapterQuizResult::create([
+            "user_id" => $user_id,
+            "chapter_quiz_id" => $chapter_quiz_id,
+            "course_id" => $course_id,
+            "mark" => 0
+        ]);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Result Details',
+            'data' => $result
+        ], 200);
+    }
+
+    public function submitQuizAnswer(Request $request){
+        $user_id = $request->user()->id;
+        $result_id = $request->result_id ? $request->result_id : 0;
+        $chapter_quiz_id = $request->chapter_quiz_id ? $request->chapter_quiz_id : 0; 
+        $answers = $request->answers ? $request->answers : []; 
+
+        if(empty($answers)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Please, attach Answer!',
+                'data' => []
+            ], 422);
+        }
+
+        if(!$result_id) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Please, Start Exam properly!',
+                'data' => []
+            ], 422);
+        }
+
+        $positiveCount = 0;
+        $negetiveCount = 0;
+
+        $quiz_details = ChapterQuiz::where('id', $chapter_quiz_id)->first();
+
+        if(empty($quiz_details)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Quiz Not found!',
+                'data' => []
+            ], 422);
+        }
+
+        foreach ($answers as $ans) 
+        {
+            $question = ChapterQuizQuestion::where('id', $ans['question_id'])->select(
+                'id',
+                'chapter_quiz_id',
+                'answer1',
+                'answer2',
+                'answer3',
+                'answer4',
+            )->first();
+
+            $is_correct = false;
+
+            $given_answer1 = $ans['answer1'] ? $ans['answer1'] : false;
+            $given_answer2 = $ans['answer2'] ? $ans['answer2'] : false;
+            $given_answer3 = $ans['answer3'] ? $ans['answer3'] : false;
+            $given_answer4 = $ans['answer4'] ? $ans['answer4'] : false;
+
+            if($given_answer1 == $question->answer1 
+                && $given_answer2 == $question->answer2 
+                && $given_answer3 == $question->answer3 
+                && $given_answer4 == $question->answer4
+            ){
+                $positiveCount++;
+                $is_correct = true;
+            }
+            else{
+                $negetiveCount++;
+            }
+
+            ChapterQuizResultAnswer::insert([
+                'chapter_quiz_result_id' => $result_id,
+                'question_id' => $ans['question_id'],
+                'answer1' => $ans['answer1'] ? $ans['answer1'] : 0,
+                'answer2' => $ans['answer2'] ? $ans['answer2'] : 0,
+                'answer3' => $ans['answer3'] ? $ans['answer3'] : 0,
+                'answer4' => $ans['answer4'] ? $ans['answer4'] : 0,
+                'is_correct' => $is_correct
+            ]);
+            
+        }
+
+        $mark = $positiveCount * $quiz_details->positive_mark - $negetiveCount * $quiz_details->negative_mark;
+
+        ChapterQuizResult::where('id', $result_id)->update([
+            "mark" => $mark,
+            'positive_count' => $positiveCount,
+            'negetive_count' => $negetiveCount,
+            "submission_status" => "Submitted"
+        ]);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Quiz Submitted Successful!',
+            'data' => []
+        ], 200);
+
     }
 
     public function mentorStudentList(Request $request)
@@ -715,6 +839,7 @@ class CourseController extends Controller
             ->get();
         return $this->apiResponse($courseOutlineList, 'Course Outline List', true, 200);
     }
+
     public function courseOutlineDelete(Request $request)
     {
         try {
@@ -873,6 +998,7 @@ class CourseController extends Controller
             return $this->apiResponse([], $th->getMessage(), false, 500);
         }
     }
+
     public function routineList(Request $request)
     {
         $id = $request->id;
@@ -938,7 +1064,6 @@ class CourseController extends Controller
         }
     }
 
-
     public function saveOrUpdateAssignMentor(Request $request)
     {
         try {
@@ -990,7 +1115,6 @@ class CourseController extends Controller
 
         return $this->apiResponse($mentorList, 'Mentor assign List', true, 200);
     }
-
 
     public function mentorAssignDelete(Request $request)
     {
@@ -1084,4 +1208,5 @@ class CourseController extends Controller
 
         return $this->apiResponse($studentMappingList, 'Student Mapping List', true, 200);
     }
+
 }
