@@ -513,6 +513,37 @@ class CourseController extends Controller
 
     }
 
+    public function quizAnswerList(Request $request){
+        $user_id = $request->user()->id;
+
+        $answer_list = ChapterQuizResult::select(
+                'chapter_quiz_results.*',
+                'chapter_quizzes.title',
+                'chapter_quizzes.title_bn',
+                'chapter_quizzes.duration',
+                'chapter_quizzes.positive_mark',
+                'chapter_quizzes.negative_mark',
+                'chapter_quizzes.total_mark as exam_mark',
+                'chapter_quizzes.number_of_question',
+                'class_levels.name as class_name',
+                'subjects.name as subject_name',
+                'chapters.name as chapter_name',
+            )
+            ->leftJoin('chapter_quizzes', 'chapter_quizzes.id', 'chapter_quiz_results.chapter_quiz_id')
+            ->leftJoin('class_levels', 'class_levels.id', 'chapter_quizzes.class_level_id')
+            ->leftJoin('subjects', 'subjects.id', 'chapter_quizzes.subject_id')
+            ->leftJoin('chapters', 'chapters.id', 'chapter_quizzes.chapter_id')
+            ->where('chapter_quiz_results.user_id', $user_id)
+            ->orderBy('chapter_quiz_results.id', 'DESC')
+            ->get();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Quiz List Successful!',
+            'data' => $answer_list
+        ], 200);
+    }
+
     public function mentorStudentList(Request $request)
     {
         $user_id = $request->user()->id;

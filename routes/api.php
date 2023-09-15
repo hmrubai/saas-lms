@@ -93,6 +93,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
         Route::post('start-quiz', [CourseController::class, 'startQuiz']);
         Route::post('submit-quiz', [CourseController::class, 'submitQuizAnswer']);
+        Route::get('student-quiz-participated-list', [CourseController::class, 'quizAnswerList']);
     });
 
     //All Admin Routes Start
