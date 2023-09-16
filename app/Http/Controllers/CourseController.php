@@ -1026,4 +1026,10 @@ class CourseController extends Controller
 
         return $this->apiResponse($studentMappingList, 'Student Mapping List', true, 200);
     }
+
+    public function courseStudentMappingDelete(Request $request, $id)
+    {
+        CourseStudentMapping::where('id', $id)->delete();
+        return $this->apiResponse([], 'Course Student Mapping Deleted Successfully', true, 200);
+    }
 }
