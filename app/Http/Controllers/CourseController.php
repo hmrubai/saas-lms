@@ -599,6 +599,7 @@ class CourseController extends Controller
         $mentor = MentorInformation::where('user_id', $user_id)->first();
 
         $student = CourseStudentMapping::select(
+            'course_student_mappings.student_id',
             'course_student_mappings.id as mapping_id',
             'courses.title as course_title',
             'mentor_informations.name as mentor_name',
@@ -641,6 +642,7 @@ class CourseController extends Controller
             ->leftJoin('courses', 'courses.id', 'class_schedules.course_id')
             ->leftJoin('mentor_informations', 'mentor_informations.id', 'class_schedules.mentor_id')
             ->leftJoin('student_informations', 'student_informations.id', 'class_schedules.student_id')
+            ->orderBy('class_schedules.schedule_datetime', 'DESC')
             ->get();
 
         foreach ($class as $item) {
@@ -651,12 +653,177 @@ class CourseController extends Controller
             } else {
                 $item->can_join = false;
             }
+
+            $item->has_passed = false;
+            if (time() > strtotime($item->schedule_datetime))
+            {
+                $item->has_passed = true; 
+            }
         }
 
         return response()->json([
             'status' => true,
             'message' => 'Successful',
             'data' => $class
+        ], 200);
+    }
+
+    public function addClassSchedule(Request $request)
+    {
+        $mapping_id = $request->mapping_id ? $request->mapping_id : 0;
+        $schedule_date = $request->schedule_date ? $request->schedule_date : 0;
+
+        if (!$mapping_id) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Please, attach Class ID',
+                'data' => []
+            ], 422);
+        }
+
+        $mapping_details = CourseStudentMapping::where('id', $mapping_id)->first();
+
+        ClassSchedule::create([
+            "course_student_mapping_id" => $mapping_id,
+            "course_id" => $mapping_details->course_id,
+            "student_id" => $mapping_details->student_id,
+            "mentor_id" => $mapping_details->mentor_id,
+            "schedule_datetime" => $schedule_date,
+            "has_started" => false,
+            "has_completed" => false,
+            "start_time" => null,
+            "end_time" => null,
+            "is_active" => true
+        ]);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Class added successful!',
+            'data' => []
+        ], 200);
+    }
+
+    public function updateClassSchedule(Request $request)
+    {
+        $schedule_id = $request->schedule_id ? $request->schedule_id : 0;
+        $schedule_date = $request->schedule_date ? $request->schedule_date : 0;
+
+        if (!$schedule_id) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Please, attach ID',
+                'data' => []
+            ], 422);
+        }
+
+        $schedule_details = ClassSchedule::where('id', $schedule_id)->first();
+
+        $schedule_details->update([
+            "schedule_datetime" => $schedule_date
+        ]);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Class updated successful!',
+            'data' => []
+        ], 200);
+    }
+
+    public function startLiveClass(Request $request)
+    {
+        $schedule_id = $request->schedule_id ? $request->schedule_id : 0;
+
+        if (!$schedule_id) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Please, attach ID',
+                'data' => []
+            ], 422);
+        }
+
+        $schedule_details = ClassSchedule::where('id', $schedule_id)->first();
+
+        if (!$schedule_details->has_completed) {
+            return response()->json([
+                'status' => false,
+                'message' => 'You can not start this class! Because it had already been completed!',
+                'data' => []
+            ], 422);
+        }
+
+        $schedule_details->update([
+            "start_time" => date("Y-m-d H:i:s"),
+            "has_started" => true
+        ]);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'The class has been started! Please take care of your student!',
+            'data' => []
+        ], 200);
+    }
+
+    public function endLiveClass(Request $request)
+    {
+        $schedule_id = $request->schedule_id ? $request->schedule_id : 0;
+
+        if (!$schedule_id) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Please, attach ID',
+                'data' => []
+            ], 422);
+        }
+
+        $schedule_details = ClassSchedule::where('id', $schedule_id)->first();
+
+        if (!$schedule_details->has_started) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Please start class first! You can not end a class before starts!',
+                'data' => []
+            ], 422);
+        }
+
+        $schedule_details->update([
+            "end_time" => date("Y-m-d H:i:s"),
+            "has_completed" => true
+        ]);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'The class has been ended! Thank You!',
+            'data' => []
+        ], 200);
+    }
+
+    public function deleteClassSchedule(Request $request)
+    {
+        $schedule_id = $request->schedule_id ? $request->schedule_id : 0;
+
+        if (!$schedule_id) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Please, attach ID',
+                'data' => []
+            ], 422);
+        }
+
+        $schedule_details = ClassSchedule::where('id', $schedule_id)->first();
+        if ($schedule_details->has_started) {
+            return response()->json([
+                'status' => false,
+                'message' => 'You cannot delete the class, because it\'s already been started!',
+                'data' => []
+            ], 422);
+        }
+
+        ClassSchedule::where('id', $schedule_id)->delete();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Class deleted successful!',
+            'data' => []
         ], 200);
     }
 

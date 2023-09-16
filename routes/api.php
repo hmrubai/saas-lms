@@ -83,6 +83,13 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('mentor-schedule-list/{mapping_id}', [CourseController::class, 'mentorClassScheduleList']);
         Route::get('mentor-completed-class-list', [CourseController::class, 'mentorCompletedClassList']);
         Route::get('mentor-ongoing-class-list', [CourseController::class, 'mentorOngoingClassList']);
+        Route::post('add-new-schedule', [CourseController::class, 'addClassSchedule']);
+        Route::post('update-schedule', [CourseController::class, 'updateClassSchedule']);
+        Route::post('delete-schedule', [CourseController::class, 'deleteClassSchedule']);
+        Route::post('start-live-class', [CourseController::class, 'startLiveClass']);
+        Route::post('end-live-class', [CourseController::class, 'endLiveClass']);
+
+        Route::get('student-details-by-mapping-id/{mapping_id}', [StudentController::class, 'studentDetailsByMappingID']);
 
         Route::get('mentor-live-link', [MentorController::class, 'getZoomLink']);
         Route::post('update-link', [MentorController::class, 'updateZoomLink']);
