@@ -62,6 +62,30 @@ class ContentController extends Controller
         return $this->apiResponse($quizList, 'Quiz List Successful', true, 200);
     }
 
+    public function resourceListByChapterID(Request $request)
+    {
+        $chapter_id = $request->chapter_id ? $request->chapter_id : 0;
+
+        if (!$chapter_id) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Please, attach ID',
+                'data' => []
+            ], 422);
+        }
+        $scriptList = ChapterScript::select('id', 'title', 'title_bn', 'chapter_id')->where('chapter_id', $chapter_id)->get();
+        $videoList = ChapterVideo::select('id', 'title', 'title_bn', 'chapter_id')->where('chapter_id', $chapter_id)->get();
+        $quizList = ChapterQuiz::select('id', 'title', 'title_bn', 'chapter_id')->where('chapter_id', $chapter_id)->get();
+        
+        $response = [
+            'script_list' => $scriptList,
+            'video_list' => $videoList,
+            'quiz_list' => $quizList
+        ];
+
+        return $this->apiResponse($response, 'Resource List Successful', true, 200);
+    }
+
     public function classList()
     {
         $classList = ClassLevel::select('id', 'name', 'name_bn', 'class_code', 'price', 'is_free', 'icon', 'color_code', 'sequence', 'is_active')->get();
@@ -933,6 +957,7 @@ class ContentController extends Controller
             ->get();
         return $this->apiResponse($contentOutlineList, 'Content Outline List', true, 200);
     }
+
     public function contentOutlineDelete(Request $request)
     {
         try {

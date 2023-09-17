@@ -80,6 +80,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('purchase-course', [PaymentController::class, 'purchaseCourse']);
         Route::get('mentor-course-list', [MentorController::class, 'myCourseList']);
         Route::get('mentor-student-list', [CourseController::class, 'mentorStudentList']);
+        Route::get('mentor-student-list-by-course/{course_id}', [CourseController::class, 'mentorStudentListByCourse']);
         Route::get('mentor-schedule-list/{mapping_id}', [CourseController::class, 'mentorClassScheduleList']);
         Route::get('mentor-completed-class-list', [CourseController::class, 'mentorCompletedClassList']);
         Route::get('mentor-ongoing-class-list', [CourseController::class, 'mentorOngoingClassList']);
@@ -102,6 +103,13 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('submit-quiz', [CourseController::class, 'submitQuizAnswer']);
         Route::get('student-quiz-participated-list', [CourseController::class, 'quizAnswerList']);
         Route::get('student-quiz-result-details-by-id/{result_id}', [CourseController::class, 'quizAnswerDetails']);
+
+        //Assignment Routes 
+        Route::get('class-list', [ContentController::class, 'classList']);
+        Route::get('subject-list-by-class-id/{class_id}', [ContentController::class, 'subjectListByClassID']);
+        Route::get('chapter-list-by-subject-id/{subject_id}', [ContentController::class, 'chapterListBySubjectID']);
+        
+        Route::get('resource-list-by-chapter-id/{chapter_id}', [ContentController::class, 'resourceListByChapterID']);
 
     });
 

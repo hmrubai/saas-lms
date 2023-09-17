@@ -619,6 +619,44 @@ class CourseController extends Controller
         ], 200);
     }
 
+    public function mentorStudentListByCourse(Request $request)
+    {
+        $user_id = $request->user()->id;
+
+        $course_id = $request->course_id ? $request->course_id : 0;
+
+        if (!$course_id) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Please, attach ID',
+                'data' => []
+            ], 422);
+        }
+
+        $mentor = MentorInformation::where('user_id', $user_id)->first();
+
+        $student = CourseStudentMapping::select(
+            'course_student_mappings.student_id',
+            'course_student_mappings.id as mapping_id',
+            'courses.title as course_title',
+            'mentor_informations.name as mentor_name',
+            'student_informations.name as student_name',
+            'student_informations.contact_no as student_contact_no'
+        )
+            ->where('course_student_mappings.mentor_id', $mentor->id)
+            ->where('course_student_mappings.course_id', $course_id)
+            ->leftJoin('courses', 'courses.id', 'course_student_mappings.course_id')
+            ->leftJoin('mentor_informations', 'mentor_informations.id', 'course_student_mappings.mentor_id')
+            ->leftJoin('student_informations', 'student_informations.id', 'course_student_mappings.student_id')
+            ->get();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Successful',
+            'data' => $student
+        ], 200);
+    }
+
     public function mentorClassScheduleList(Request $request)
     {
         $mapping_id = $request->mapping_id ? $request->mapping_id : 0;
