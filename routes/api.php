@@ -205,6 +205,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('all-student-list-admin', [StudentController::class, 'allStudentAdmin']);
 
         Route::post('student-mapping-save-or-update', [CourseController::class, 'saveOrUpdateStudentMapping']);
+        Route::delete('course-student-mapping-delete/{id}', [CourseController::class, 'courseStudentMappingDelete']);
         Route::get('student-mapping-list', [CourseController::class, 'studentMappingList']);
         Route::get('course-list-for-mapping', [CourseController::class, 'courseListForStudentMapping']);
         Route::get('mentor-list-by-course', [CourseController::class, 'mentorListByCourse']);

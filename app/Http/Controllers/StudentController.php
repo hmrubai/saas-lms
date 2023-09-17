@@ -20,16 +20,19 @@ use App\Models\CourseStudentMapping;
 class StudentController extends Controller
 {
     use HelperTrait;
-    public function updateInterests(Request $request){
+    public function updateInterests(Request $request)
+    {
         $user_id = $request->user()->id;
 
         try {
-            $validateUser = Validator::make($request->all(), 
-            [
-                'tags' => 'required'
-            ]);
+            $validateUser = Validator::make(
+                $request->all(),
+                [
+                    'tags' => 'required'
+                ]
+            );
 
-            if($validateUser->fails()){
+            if ($validateUser->fails()) {
                 return response()->json([
                     'status' => false,
                     'message' => 'validation error',
@@ -39,7 +42,7 @@ class StudentController extends Controller
 
             $student = StudentInformation::where('user_id', $user_id)->first();
 
-            if(empty($student)){
+            if (empty($student)) {
                 return response()->json([
                     'status' => false,
                     'message' => 'Your account not found!',
@@ -47,7 +50,7 @@ class StudentController extends Controller
                 ], 404);
             }
 
-            $all_tags = implode(",",$request->tags);
+            $all_tags = implode(",", $request->tags);
 
             $student->update([
                 "interests" => $all_tags
@@ -58,19 +61,18 @@ class StudentController extends Controller
             $user = User::where('id', $user_id)->first();
 
             $response_user = [
-                'name' => $user->name, 
-                'username'=> $user->username, 
-                'interests' => explode(',',$student->interests),
-                'user_type' => $user->user_type, 
+                'name' => $user->name,
+                'username' => $user->username,
+                'interests' => explode(',', $student->interests),
+                'user_type' => $user->user_type,
                 'token' => $user->createToken("API TOKEN")->plainTextToken
             ];
-    
+
             return response()->json([
                 'status' => true,
                 'message' => 'Tags updated successful',
                 'data' => $response_user
             ], 200);
-
         } catch (\Throwable $th) {
             return response()->json([
                 'status' => false,
@@ -80,7 +82,8 @@ class StudentController extends Controller
         }
     }
 
-    public function studentDetails(Request $request){
+    public function studentDetails(Request $request)
+    {
         $user_id = $request->user()->id;
         $student = StudentInformation::where('user_id', $user_id)->first();
         return response()->json([
@@ -97,10 +100,10 @@ class StudentController extends Controller
         $ids = CourseParticipant::where('user_id', $user_id)->where('item_type', 'Course')->pluck('item_id');
 
         $courses = Course::select('courses.*', 'categories.name as category_name')
-        ->whereIn('courses.id', $ids)
-        ->leftJoin('categories', 'categories.id', 'courses.category_id')
-        ->orderBy('courses.sequence', 'ASC')
-        ->get();
+            ->whereIn('courses.id', $ids)
+            ->leftJoin('categories', 'categories.id', 'courses.category_id')
+            ->orderBy('courses.sequence', 'ASC')
+            ->get();
 
         return response()->json([
             'status' => true,
@@ -116,10 +119,10 @@ class StudentController extends Controller
         $ids = CourseParticipant::where('user_id', $user_id)->where('item_type', 'Course')->pluck('item_id');
 
         $courses = Course::select('courses.*', 'categories.name as category_name')
-        ->whereIn('courses.id', $ids)
-        ->leftJoin('categories', 'categories.id', 'courses.category_id')
-        ->orderBy('courses.sequence', 'ASC')
-        ->get();
+            ->whereIn('courses.id', $ids)
+            ->leftJoin('categories', 'categories.id', 'courses.category_id')
+            ->orderBy('courses.sequence', 'ASC')
+            ->get();
 
         foreach ($courses as $item) {
             $payment_details = CourseParticipant::where('user_id', $user_id)->where('item_id', $item->id)->where('item_type', 'Course')->first();
@@ -140,32 +143,32 @@ class StudentController extends Controller
             $student = [
                 'education' => $request->education,
                 'institute' => $request->institute,
-                'device_id'=>$request->device_id,
-                'alternative_contact_no'=>$request->alternative_contact_no,
-                'gender'=>$request->gender,
-                'blood_group'=>$request->blood_group,
-                'bio'=>$request->bio,
-                'father_name'=>$request->father_name,
-                'mother_name'=>$request->mother_name,
-                'religion'=>$request->religion,
-                'marital_status'=>$request->marital_status,
-                'date_of_birth'=>$request->date_of_birth,
-                'current_address'=>$request->current_address,
-                'permanent_address'=>$request->permanent_address,
-                'interests'=>$request->interests,
-                'division_id'=> $request->division_id,
-                'city_id'=> $request->city_id,
-                'area_id'=> $request->area_id,
-                'nid_no'=>$request->nid_no,
-                'birth_certificate_no'=>$request->birth_certificate_no,
-                'passport_no'=>$request->passport_no,
+                'device_id' => $request->device_id,
+                'alternative_contact_no' => $request->alternative_contact_no,
+                'gender' => $request->gender,
+                'blood_group' => $request->blood_group,
+                'bio' => $request->bio,
+                'father_name' => $request->father_name,
+                'mother_name' => $request->mother_name,
+                'religion' => $request->religion,
+                'marital_status' => $request->marital_status,
+                'date_of_birth' => $request->date_of_birth,
+                'current_address' => $request->current_address,
+                'permanent_address' => $request->permanent_address,
+                'interests' => $request->interests,
+                'division_id' => $request->division_id,
+                'city_id' => $request->city_id,
+                'area_id' => $request->area_id,
+                'nid_no' => $request->nid_no,
+                'birth_certificate_no' => $request->birth_certificate_no,
+                'passport_no' => $request->passport_no,
                 'status' => $request->status,
                 'is_foreigner' => $request->is_foreigner,
                 'is_active' => $request->is_active,
                 'rating' => $request->rating,
             ];
 
-          
+
             if (empty($request->id)) {
                 $validateUser = Validator::make(
                     $request->all(),
@@ -173,12 +176,12 @@ class StudentController extends Controller
                         'name' => 'required',
                         'organization_slug' => 'required',
                         'username' => 'required|unique:users,username,',
-                        'email' => 'unique:users,email,' ,
-                        'contact_no' =>'unique:users,contact_no,',
+                        'email' => 'unique:users,email,',
+                        'contact_no' => 'unique:users,contact_no,',
                         'password' => 'required'
                     ]
                 );
-        
+
                 if ($validateUser->fails()) {
                     return response()->json([
                         'status' => false,
@@ -197,7 +200,7 @@ class StudentController extends Controller
                         ], 422);
                     }
                 }
-    
+
                 if ($request->contact_no) {
                     $is_exist = User::where('contact_no', $request->contact_no)->first();
                     if (!empty($is_exist)) {
@@ -208,7 +211,7 @@ class StudentController extends Controller
                         ], 422);
                     }
                 }
-    
+
                 $user = User::create([
                     'name' => $request->name,
                     'email' => $request->email,
@@ -234,14 +237,14 @@ class StudentController extends Controller
                         'organization_slug' => $user->organization_slug,
                         'address' => $user->address,
                         'image' => $user->image,
-                        'student_code'=>$this->codeGenerator('SC', StudentInformation::class)
+                        'student_code' => $this->codeGenerator('SC', StudentInformation::class)
                     ]
                 );
                 $studentInfo->update($student);
                 DB::commit();
                 return $this->apiResponse([], 'Student Created Successfully', true, 200);
             } else {
-                
+
                 $validateUser = Validator::make(
                     $request->all(),
                     [
@@ -250,7 +253,7 @@ class StudentController extends Controller
                         'contact_no' => 'unique:users,contact_no,' . $request->user_id,
                     ]
                 );
-        
+
                 if ($validateUser->fails()) {
                     return response()->json([
                         'status' => false,
@@ -295,40 +298,49 @@ class StudentController extends Controller
     public function allStudentAdmin(Request $request)
     {
         $students = StudentInformation::latest()
-        ->get();
+            ->get();
         return $this->apiResponse($students, 'All Student', true, 200);
-
     }
-    
+
     public function courseParticipantList(Request $request)
     {
         $course_id = $request->course_id ? $request->course_id : 0;
-        $user_ids = CourseParticipant::where('item_id', $course_id)->where('item_type', 'Course')->pluck('user_id');
-        $student_list = StudentInformation::whereIn("user_id", $user_ids)
-        ->select('id', 'name', 'email', 'contact_no')
-        ->get();
-        $course_name=Course::where('id',$course_id)->first()->title;
 
-        $data=[
-            'course_name'=>$course_name,
-            'student_list'=>$student_list
-        ];
 
-        return $this->apiResponse($data, 'Participant List', true, 200);
+        if ($course_id) {
+            $user_ids = CourseParticipant::where('item_id', $course_id)->where('item_type', 'Course')->pluck('user_id');
+            $student_list = StudentInformation::whereIn("user_id", $user_ids)
+                ->select('id', 'name', 'email', 'contact_no')
+                ->get();
+            $course_name = Course::where('id', $course_id)->first()->title;
+
+            $data = [
+                'course_name' => $course_name,
+                'student_list' => $student_list
+            ];
+
+            return $this->apiResponse($data, 'Participant List', true, 200);
+        }
     }
 
-    public function courseParticipantPaymentList(Request $request){
+    public function courseParticipantPaymentList(Request $request)
+    {
         $course_id = $request->course_id ? $request->course_id : 0;
 
-        $payment=CourseParticipant::leftJoin('users','users.id','course_participants.user_id')
-        ->leftJoin('courses','courses.id','course_participants.item_id')
-        ->where('item_type','Course')
-        ->when($course_id, function ($query, $course_id) {
-            return $query->where('item_id', $course_id);
-        })
-        ->select('course_participants.*','users.name','users.email','users.contact_no',
-        'courses.title as course_name')
-        ->get();
+        $payment = CourseParticipant::leftJoin('users', 'users.id', 'course_participants.user_id')
+            ->leftJoin('courses', 'courses.id', 'course_participants.item_id')
+            ->where('item_type', 'Course')
+            ->when($course_id, function ($query, $course_id) {
+                return $query->where('item_id', $course_id);
+            })
+            ->select(
+                'course_participants.*',
+                'users.name',
+                'users.email',
+                'users.contact_no',
+                'courses.title as course_name'
+            )
+            ->get();
 
         return $this->apiResponse($payment, 'Payment Successful', true, 200);
     }
@@ -354,5 +366,4 @@ class StudentController extends Controller
             'data' => $student
         ], 200);
     }
-
 }
