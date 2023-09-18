@@ -686,10 +686,14 @@ class CourseController extends Controller
         foreach ($class as $item) {
             $isToday = date('Ymd') == date('Ymd', strtotime($item->schedule_datetime));
 
+            $zoomLink = MentorZoomLink::where('mentor_id', $item->mentor_id)->first();
+
             if ($isToday) {
                 $item->can_join = true;
+                $item->join_link = $zoomLink->live_link;
             } else {
                 $item->can_join = false;
+                $item->join_link = null;
             }
 
             $item->has_passed = false;
@@ -781,7 +785,7 @@ class CourseController extends Controller
 
         $schedule_details = ClassSchedule::where('id', $schedule_id)->first();
 
-        if (!$schedule_details->has_completed) {
+        if ($schedule_details->has_started) {
             return response()->json([
                 'status' => false,
                 'message' => 'You can not start this class! Because it had already been completed!',

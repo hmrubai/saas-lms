@@ -76,7 +76,7 @@ class ContentController extends Controller
         $scriptList = ChapterScript::select('id', 'title', 'title_bn', 'chapter_id')->where('chapter_id', $chapter_id)->get();
         $videoList = ChapterVideo::select('id', 'title', 'title_bn', 'chapter_id')->where('chapter_id', $chapter_id)->get();
         $quizList = ChapterQuiz::select('id', 'title', 'title_bn', 'chapter_id')->where('chapter_id', $chapter_id)->get();
-        
+
         $response = [
             'script_list' => $scriptList,
             'video_list' => $videoList,
@@ -531,9 +531,11 @@ class ContentController extends Controller
     }
     public function chapterQuizList(Request $request)
     {
-        $class = $request->query('class_id');
-        $subject = $request->query('subject_id');
-        $chapter = $request->query('chapter_id');
+        $class = $request->query('class_id') ? $request->query('class_id') : 0;
+        $subject = $request->query('subject_id') ? $request->query('subject_id') : 0;
+        $chapter = $request->query('chapter_id') ? $request->query('chapter_id') : 0;
+
+
         $chapterQuizList = ChapterQuiz::leftJoin('class_levels', 'class_levels.id', '=', 'chapter_quizzes.class_level_id')
             ->leftJoin('subjects', 'subjects.id', '=', 'chapter_quizzes.subject_id')
             ->leftJoin('chapters', 'chapters.id', '=', 'chapter_quizzes.chapter_id')
@@ -572,6 +574,7 @@ class ContentController extends Controller
                 return $query->where('chapter_quizzes.chapter_id', $chapter);
             })
             ->get();
+            
         return $this->apiResponse($chapterQuizList, 'Chapter Quiz List Successful', true, 200);
     }
 
