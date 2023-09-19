@@ -713,6 +713,7 @@ class ContentController extends Controller
             ->leftJoin('subjects', 'subjects.id', '=', 'chapter_quiz_questions.subject_id')
             ->leftJoin('chapters', 'chapters.id', '=', 'chapter_quiz_questions.chapter_id')
             ->leftJoin('chapter_quizzes', 'chapter_quizzes.id', '=', 'chapter_quiz_questions.chapter_quiz_id')
+            ->leftJoin('quiz_question_sets', 'quiz_question_sets.id', '=', 'chapter_quiz_questions.question_set_id')
             ->select(
                 'chapter_quiz_questions.id',
                 'chapter_quiz_questions.chapter_quiz_id',
@@ -746,6 +747,7 @@ class ContentController extends Controller
                 'chapters.name_bn as chapter_name_bn',
                 'chapter_quizzes.title as quiz_title',
                 'chapter_quizzes.title_bn as quiz_title_bn',
+                'quiz_question_sets.name as question_set_name',
             )
             ->get();
         return $this->apiResponse($quizQuestions, 'Chapter Quiz Question List Successful', true, 200);
