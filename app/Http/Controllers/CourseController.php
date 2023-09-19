@@ -6,6 +6,11 @@ use App\Http\Traits\HelperTrait;
 use App\Models\Course;
 use App\Models\Category;
 use App\Models\Content;
+use App\Models\ChapterQuiz;
+use App\Models\QuizQuestionSet;
+use App\Models\ChapterQuizQuestion;
+use App\Models\ChapterQuizResult;
+use App\Models\ChapterQuizResultAnswer;
 use App\Models\MentorZoomLink;
 use App\Models\ContentOutline;
 use App\Models\CourseOutline;
@@ -316,6 +321,22 @@ class CourseController extends Controller
             ->leftJoin('chapter_quizzes', 'chapter_quizzes.id', 'course_outlines.chapter_quiz_id')
             ->get();
 
+        foreach ($courses->course_outline as $item) {
+            $quiz = null;
+            if($item->chapter_quiz_id){
+                $set = QuizQuestionSet::inRandomOrder()->first();
+                $quiz = ChapterQuiz::where('id', $item->chapter_quiz_id)->first();
+
+                $quiz->questions = ChapterQuizQuestion::inRandomOrder()
+                ->where('chapter_quiz_id', $item->chapter_quiz_id)
+                ->where('question_set_id', $set->id)
+                ->limit($quiz->number_of_question)
+                ->get();
+            }
+
+            $item->quiz_details = $quiz;
+        }
+
         $courses->course_routine = CourseClassRoutine::where('course_id', $course_id)->get();
         $courses->course_feature = CourseFeature::where('course_id', $course_id)->get();
         $courses->course_mentor = CourseMentor::select('course_mentors.*', 'mentor_informations.name', 'mentor_informations.education', 'mentor_informations.institute')
@@ -331,12 +352,254 @@ class CourseController extends Controller
         ], 200);
     }
 
+    public function chapterQuizDetails(Request $request)
+    {
+        $chapter_quiz_id = $request->quiz_id ? $request->quiz_id : 0; 
+
+        if (!$chapter_quiz_id) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Please, attach Quiz ID',
+                'data' => []
+            ], 422);
+        }
+
+        if($chapter_quiz_id){
+            $set = QuizQuestionSet::inRandomOrder()->first();
+            $quiz_details = ChapterQuiz::where('chapter_quizzes.id', $chapter_quiz_id)
+                ->select('chapter_quizzes.*',
+                    'class_levels.name as class_name',
+                    'subjects.name as subject_name',
+                    'chapters.name as chapter_name',
+                )
+                ->leftJoin('class_levels', 'class_levels.id', 'chapter_quizzes.class_level_id')
+                ->leftJoin('subjects', 'subjects.id', 'chapter_quizzes.subject_id')
+                ->leftJoin('chapters', 'chapters.id', 'chapter_quizzes.chapter_id')
+                ->first();
+
+            $quiz_details->questions = ChapterQuizQuestion::inRandomOrder()
+                ->where('chapter_quiz_id', $chapter_quiz_id)
+                ->where('question_set_id', $set->id)
+                ->limit($quiz_details->number_of_question)
+                ->get();
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Quiz Details',
+            'data' => $quiz_details
+        ], 200);
+    }
+
+    public function startQuiz(Request $request)
+    {
+        $user_id = $request->user()->id;
+        $course_id = $request->course_id ? $request->course_id : 0;
+        $chapter_quiz_id = $request->chapter_quiz_id ? $request->chapter_quiz_id : 0; 
+
+        if (!$course_id || !$chapter_quiz_id) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Please, attach ID',
+                'data' => []
+            ], 422);
+        }
+
+        $result = ChapterQuizResult::create([
+            "user_id" => $user_id,
+            "chapter_quiz_id" => $chapter_quiz_id,
+            "course_id" => $course_id,
+            "mark" => 0
+        ]);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Result Details',
+            'data' => $result
+        ], 200);
+    }
+
+    public function submitQuizAnswer(Request $request){
+        $user_id = $request->user()->id;
+        $result_id = $request->result_id ? $request->result_id : 0;
+        $chapter_quiz_id = $request->chapter_quiz_id ? $request->chapter_quiz_id : 0; 
+        $answers = $request->answers ? $request->answers : []; 
+
+        if(empty($answers)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Please, attach Answer!',
+                'data' => []
+            ], 422);
+        }
+
+        if(!$result_id) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Please, Start Exam properly!',
+                'data' => []
+            ], 422);
+        }
+
+        $positiveCount = 0;
+        $negetiveCount = 0;
+
+        $quiz_details = ChapterQuiz::where('id', $chapter_quiz_id)->first();
+
+        if(empty($quiz_details)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Quiz Not found!',
+                'data' => []
+            ], 422);
+        }
+
+        foreach ($answers as $ans) 
+        {
+            $question = ChapterQuizQuestion::where('id', $ans['question_id'])->select(
+                'id',
+                'chapter_quiz_id',
+                'answer1',
+                'answer2',
+                'answer3',
+                'answer4',
+            )->first();
+
+            $is_correct = false;
+
+            $given_answer1 = $ans['answer1'] ? $ans['answer1'] : false;
+            $given_answer2 = $ans['answer2'] ? $ans['answer2'] : false;
+            $given_answer3 = $ans['answer3'] ? $ans['answer3'] : false;
+            $given_answer4 = $ans['answer4'] ? $ans['answer4'] : false;
+
+            if($given_answer1 == $question->answer1 
+                && $given_answer2 == $question->answer2 
+                && $given_answer3 == $question->answer3 
+                && $given_answer4 == $question->answer4
+            ){
+                $positiveCount++;
+                $is_correct = true;
+            }
+            else{
+                $negetiveCount++;
+            }
+
+            ChapterQuizResultAnswer::insert([
+                'chapter_quiz_result_id' => $result_id,
+                'question_id' => $ans['question_id'],
+                'answer1' => $ans['answer1'] ? $ans['answer1'] : 0,
+                'answer2' => $ans['answer2'] ? $ans['answer2'] : 0,
+                'answer3' => $ans['answer3'] ? $ans['answer3'] : 0,
+                'answer4' => $ans['answer4'] ? $ans['answer4'] : 0,
+                'is_correct' => $is_correct
+            ]);
+            
+        }
+
+        $mark = $positiveCount * $quiz_details->positive_mark - $negetiveCount * $quiz_details->negative_mark;
+
+        ChapterQuizResult::where('id', $result_id)->update([
+            "mark" => $mark,
+            'positive_count' => $positiveCount,
+            'negetive_count' => $negetiveCount,
+            "submission_status" => "Submitted"
+        ]);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Quiz Submitted Successful!',
+            'data' => []
+        ], 200);
+
+    }
+
+    public function quizAnswerList(Request $request){
+        $user_id = $request->user()->id;
+
+        $answer_list = ChapterQuizResult::select(
+                'chapter_quiz_results.*',
+                'chapter_quizzes.title',
+                'chapter_quizzes.title_bn',
+                'chapter_quizzes.duration',
+                'chapter_quizzes.positive_mark',
+                'chapter_quizzes.negative_mark',
+                'chapter_quizzes.total_mark as exam_mark',
+                'chapter_quizzes.number_of_question',
+                'class_levels.name as class_name',
+                'subjects.name as subject_name',
+                'chapters.name as chapter_name',
+            )
+            ->leftJoin('chapter_quizzes', 'chapter_quizzes.id', 'chapter_quiz_results.chapter_quiz_id')
+            ->leftJoin('class_levels', 'class_levels.id', 'chapter_quizzes.class_level_id')
+            ->leftJoin('subjects', 'subjects.id', 'chapter_quizzes.subject_id')
+            ->leftJoin('chapters', 'chapters.id', 'chapter_quizzes.chapter_id')
+            ->where('chapter_quiz_results.user_id', $user_id)
+            ->orderBy('chapter_quiz_results.id', 'DESC')
+            ->get();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Quiz List Successful!',
+            'data' => $answer_list
+        ], 200);
+    }
+
+    public function quizAnswerDetails(Request $request){
+        $user_id = $request->user()->id;
+        $result_id = $request->result_id ? $request->result_id : 0; 
+
+        $answer = ChapterQuizResult::select(
+                'chapter_quiz_results.*',
+                'chapter_quizzes.title',
+                'chapter_quizzes.title_bn',
+                'chapter_quizzes.duration',
+                'chapter_quizzes.positive_mark',
+                'chapter_quizzes.negative_mark',
+                'chapter_quizzes.total_mark as exam_mark',
+                'chapter_quizzes.number_of_question',
+                'class_levels.name as class_name',
+                'subjects.name as subject_name',
+                'chapters.name as chapter_name',
+            )
+            ->leftJoin('chapter_quizzes', 'chapter_quizzes.id', 'chapter_quiz_results.chapter_quiz_id')
+            ->leftJoin('class_levels', 'class_levels.id', 'chapter_quizzes.class_level_id')
+            ->leftJoin('subjects', 'subjects.id', 'chapter_quizzes.subject_id')
+            ->leftJoin('chapters', 'chapters.id', 'chapter_quizzes.chapter_id')
+            ->where('chapter_quiz_results.id', $result_id)
+            ->orderBy('chapter_quiz_results.id', 'DESC')
+            ->first();
+
+            $answer->questions = ChapterQuizResultAnswer::select(
+                'chapter_quiz_result_answers.*',
+                'chapter_quiz_questions.question_text',
+                'chapter_quiz_questions.question_text_bn',
+                'chapter_quiz_questions.option1',
+                'chapter_quiz_questions.option2',
+                'chapter_quiz_questions.option3',
+                'chapter_quiz_questions.option4',
+                'chapter_quiz_questions.answer1 as correct_answer1',
+                'chapter_quiz_questions.answer2 as correct_answer2',
+                'chapter_quiz_questions.answer3 as correct_answer3',
+                'chapter_quiz_questions.answer4 as correct_answer4',
+            )
+            ->leftJoin('chapter_quiz_questions', 'chapter_quiz_questions.id', 'chapter_quiz_result_answers.question_id')
+            ->where('chapter_quiz_result_answers.chapter_quiz_result_id', $result_id)
+            ->get();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Answer Successful!',
+            'data' => $answer
+        ], 200);
+    }
+
     public function mentorStudentList(Request $request)
     {
         $user_id = $request->user()->id;
         $mentor = MentorInformation::where('user_id', $user_id)->first();
 
         $student = CourseStudentMapping::select(
+            'course_student_mappings.student_id',
             'course_student_mappings.id as mapping_id',
             'courses.title as course_title',
             'mentor_informations.name as mentor_name',
@@ -344,6 +607,44 @@ class CourseController extends Controller
             'student_informations.contact_no as student_contact_no'
         )
             ->where('course_student_mappings.mentor_id', $mentor->id)
+            ->leftJoin('courses', 'courses.id', 'course_student_mappings.course_id')
+            ->leftJoin('mentor_informations', 'mentor_informations.id', 'course_student_mappings.mentor_id')
+            ->leftJoin('student_informations', 'student_informations.id', 'course_student_mappings.student_id')
+            ->get();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Successful',
+            'data' => $student
+        ], 200);
+    }
+
+    public function mentorStudentListByCourse(Request $request)
+    {
+        $user_id = $request->user()->id;
+
+        $course_id = $request->course_id ? $request->course_id : 0;
+
+        if (!$course_id) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Please, attach ID',
+                'data' => []
+            ], 422);
+        }
+
+        $mentor = MentorInformation::where('user_id', $user_id)->first();
+
+        $student = CourseStudentMapping::select(
+            'course_student_mappings.student_id',
+            'course_student_mappings.id as mapping_id',
+            'courses.title as course_title',
+            'mentor_informations.name as mentor_name',
+            'student_informations.name as student_name',
+            'student_informations.contact_no as student_contact_no'
+        )
+            ->where('course_student_mappings.mentor_id', $mentor->id)
+            ->where('course_student_mappings.course_id', $course_id)
             ->leftJoin('courses', 'courses.id', 'course_student_mappings.course_id')
             ->leftJoin('mentor_informations', 'mentor_informations.id', 'course_student_mappings.mentor_id')
             ->leftJoin('student_informations', 'student_informations.id', 'course_student_mappings.student_id')
@@ -379,15 +680,26 @@ class CourseController extends Controller
             ->leftJoin('courses', 'courses.id', 'class_schedules.course_id')
             ->leftJoin('mentor_informations', 'mentor_informations.id', 'class_schedules.mentor_id')
             ->leftJoin('student_informations', 'student_informations.id', 'class_schedules.student_id')
+            ->orderBy('class_schedules.schedule_datetime', 'DESC')
             ->get();
 
         foreach ($class as $item) {
             $isToday = date('Ymd') == date('Ymd', strtotime($item->schedule_datetime));
 
+            $zoomLink = MentorZoomLink::where('mentor_id', $item->mentor_id)->first();
+
             if ($isToday) {
                 $item->can_join = true;
+                $item->join_link = $zoomLink->live_link;
             } else {
                 $item->can_join = false;
+                $item->join_link = null;
+            }
+
+            $item->has_passed = false;
+            if (time() > strtotime($item->schedule_datetime))
+            {
+                $item->has_passed = true; 
             }
         }
 
@@ -395,6 +707,165 @@ class CourseController extends Controller
             'status' => true,
             'message' => 'Successful',
             'data' => $class
+        ], 200);
+    }
+
+    public function addClassSchedule(Request $request)
+    {
+        $mapping_id = $request->mapping_id ? $request->mapping_id : 0;
+        $schedule_date = $request->schedule_date ? $request->schedule_date : 0;
+
+        if (!$mapping_id) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Please, attach Class ID',
+                'data' => []
+            ], 422);
+        }
+
+        $mapping_details = CourseStudentMapping::where('id', $mapping_id)->first();
+
+        ClassSchedule::create([
+            "course_student_mapping_id" => $mapping_id,
+            "course_id" => $mapping_details->course_id,
+            "student_id" => $mapping_details->student_id,
+            "mentor_id" => $mapping_details->mentor_id,
+            "schedule_datetime" => $schedule_date,
+            "has_started" => false,
+            "has_completed" => false,
+            "start_time" => null,
+            "end_time" => null,
+            "is_active" => true
+        ]);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Class added successful!',
+            'data' => []
+        ], 200);
+    }
+
+    public function updateClassSchedule(Request $request)
+    {
+        $schedule_id = $request->schedule_id ? $request->schedule_id : 0;
+        $schedule_date = $request->schedule_date ? $request->schedule_date : 0;
+
+        if (!$schedule_id) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Please, attach ID',
+                'data' => []
+            ], 422);
+        }
+
+        $schedule_details = ClassSchedule::where('id', $schedule_id)->first();
+
+        $schedule_details->update([
+            "schedule_datetime" => $schedule_date
+        ]);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Class updated successful!',
+            'data' => []
+        ], 200);
+    }
+
+    public function startLiveClass(Request $request)
+    {
+        $schedule_id = $request->schedule_id ? $request->schedule_id : 0;
+
+        if (!$schedule_id) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Please, attach ID',
+                'data' => []
+            ], 422);
+        }
+
+        $schedule_details = ClassSchedule::where('id', $schedule_id)->first();
+
+        if ($schedule_details->has_started) {
+            return response()->json([
+                'status' => false,
+                'message' => 'You can not start this class! Because it had already been completed!',
+                'data' => []
+            ], 422);
+        }
+
+        $schedule_details->update([
+            "start_time" => date("Y-m-d H:i:s"),
+            "has_started" => true
+        ]);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'The class has been started! Please take care of your student!',
+            'data' => []
+        ], 200);
+    }
+
+    public function endLiveClass(Request $request)
+    {
+        $schedule_id = $request->schedule_id ? $request->schedule_id : 0;
+
+        if (!$schedule_id) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Please, attach ID',
+                'data' => []
+            ], 422);
+        }
+
+        $schedule_details = ClassSchedule::where('id', $schedule_id)->first();
+
+        if (!$schedule_details->has_started) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Please start class first! You can not end a class before starts!',
+                'data' => []
+            ], 422);
+        }
+
+        $schedule_details->update([
+            "end_time" => date("Y-m-d H:i:s"),
+            "has_completed" => true
+        ]);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'The class has been ended! Thank You!',
+            'data' => []
+        ], 200);
+    }
+
+    public function deleteClassSchedule(Request $request)
+    {
+        $schedule_id = $request->schedule_id ? $request->schedule_id : 0;
+
+        if (!$schedule_id) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Please, attach ID',
+                'data' => []
+            ], 422);
+        }
+
+        $schedule_details = ClassSchedule::where('id', $schedule_id)->first();
+        if ($schedule_details->has_started) {
+            return response()->json([
+                'status' => false,
+                'message' => 'You cannot delete the class, because it\'s already been started!',
+                'data' => []
+            ], 422);
+        }
+
+        ClassSchedule::where('id', $schedule_id)->delete();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Class deleted successful!',
+            'data' => []
         ], 200);
     }
 
@@ -657,6 +1128,7 @@ class CourseController extends Controller
             ->get();
         return $this->apiResponse($courseOutlineList, 'Course Outline List', true, 200);
     }
+
     public function courseOutlineDelete(Request $request)
     {
         try {
@@ -815,6 +1287,7 @@ class CourseController extends Controller
             return $this->apiResponse([], $th->getMessage(), false, 500);
         }
     }
+
     public function routineList(Request $request)
     {
         $id = $request->id;
@@ -880,7 +1353,6 @@ class CourseController extends Controller
         }
     }
 
-
     public function saveOrUpdateAssignMentor(Request $request)
     {
         try {
@@ -932,7 +1404,6 @@ class CourseController extends Controller
 
         return $this->apiResponse($mentorList, 'Mentor assign List', true, 200);
     }
-
 
     public function mentorAssignDelete(Request $request)
     {

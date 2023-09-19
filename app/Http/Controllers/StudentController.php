@@ -15,6 +15,7 @@ use App\Models\User;
 use App\Models\Course;
 use App\Models\CourseParticipant;
 use App\Models\StudentInformation;
+use App\Models\CourseStudentMapping;
 
 class StudentController extends Controller
 {
@@ -344,5 +345,25 @@ class StudentController extends Controller
         return $this->apiResponse($payment, 'Payment Successful', true, 200);
     }
 
- 
+    public function studentDetailsByMappingID(Request $request)
+    {
+        $mapping_id = $request->mapping_id ? $request->mapping_id : 0;
+
+        if (!$mapping_id) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Please, attach ID',
+                'data' => []
+            ], 422);
+        }
+
+        $mapping_details = CourseStudentMapping::where('id', $mapping_id)->first();
+        $student = StudentInformation::where('id', $mapping_details->student_id)->first();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Class added successful!',
+            'data' => $student
+        ], 200);
+    }
 }

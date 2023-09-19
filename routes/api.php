@@ -57,6 +57,7 @@ Route::group(['prefix' => 'website'], function () {
     Route::get('menu-list', [MasterSettingsController::class, 'websiteMenuList']);
     Route::get('course-list-by-id/{menu_id}', [CourseController::class, 'courseListByID']);
     Route::get('course-details-by-user/{user_id}/{course_id}', [CourseController::class, 'courseDetailsByUserID']);
+    Route::get('quiz-details-by-id/{quiz_id}', [CourseController::class, 'chapterQuizDetails']);
 
     Route::get('organization-details-by-id/{organization_id}', [OrganizationController::class, 'organizationDetailsByID']);
 });
@@ -79,9 +80,17 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('purchase-course', [PaymentController::class, 'purchaseCourse']);
         Route::get('mentor-course-list', [MentorController::class, 'myCourseList']);
         Route::get('mentor-student-list', [CourseController::class, 'mentorStudentList']);
+        Route::get('mentor-student-list-by-course/{course_id}', [CourseController::class, 'mentorStudentListByCourse']);
         Route::get('mentor-schedule-list/{mapping_id}', [CourseController::class, 'mentorClassScheduleList']);
         Route::get('mentor-completed-class-list', [CourseController::class, 'mentorCompletedClassList']);
         Route::get('mentor-ongoing-class-list', [CourseController::class, 'mentorOngoingClassList']);
+        Route::post('add-new-schedule', [CourseController::class, 'addClassSchedule']);
+        Route::post('update-schedule', [CourseController::class, 'updateClassSchedule']);
+        Route::post('delete-schedule', [CourseController::class, 'deleteClassSchedule']);
+        Route::post('start-live-class', [CourseController::class, 'startLiveClass']);
+        Route::post('end-live-class', [CourseController::class, 'endLiveClass']);
+
+        Route::get('student-details-by-mapping-id/{mapping_id}', [StudentController::class, 'studentDetailsByMappingID']);
 
         Route::get('mentor-live-link', [MentorController::class, 'getZoomLink']);
         Route::post('update-link', [MentorController::class, 'updateZoomLink']);
@@ -89,6 +98,19 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('student-course-list', [StudentController::class, 'myCourseList']);
         Route::get('student-class-list', [CourseController::class, 'studentClassList']);
         Route::get('student-purchase-list', [StudentController::class, 'myPurchaseList']);
+
+        Route::post('start-quiz', [CourseController::class, 'startQuiz']);
+        Route::post('submit-quiz', [CourseController::class, 'submitQuizAnswer']);
+        Route::get('student-quiz-participated-list', [CourseController::class, 'quizAnswerList']);
+        Route::get('student-quiz-result-details-by-id/{result_id}', [CourseController::class, 'quizAnswerDetails']);
+
+        //Assignment Routes 
+        Route::get('class-list', [ContentController::class, 'classList']);
+        Route::get('subject-list-by-class-id/{class_id}', [ContentController::class, 'subjectListByClassID']);
+        Route::get('chapter-list-by-subject-id/{subject_id}', [ContentController::class, 'chapterListBySubjectID']);
+        
+        Route::get('resource-list-by-chapter-id/{chapter_id}', [ContentController::class, 'resourceListByChapterID']);
+
     });
 
     //All Admin Routes Start
