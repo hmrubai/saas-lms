@@ -9,9 +9,11 @@ use App\Models\Chapter;
 use App\Models\ChapterQuiz;
 use App\Models\ContentOutline;
 use App\Models\ChapterQuizQuestion;
+use App\Models\ChapterQuizSubject;
 use App\Models\ChapterScript;
 use App\Models\ChapterVideo;
 use App\Models\ClassLevel;
+use App\Models\QuizCoreSubjects;
 use App\Models\QuizQuestionSet;
 use App\Models\Subject;
 use Illuminate\Http\Request;
@@ -1009,4 +1011,52 @@ class ContentController extends Controller
             ], 500);
         }
     }
+
+    public function quizSubjectSaveOrUpdate(Request $request)
+    {
+        try {
+            $quizSubject=[
+                'chapter_quiz_id'=>$request->chapter_quiz_id,
+                'quiz_core_subject_id'=>$request->quiz_core_subject_id,
+                'no_of_question'=>$request->no_of_question,
+                'is_active'=>$request->is_active,
+            ];
+
+            if(empty($request->id)){
+                $quizSubject=ChapterQuizSubject::create($quizSubject);
+                return $this->apiResponse([], 'Quiz Subject Created Successfully', true, 201);
+            }else{
+                $quizSubject=ChapterQuizSubject::where('id',$request->id)->first();
+                $quizSubject->update($request->all());
+                return $this->apiResponse([], 'Quiz Subject Updated Successfully', true, 200);
+            }   
+        } catch (\Throwable $th) {
+            //throw $th; 
+            return $this->apiResponse([], $th->getMessage(), false, 500);
+        }
+    }
+
+    public function chapterQuizSubjectList(Request $request)
+    {
+        $chapter_quiz_id=$request->id;
+        $chapterQuizSubjectList=ChapterQuizSubject::where('chapter_quiz_id',$chapter_quiz_id)
+        ->leftJoin('chapter_quizzes','chapter_quizzes.id','chapter_quiz_subjects.chapter_quiz_id')
+        ->leftJoin('quiz_core_subjects','quiz_core_subjects.id','chapter_quiz_subjects.quiz_core_subject_id')
+        ->select(
+            'chapter_quiz_subjects.*',
+            'chapter_quizzes.title as quiz_title',
+            'quiz_core_subjects.name as subject_name',
+        )
+        ->get();
+
+        return $this->apiResponse($chapterQuizSubjectList, 'Chapter Quiz Subject List', true, 200);
+    }
+
+
+    public function coreSubjectList(Request $request)
+    {
+        $subject=QuizCoreSubjects::get();
+        return $this->apiResponse($subject, 'Subject List', true, 200);
+    }
+
 }

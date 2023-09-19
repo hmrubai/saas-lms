@@ -156,6 +156,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('chapter-quiz-save-or-update', [ContentController::class, 'saveOrUpdateQuiz']);
         Route::get('chapter-quiz-list', [ContentController::class, 'chapterQuizList']);
 
+        Route::get('core-subject-list', [ContentController::class, 'coreSubjectList']);
+        Route::get('chapter-quiz-subject-list/{id}', [ContentController::class, 'chapterQuizSubjectList']);
+        Route::post('quiz-subject-save-or-update',[ContentController::class, 'quizSubjectSaveOrUpdate']);
+
         Route::get('question-set-list', [ContentController::class, 'questionSetList']);
         Route::get('question-list-by-quiz/{id}', [ContentController::class, 'quizQuestionList']);
         Route::post('chapter-quiz-question-save-or-update', [ContentController::class, 'saveOrUpdateQuizQuestion']);
@@ -169,6 +173,7 @@ Route::middleware('auth:sanctum')->group(function () {
         //Course 
         Route::get('course-list', [CourseController::class, 'courseList']);
         Route::post('course-save-or-update', [CourseController::class, 'saveOrUpdateCourse']);
+        Route::get('course-type',[CourseController::class, 'courseTypeList']);
 
         Route::post('course-outline-save-or-update', [CourseController::class, 'saveOrUpdateCourseOutline']);
         Route::get('course-outline-list/{id}', [CourseController::class, 'courseOutlineList']);
