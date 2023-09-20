@@ -13,6 +13,7 @@ class Course extends Model
         'title_bn',
         'category_id',
         'gp_product_id',
+        'course_type_id',
         'youtube_url',
         'description',
         'thumbnail',

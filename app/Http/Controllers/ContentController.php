@@ -9,9 +9,11 @@ use App\Models\Chapter;
 use App\Models\ChapterQuiz;
 use App\Models\ContentOutline;
 use App\Models\ChapterQuizQuestion;
+use App\Models\ChapterQuizSubject;
 use App\Models\ChapterScript;
 use App\Models\ChapterVideo;
 use App\Models\ClassLevel;
+use App\Models\QuizCoreSubjects;
 use App\Models\QuizQuestionSet;
 use App\Models\Subject;
 use Illuminate\Http\Request;
@@ -670,6 +672,7 @@ class ContentController extends Controller
 
     public function excelQuestionUpload(Request $request)
     {
+        
         try {
             DB::beginTransaction();
             $excel_data = json_decode($request->excel_data, true);
@@ -681,6 +684,7 @@ class ContentController extends Controller
                         'class_level_id' => $value['class_level_id'],
                         'subject_id' => $value['subject_id'],
                         'chapter_id' => $value['chapter_id'],
+                        'chapter_quiz_subject_id'=>$value['chapter_quiz_subject_id'],
                         'question_text' => $value['question_text'],
                         'question_text_bn' => $value['question_text_bn'],
                         'question_set_id' => $value['question_set_id'],
@@ -696,32 +700,32 @@ class ContentController extends Controller
                     ];
                 }
                 $quizQuestion = ChapterQuizQuestion::insert($qtn);
-                if ($quizQuestion) {
-                    $chapterQuizUpdate = ChapterQuiz::where('id', $request->chapter_quiz_id)->first();
-                    $sets=QuizQuestionSet::get();
-                    $sufficientQuestion=false;
-                    foreach($sets as $set){
-                        $setCount=ChapterQuizQuestion::
-                        where('chapter_quiz_id', $request->chapter_quiz_id)
-                        ->where('class_level_id', $request->class_level_id)
-                        ->where('subject_id', $request->subject_id)
-                        ->where('chapter_id', $request->chapter_id)
-                        ->where('question_set_id', $set->id)
-                        ->count();
-                        if($chapterQuizUpdate->number_of_question <= $setCount){
-                            $sufficientQuestion=true;
-                        }else{
-                            $sufficientQuestion=false;
-                            break;
-                        }
-                    }
+                // if ($quizQuestion) {
+                //     $chapterQuizUpdate = ChapterQuiz::where('id', $request->chapter_quiz_id)->first();
+                //     $sets=QuizQuestionSet::get();
+                //     $sufficientQuestion=false;
+                //     foreach($sets as $set){
+                //         $setCount=ChapterQuizQuestion::
+                //         where('chapter_quiz_id', $request->chapter_quiz_id)
+                //         ->where('class_level_id', $request->class_level_id)
+                //         ->where('subject_id', $request->subject_id)
+                //         ->where('chapter_id', $request->chapter_id)
+                //         ->where('question_set_id', $set->id)
+                //         ->count();
+                //         if($chapterQuizUpdate->number_of_question <= $setCount){
+                //             $sufficientQuestion=true;
+                //         }else{
+                //             $sufficientQuestion=false;
+                //             break;
+                //         }
+                //     }
                     
-                    if ($sufficientQuestion==true) {
-                        ChapterQuiz::where('id', $request->chapter_quiz_id)->update([
-                            "sufficient_question" => true,
-                        ]);
-                  }
-                }
+                //     if ($sufficientQuestion==true) {
+                //         ChapterQuiz::where('id', $request->chapter_quiz_id)->update([
+                //             "sufficient_question" => true,
+                //         ]);
+                //   }
+                // }
             }
             DB::commit();
             return $this->apiResponse($excel_data, 'Chapter Quiz Question Updated Successfully', true, 200);
@@ -740,6 +744,7 @@ class ContentController extends Controller
             ->leftJoin('subjects', 'subjects.id', '=', 'chapter_quiz_questions.subject_id')
             ->leftJoin('chapters', 'chapters.id', '=', 'chapter_quiz_questions.chapter_id')
             ->leftJoin('chapter_quizzes', 'chapter_quizzes.id', '=', 'chapter_quiz_questions.chapter_quiz_id')
+            ->leftJoin('quiz_question_sets', 'quiz_question_sets.id', '=', 'chapter_quiz_questions.question_set_id')
             ->select(
                 'chapter_quiz_questions.id',
                 'chapter_quiz_questions.chapter_quiz_id',
@@ -773,6 +778,7 @@ class ContentController extends Controller
                 'chapters.name_bn as chapter_name_bn',
                 'chapter_quizzes.title as quiz_title',
                 'chapter_quizzes.title_bn as quiz_title_bn',
+                'quiz_question_sets.name as question_set_name',
             )
             ->get();
         return $this->apiResponse($quizQuestions, 'Chapter Quiz Question List Successful', true, 200);
@@ -1007,4 +1013,53 @@ class ContentController extends Controller
             ], 500);
         }
     }
+
+    public function quizSubjectSaveOrUpdate(Request $request)
+    {
+        try {
+            $quizSubject=[
+                'chapter_quiz_id'=>$request->chapter_quiz_id,
+                'quiz_core_subject_id'=>$request->quiz_core_subject_id,
+                'no_of_question'=>$request->no_of_question,
+                'is_active'=>$request->is_active,
+            ];
+
+            if(empty($request->id)){
+                $quizSubject=ChapterQuizSubject::create($quizSubject);
+                return $this->apiResponse([], 'Quiz Subject Created Successfully', true, 201);
+            }else{
+                $quizSubject=ChapterQuizSubject::where('id',$request->id)->first();
+                $quizSubject->update($request->all());
+                return $this->apiResponse([], 'Quiz Subject Updated Successfully', true, 200);
+            }   
+        } catch (\Throwable $th) {
+            //throw $th; 
+            return $this->apiResponse([], $th->getMessage(), false, 500);
+        }
+    }
+
+    public function chapterQuizSubjectList(Request $request)
+    {
+       
+        $chapter_quiz_id=$request->id;
+        $chapterQuizSubjectList=ChapterQuizSubject::where('chapter_quiz_id',$chapter_quiz_id)
+        ->leftJoin('chapter_quizzes','chapter_quizzes.id','chapter_quiz_subjects.chapter_quiz_id')
+        ->leftJoin('quiz_core_subjects','quiz_core_subjects.id','chapter_quiz_subjects.quiz_core_subject_id')
+        ->select(
+            'chapter_quiz_subjects.*',
+            'chapter_quizzes.title as quiz_title',
+            'quiz_core_subjects.name as subject_name',
+        )
+        ->get();
+
+        return $this->apiResponse($chapterQuizSubjectList, 'Chapter Quiz Subject List', true, 200);
+    }
+
+
+    public function coreSubjectList(Request $request)
+    {
+        $subject=QuizCoreSubjects::get();
+        return $this->apiResponse($subject, 'Subject List', true, 200);
+    }
+
 }
