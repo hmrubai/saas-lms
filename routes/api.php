@@ -160,7 +160,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('chapter-quiz-subject-list/{id}', [ContentController::class, 'chapterQuizSubjectList']);
         Route::post('quiz-subject-save-or-update',[ContentController::class, 'quizSubjectSaveOrUpdate']);
 
-        Route::get('quiz-assign-subject-list/{id}', [ContentController::class, 'quizAssignSubject']);
+        Route::get('quiz-assign-subject-list/{id}', [ContentController::class, 'chapterQuizSubjectList']);
 
         Route::get('question-set-list', [ContentController::class, 'questionSetList']);
         Route::get('question-list-by-quiz/{id}', [ContentController::class, 'quizQuestionList']);
