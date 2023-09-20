@@ -10,6 +10,7 @@ use App\Models\ChapterQuiz;
 use App\Models\ContentOutline;
 use App\Models\ChapterQuizQuestion;
 use App\Models\ChapterQuizSubject;
+use App\Models\ChapterQuizWrittenQuestion;
 use App\Models\ChapterScript;
 use App\Models\ChapterVideo;
 use App\Models\ClassLevel;
@@ -1025,15 +1026,43 @@ class ContentController extends Controller
             ];
 
             if(empty($request->id)){
-                $quizSubject=ChapterQuizSubject::create($quizSubject);
-                return $this->apiResponse([], 'Quiz Subject Created Successfully', true, 201);
+                $Quiz=ChapterQuiz::where('id',$request->chapter_quiz_id)->first();
+                $numberOfQuiz=$Quiz->number_of_question;
+                $numberOfChapterQuizSubject=ChapterQuizSubject::where('chapter_quiz_id',$request->chapter_quiz_id)->get();
+                if(in_array($request->quiz_core_subject_id,$numberOfChapterQuizSubject->pluck('quiz_core_subject_id')->toArray())){
+                    return $this->apiResponse([], 'Subject Already Added', false, 500);
+                }else{
+                    $alreadyNumberOfQuiz=$numberOfChapterQuizSubject->sum('no_of_question');
+                    $sumOfQuiz=$alreadyNumberOfQuiz+$request->no_of_question;
+                    if($numberOfQuiz > $alreadyNumberOfQuiz && $numberOfQuiz >= $sumOfQuiz  ){
+                        $quizSubject=ChapterQuizSubject::create($quizSubject);
+                        return $this->apiResponse([], 'Quiz Subject Created Successfully', true, 201);
+                  }else{
+                    return $this->apiResponse([], 'Number of Question Exceed', false, 500);
+                  }
+                }
             }else{
                 $quizSubject=ChapterQuizSubject::where('id',$request->id)->first();
-                $quizSubject->update($request->all());
-                return $this->apiResponse([], 'Quiz Subject Updated Successfully', true, 200);
+                $Quiz=ChapterQuiz::where('id',$request->chapter_quiz_id)->first();
+                $numberOfQuiz=$Quiz->number_of_question;
+                $numberOfChapterQuizSubject=ChapterQuizSubject::where('chapter_quiz_id',$request->chapter_quiz_id)
+                ->where('id','!=',$request->id)
+                ->get();
+                $alreadyNumberOfQuiz=$numberOfChapterQuizSubject->sum('no_of_question');
+                $sumOfQuiz=$alreadyNumberOfQuiz+$request->no_of_question;
+                if($numberOfQuiz >= $alreadyNumberOfQuiz && $numberOfQuiz >= $sumOfQuiz  ){
+                    $quizSubject->update(
+                        [
+                            'no_of_question'=>$request->no_of_question,
+                            'is_active'=>$request->is_active,
+                        ]
+                    );
+                    return $this->apiResponse([], 'Quiz Subject Updated Successfully', true, 200);
+                }else{
+                    return $this->apiResponse([], 'Number of Question Exceed', false, 500);
+                }
             }   
         } catch (\Throwable $th) {
-            //throw $th; 
             return $this->apiResponse([], $th->getMessage(), false, 500);
         }
     }
@@ -1055,11 +1084,64 @@ class ContentController extends Controller
         return $this->apiResponse($chapterQuizSubjectList, 'Chapter Quiz Subject List', true, 200);
     }
 
-
     public function coreSubjectList(Request $request)
     {
         $subject=QuizCoreSubjects::get();
         return $this->apiResponse($subject, 'Subject List', true, 200);
+    }
+
+    public function writtenQuestionList(Request $request,$id)
+    {
+        $writtenQuestion=ChapterQuizWrittenQuestion::where('chapter_quiz_id',$id)
+        ->leftJoin('chapter_quizzes','chapter_quizzes.id','chapter_quiz_written_questions.chapter_quiz_id')
+        ->select(
+            'chapter_quiz_written_questions.*',
+            'chapter_quizzes.title as quiz_title',
+        )
+        ->get();
+        return $this->apiResponse($writtenQuestion, 'Written Question List', true, 200);
+       
+    }
+
+    public function saveOrUpdateWrittenQuestion(Request $request)
+    {
+        
+        try {
+            $question=[
+                'chapter_quiz_id'=>$request->chapter_quiz_id,
+                'marks'=>$request->marks,
+                'no_of_question'=>$request->no_of_question,
+                'is_active'=>$request->is_active,
+            ];
+
+            if(empty($request->id)){
+                $writtenQuestion=ChapterQuizWrittenQuestion::create($question);
+                if ($request->hasFile('question_attachment')) {
+                    $writtenQuestion->update([
+                        'question_attachment' => $this->imageUpload($request, 'question_attachment', 'attachment'),
+                    ]);
+                }
+                return $this->apiResponse([], 'Written Question Created Successfully', true, 201);
+            }else{
+                $writtenQuestion=ChapterQuizWrittenQuestion::where('id',$request->id)->first();
+                 $writtenQuestion->update(
+                    $question
+                 );
+
+                if ($request->hasFile('question_attachment')) {
+                    $writtenQuestion->update([
+                        'question_attachment' => $this->imageUpload($request, 'question_attachment', 'attachment', $writtenQuestion->question_attachment),
+                    ]);
+                }
+
+                return $this->apiResponse([], 'Written Question Updated Successfully', true, 200);
+            }   
+        } catch (\Throwable $th) {
+            //throw $th; 
+            return $this->apiResponse([], $th->getMessage(), false, 500);
+        }
+
+
     }
 
 }
