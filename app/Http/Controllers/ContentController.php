@@ -816,29 +816,6 @@ class ContentController extends Controller
             }
             $question->delete();
 
-            $chapterQuizUpdate = ChapterQuiz::where('id', $question->chapter_quiz_id)->first();
-            $sets = QuizQuestionSet::get();
-            $sufficientQuestion = false;
-            foreach ($sets as $set) {
-                $setCount = ChapterQuizQuestion::where('chapter_quiz_id', $question->chapter_quiz_id)
-                    ->where('class_level_id', $question->class_level_id)
-                    ->where('subject_id', $question->subject_id)
-                    ->where('chapter_id', $question->chapter_id)
-                    ->where('question_set_id', $set->id)
-                    ->count();
-                if ($chapterQuizUpdate->number_of_question <= $setCount) {
-                    $sufficientQuestion = true;
-                } else {
-                    $sufficientQuestion = false;
-                    break;
-                }
-            }
-            if ($sufficientQuestion == false) {
-                ChapterQuiz::where('id', $question->chapter_quiz_id)->update([
-                    "sufficient_question" => false,
-                ]);
-            }
-
             return $this->apiResponse([], 'Question Deleted Successfully', true, 200);
         } catch (\Throwable $th) {
             return $this->apiResponse([], $th->getMessage(), false, 500);
