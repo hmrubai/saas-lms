@@ -162,8 +162,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('core-subject-list', [ContentController::class, 'coreSubjectList']);
         Route::get('chapter-quiz-subject-list/{id}', [ContentController::class, 'chapterQuizSubjectList']);
         Route::post('quiz-subject-save-or-update',[ContentController::class, 'quizSubjectSaveOrUpdate']);
-
         Route::get('quiz-assign-subject-list/{id}', [ContentController::class, 'chapterQuizSubjectList']);
+
+        //WrittenQuestion
+        Route::get('written-question-list/{id}', [ContentController::class, 'writtenQuestionList']);
+        Route::post('written-question-save-or-update', [ContentController::class, 'saveOrUpdateWrittenQuestion']);
 
         Route::get('question-set-list', [ContentController::class, 'questionSetList']);
         Route::get('question-list-by-quiz/{id}', [ContentController::class, 'quizQuestionList']);
