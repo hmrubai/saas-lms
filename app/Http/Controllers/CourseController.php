@@ -23,6 +23,7 @@ use App\Models\ClassSchedule;
 use App\Models\CourseStudentMapping;
 use App\Models\MentorInformation;
 use App\Models\StudentInformation;
+use App\Models\StudentJoinHistory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -788,7 +789,7 @@ class CourseController extends Controller
         if ($schedule_details->has_started) {
             return response()->json([
                 'status' => false,
-                'message' => 'You can not start this class! Because it had already been completed!',
+                'message' => 'You can not start this class! Because it\'s already been started!',
                 'data' => []
             ], 422);
         }
@@ -801,6 +802,41 @@ class CourseController extends Controller
         return response()->json([
             'status' => true,
             'message' => 'The class has been started! Please take care of your student!',
+            'data' => []
+        ], 200);
+    }
+
+    public function studentJoinClass(Request $request)
+    {
+        $schedule_id = $request->schedule_id ? $request->schedule_id : 0;
+
+        if (!$schedule_id) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Please, attach ID',
+                'data' => []
+            ], 422);
+        }
+
+        $schedule_details = ClassSchedule::where('id', $schedule_id)->first();
+
+        if (!$schedule_details->has_started) {
+            return response()->json([
+                'status' => false,
+                'message' => 'You can not join this class! Because this class has not been started yet!!',
+                'data' => []
+            ], 422);
+        }
+
+        StudentJoinHistory::create([
+            'class_schedule_id' => $schedule_id,
+            'student_id' => $schedule_details->student_id,
+            'join_time' => date("Y-m-d H:i:s")
+        ]);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Enjoy your class!!',
             'data' => []
         ], 200);
     }
@@ -918,6 +954,8 @@ class CourseController extends Controller
         foreach ($class as $item) {
             $isToday = date('Ymd') == date('Ymd', strtotime($item->schedule_datetime));
 
+            $zoomLink = MentorZoomLink::where('mentor_id', $item->mentor_id)->first();
+
             if (!empty($zoomLink)) {
                 $item->join_link = $zoomLink->live_link;
             } else {
@@ -926,9 +964,10 @@ class CourseController extends Controller
 
             if ($isToday) {
                 $item->can_join = true;
-                //array_push($class_list, $item);
+                $item->join_link = $zoomLink->live_link;
             } else {
                 $item->can_join = false;
+                $item->join_link = null;
             }
         }
 

@@ -90,6 +90,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('start-live-class', [CourseController::class, 'startLiveClass']);
         Route::post('end-live-class', [CourseController::class, 'endLiveClass']);
 
+        Route::post('join-live-class', [CourseController::class, 'studentJoinClass']);
+
         Route::get('student-details-by-mapping-id/{mapping_id}', [StudentController::class, 'studentDetailsByMappingID']);
 
         Route::get('mentor-live-link', [MentorController::class, 'getZoomLink']);
