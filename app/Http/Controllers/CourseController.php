@@ -21,6 +21,7 @@ use App\Models\CourseMentor;
 use App\Models\CourseFaq;
 use App\Models\ClassSchedule;
 use App\Models\CourseStudentMapping;
+use App\Models\CourseType;
 use App\Models\MentorInformation;
 use App\Models\StudentInformation;
 use App\Models\StudentJoinHistory;
@@ -1033,6 +1034,7 @@ class CourseController extends Controller
                 'title' => $request->title,
                 'title_bn' => $request->title_bn,
                 'category_id' => $request->category_id,
+                'course_type_id' => $request->course_type_id,
                 'gp_product_id' => $request->gp_product_id,
                 'youtube_url' => $request->youtube_url,
                 'description' => $request->description,
@@ -1541,5 +1543,17 @@ class CourseController extends Controller
     {
         CourseStudentMapping::where('id', $id)->delete();
         return $this->apiResponse([], 'Course Student Mapping Deleted Successfully', true, 200);
+    }
+
+    public function courseTypeList (Request $request)
+    {
+        $courseType = CourseType::select(
+            'course_types.id',
+            'course_types.name',
+            'course_types.name_bn',
+            'course_types.is_active',
+        )->latest()->get();
+        return $this->apiResponse($courseType, 'Course Type List', true, 200);
+        
     }
 }
