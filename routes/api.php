@@ -91,6 +91,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('end-live-class', [CourseController::class, 'endLiveClass']);
 
         Route::post('join-live-class', [CourseController::class, 'studentJoinClass']);
+        Route::get('student-join-history/{schedule_id}', [CourseController::class, 'studentClassJoinHistory']);
 
         Route::get('student-details-by-mapping-id/{mapping_id}', [StudentController::class, 'studentDetailsByMappingID']);
 

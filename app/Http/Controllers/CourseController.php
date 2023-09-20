@@ -515,7 +515,8 @@ class CourseController extends Controller
 
     }
 
-    public function quizAnswerList(Request $request){
+    public function quizAnswerList(Request $request)
+    {
         $user_id = $request->user()->id;
 
         $answer_list = ChapterQuizResult::select(
@@ -546,7 +547,8 @@ class CourseController extends Controller
         ], 200);
     }
 
-    public function quizAnswerDetails(Request $request){
+    public function quizAnswerDetails(Request $request)
+    {
         $user_id = $request->user()->id;
         $result_id = $request->result_id ? $request->result_id : 0; 
 
@@ -839,6 +841,42 @@ class CourseController extends Controller
             'status' => true,
             'message' => 'Enjoy your class!!',
             'data' => []
+        ], 200);
+    }
+
+    public function studentClassJoinHistory(Request $request)
+    {
+        $schedule_id = $request->schedule_id ? $request->schedule_id : 0;
+
+        if (!$schedule_id) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Please, attach ID',
+                'data' => []
+            ], 422);
+        }
+
+        $schedule_details = ClassSchedule::select(
+            'class_schedules.*',
+            'courses.title as course_title',
+            'mentor_informations.name as mentor_name'
+        )
+        ->leftJoin('courses', 'courses.id', 'class_schedules.course_id')
+        ->leftJoin('mentor_informations', 'mentor_informations.id', 'class_schedules.mentor_id')
+        ->where('class_schedules.id', $schedule_id)
+        ->first();
+
+        $history = StudentJoinHistory::where('class_schedule_id', $schedule_id)->get();
+        foreach ($history as $item) {
+            $item->schedule_datetime = $schedule_details->schedule_datetime;
+            $item->course_title = $schedule_details->course_title;
+            $item->mentor_name = $schedule_details->mentor_name;
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => 'History List!',
+            'data' => $history
         ], 200);
     }
 
@@ -1370,6 +1408,7 @@ class CourseController extends Controller
         )->latest()->get();
         return $this->apiResponse($mentorList, 'Mentor List', true, 200);
     }
+
     public function courseStudentList(Request $request)
     {
         $mentorList = StudentInformation
