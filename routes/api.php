@@ -172,7 +172,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('question-list-by-quiz/{id}', [ContentController::class, 'quizQuestionList']);
         Route::post('chapter-quiz-question-save-or-update', [ContentController::class, 'saveOrUpdateQuizQuestion']);
         Route::post('excel-question-upload', [ContentController::class, 'excelQuestionUpload']);
-        Route::delete('delete-question/{id}', [ContentController::class, 'deleteQuestion']);
+        Route::post('delete-question', [ContentController::class, 'deleteQuestion']);
 
         //Website 
         Route::post('website-page-save-or-update', [MasterSettingsController::class, 'websitePageSaveOrUpdate']);
