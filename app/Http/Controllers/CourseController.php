@@ -23,6 +23,8 @@ use App\Models\ClassSchedule;
 use App\Models\CourseStudentMapping;
 use App\Models\CourseType;
 use App\Models\MentorInformation;
+use App\Models\Payment;
+use App\Models\PaymentDetail;
 use App\Models\StudentInformation;
 use App\Models\StudentJoinHistory;
 use Illuminate\Http\Request;
@@ -325,15 +327,15 @@ class CourseController extends Controller
 
         foreach ($courses->course_outline as $item) {
             $quiz = null;
-            if($item->chapter_quiz_id){
+            if ($item->chapter_quiz_id) {
                 $set = QuizQuestionSet::inRandomOrder()->first();
                 $quiz = ChapterQuiz::where('id', $item->chapter_quiz_id)->first();
 
                 $quiz->questions = ChapterQuizQuestion::inRandomOrder()
-                ->where('chapter_quiz_id', $item->chapter_quiz_id)
-                ->where('question_set_id', $set->id)
-                ->limit($quiz->number_of_question)
-                ->get();
+                    ->where('chapter_quiz_id', $item->chapter_quiz_id)
+                    ->where('question_set_id', $set->id)
+                    ->limit($quiz->number_of_question)
+                    ->get();
             }
 
             $item->quiz_details = $quiz;
@@ -356,7 +358,7 @@ class CourseController extends Controller
 
     public function chapterQuizDetails(Request $request)
     {
-        $chapter_quiz_id = $request->quiz_id ? $request->quiz_id : 0; 
+        $chapter_quiz_id = $request->quiz_id ? $request->quiz_id : 0;
 
         if (!$chapter_quiz_id) {
             return response()->json([
@@ -366,10 +368,11 @@ class CourseController extends Controller
             ], 422);
         }
 
-        if($chapter_quiz_id){
+        if ($chapter_quiz_id) {
             $set = QuizQuestionSet::inRandomOrder()->first();
             $quiz_details = ChapterQuiz::where('chapter_quizzes.id', $chapter_quiz_id)
-                ->select('chapter_quizzes.*',
+                ->select(
+                    'chapter_quizzes.*',
                     'class_levels.name as class_name',
                     'subjects.name as subject_name',
                     'chapters.name as chapter_name',
@@ -397,7 +400,7 @@ class CourseController extends Controller
     {
         $user_id = $request->user()->id;
         $course_id = $request->course_id ? $request->course_id : 0;
-        $chapter_quiz_id = $request->chapter_quiz_id ? $request->chapter_quiz_id : 0; 
+        $chapter_quiz_id = $request->chapter_quiz_id ? $request->chapter_quiz_id : 0;
 
         if (!$course_id || !$chapter_quiz_id) {
             return response()->json([
@@ -421,13 +424,14 @@ class CourseController extends Controller
         ], 200);
     }
 
-    public function submitQuizAnswer(Request $request){
+    public function submitQuizAnswer(Request $request)
+    {
         $user_id = $request->user()->id;
         $result_id = $request->result_id ? $request->result_id : 0;
-        $chapter_quiz_id = $request->chapter_quiz_id ? $request->chapter_quiz_id : 0; 
-        $answers = $request->answers ? $request->answers : []; 
+        $chapter_quiz_id = $request->chapter_quiz_id ? $request->chapter_quiz_id : 0;
+        $answers = $request->answers ? $request->answers : [];
 
-        if(empty($answers)) {
+        if (empty($answers)) {
             return response()->json([
                 'status' => false,
                 'message' => 'Please, attach Answer!',
@@ -435,7 +439,7 @@ class CourseController extends Controller
             ], 422);
         }
 
-        if(!$result_id) {
+        if (!$result_id) {
             return response()->json([
                 'status' => false,
                 'message' => 'Please, Start Exam properly!',
@@ -448,7 +452,7 @@ class CourseController extends Controller
 
         $quiz_details = ChapterQuiz::where('id', $chapter_quiz_id)->first();
 
-        if(empty($quiz_details)) {
+        if (empty($quiz_details)) {
             return response()->json([
                 'status' => false,
                 'message' => 'Quiz Not found!',
@@ -456,8 +460,7 @@ class CourseController extends Controller
             ], 422);
         }
 
-        foreach ($answers as $ans) 
-        {
+        foreach ($answers as $ans) {
             $question = ChapterQuizQuestion::where('id', $ans['question_id'])->select(
                 'id',
                 'chapter_quiz_id',
@@ -474,15 +477,15 @@ class CourseController extends Controller
             $given_answer3 = $ans['answer3'] ? $ans['answer3'] : false;
             $given_answer4 = $ans['answer4'] ? $ans['answer4'] : false;
 
-            if($given_answer1 == $question->answer1 
-                && $given_answer2 == $question->answer2 
-                && $given_answer3 == $question->answer3 
+            if (
+                $given_answer1 == $question->answer1
+                && $given_answer2 == $question->answer2
+                && $given_answer3 == $question->answer3
                 && $given_answer4 == $question->answer4
-            ){
+            ) {
                 $positiveCount++;
                 $is_correct = true;
-            }
-            else{
+            } else {
                 $negetiveCount++;
             }
 
@@ -495,7 +498,6 @@ class CourseController extends Controller
                 'answer4' => $ans['answer4'] ? $ans['answer4'] : 0,
                 'is_correct' => $is_correct
             ]);
-            
         }
 
         $mark = $positiveCount * $quiz_details->positive_mark - $negetiveCount * $quiz_details->negative_mark;
@@ -512,7 +514,6 @@ class CourseController extends Controller
             'message' => 'Quiz Submitted Successful!',
             'data' => []
         ], 200);
-
     }
 
     public function quizAnswerList(Request $request)
@@ -520,18 +521,18 @@ class CourseController extends Controller
         $user_id = $request->user()->id;
 
         $answer_list = ChapterQuizResult::select(
-                'chapter_quiz_results.*',
-                'chapter_quizzes.title',
-                'chapter_quizzes.title_bn',
-                'chapter_quizzes.duration',
-                'chapter_quizzes.positive_mark',
-                'chapter_quizzes.negative_mark',
-                'chapter_quizzes.total_mark as exam_mark',
-                'chapter_quizzes.number_of_question',
-                'class_levels.name as class_name',
-                'subjects.name as subject_name',
-                'chapters.name as chapter_name',
-            )
+            'chapter_quiz_results.*',
+            'chapter_quizzes.title',
+            'chapter_quizzes.title_bn',
+            'chapter_quizzes.duration',
+            'chapter_quizzes.positive_mark',
+            'chapter_quizzes.negative_mark',
+            'chapter_quizzes.total_mark as exam_mark',
+            'chapter_quizzes.number_of_question',
+            'class_levels.name as class_name',
+            'subjects.name as subject_name',
+            'chapters.name as chapter_name',
+        )
             ->leftJoin('chapter_quizzes', 'chapter_quizzes.id', 'chapter_quiz_results.chapter_quiz_id')
             ->leftJoin('class_levels', 'class_levels.id', 'chapter_quizzes.class_level_id')
             ->leftJoin('subjects', 'subjects.id', 'chapter_quizzes.subject_id')
@@ -550,21 +551,21 @@ class CourseController extends Controller
     public function quizAnswerDetails(Request $request)
     {
         $user_id = $request->user()->id;
-        $result_id = $request->result_id ? $request->result_id : 0; 
+        $result_id = $request->result_id ? $request->result_id : 0;
 
         $answer = ChapterQuizResult::select(
-                'chapter_quiz_results.*',
-                'chapter_quizzes.title',
-                'chapter_quizzes.title_bn',
-                'chapter_quizzes.duration',
-                'chapter_quizzes.positive_mark',
-                'chapter_quizzes.negative_mark',
-                'chapter_quizzes.total_mark as exam_mark',
-                'chapter_quizzes.number_of_question',
-                'class_levels.name as class_name',
-                'subjects.name as subject_name',
-                'chapters.name as chapter_name',
-            )
+            'chapter_quiz_results.*',
+            'chapter_quizzes.title',
+            'chapter_quizzes.title_bn',
+            'chapter_quizzes.duration',
+            'chapter_quizzes.positive_mark',
+            'chapter_quizzes.negative_mark',
+            'chapter_quizzes.total_mark as exam_mark',
+            'chapter_quizzes.number_of_question',
+            'class_levels.name as class_name',
+            'subjects.name as subject_name',
+            'chapters.name as chapter_name',
+        )
             ->leftJoin('chapter_quizzes', 'chapter_quizzes.id', 'chapter_quiz_results.chapter_quiz_id')
             ->leftJoin('class_levels', 'class_levels.id', 'chapter_quizzes.class_level_id')
             ->leftJoin('subjects', 'subjects.id', 'chapter_quizzes.subject_id')
@@ -573,19 +574,19 @@ class CourseController extends Controller
             ->orderBy('chapter_quiz_results.id', 'DESC')
             ->first();
 
-            $answer->questions = ChapterQuizResultAnswer::select(
-                'chapter_quiz_result_answers.*',
-                'chapter_quiz_questions.question_text',
-                'chapter_quiz_questions.question_text_bn',
-                'chapter_quiz_questions.option1',
-                'chapter_quiz_questions.option2',
-                'chapter_quiz_questions.option3',
-                'chapter_quiz_questions.option4',
-                'chapter_quiz_questions.answer1 as correct_answer1',
-                'chapter_quiz_questions.answer2 as correct_answer2',
-                'chapter_quiz_questions.answer3 as correct_answer3',
-                'chapter_quiz_questions.answer4 as correct_answer4',
-            )
+        $answer->questions = ChapterQuizResultAnswer::select(
+            'chapter_quiz_result_answers.*',
+            'chapter_quiz_questions.question_text',
+            'chapter_quiz_questions.question_text_bn',
+            'chapter_quiz_questions.option1',
+            'chapter_quiz_questions.option2',
+            'chapter_quiz_questions.option3',
+            'chapter_quiz_questions.option4',
+            'chapter_quiz_questions.answer1 as correct_answer1',
+            'chapter_quiz_questions.answer2 as correct_answer2',
+            'chapter_quiz_questions.answer3 as correct_answer3',
+            'chapter_quiz_questions.answer4 as correct_answer4',
+        )
             ->leftJoin('chapter_quiz_questions', 'chapter_quiz_questions.id', 'chapter_quiz_result_answers.question_id')
             ->where('chapter_quiz_result_answers.chapter_quiz_result_id', $result_id)
             ->get();
@@ -701,9 +702,8 @@ class CourseController extends Controller
             }
 
             $item->has_passed = false;
-            if (time() > strtotime($item->schedule_datetime))
-            {
-                $item->has_passed = true; 
+            if (time() > strtotime($item->schedule_datetime)) {
+                $item->has_passed = true;
             }
         }
 
@@ -861,10 +861,10 @@ class CourseController extends Controller
             'courses.title as course_title',
             'mentor_informations.name as mentor_name'
         )
-        ->leftJoin('courses', 'courses.id', 'class_schedules.course_id')
-        ->leftJoin('mentor_informations', 'mentor_informations.id', 'class_schedules.mentor_id')
-        ->where('class_schedules.id', $schedule_id)
-        ->first();
+            ->leftJoin('courses', 'courses.id', 'class_schedules.course_id')
+            ->leftJoin('mentor_informations', 'mentor_informations.id', 'class_schedules.mentor_id')
+            ->where('class_schedules.id', $schedule_id)
+            ->first();
 
         $history = StudentJoinHistory::where('class_schedule_id', $schedule_id)->get();
         foreach ($history as $item) {
@@ -1411,7 +1411,7 @@ class CourseController extends Controller
 
     public function courseStudentList(Request $request)
     {
-        $mentorList = StudentInformation
+        $studentList = StudentInformation
             ::select(
                 'student_informations.id',
                 'student_informations.name',
@@ -1420,7 +1420,7 @@ class CourseController extends Controller
                 'student_informations.username',
                 'student_informations.contact_no',
             )->latest()->get();
-        return $this->apiResponse($mentorList, 'Student List', true, 200);
+        return $this->apiResponse($studentList, 'Student List', true, 200);
     }
 
     public function assignMentorByCourse(Request $request, $id)
@@ -1584,7 +1584,7 @@ class CourseController extends Controller
         return $this->apiResponse([], 'Course Student Mapping Deleted Successfully', true, 200);
     }
 
-    public function courseTypeList (Request $request)
+    public function courseTypeList(Request $request)
     {
         $courseType = CourseType::select(
             'course_types.id',
@@ -1593,6 +1593,88 @@ class CourseController extends Controller
             'course_types.is_active',
         )->latest()->get();
         return $this->apiResponse($courseType, 'Course Type List', true, 200);
-        
+    }
+
+
+    public function enrollMentorList(Request $request)
+    {
+        $id = $request->id?$request->id:0;
+        $mentorList = CourseParticipant:: where('item_type', "Course")
+        ->leftJoin('student_informations', 'student_informations.user_id', 'course_participants.user_id')
+        ->leftJoin('courses', 'courses.id', 'course_participants.item_id')
+            ->select(
+                'course_participants.*',
+                'student_informations.name as student_name',
+                'courses.title as course_title',
+
+            )->when($id, function ($query, $id) {
+                return $query->where('course_participants.item_id', $id);
+            })->latest()->get();
+
+       
+
+        return $this->apiResponse($mentorList, 'Mentor List', true, 200);
+    }
+
+
+    public function courseFreeEnrollment(Request $request)
+    {
+        try {
+            DB::beginTransaction();
+
+           
+      
+            $alreadyEnroll = CourseParticipant::where('item_id', $request->item_id)
+                ->where('user_id', $request->user_id)
+                ->where('item_type', "Course")
+                ->first();
+
+            if ($alreadyEnroll) {
+                return $this->apiResponse([], 'Already Enroll', false, 403);
+            }
+
+            $item = Course::where('id', $request->item_id)->first();
+            $payment = Payment::create([
+                'user_id' => $request->user_id,
+                'item_id' => $request->item_id,
+                'item_type' => "Course",
+                'is_promo_applied' => true,
+                'promo_id' => $request->promo_id,
+                'payable_amount' => $item->sale_price,
+                'paid_amount' => 0.00,
+                'discount_amount' => $item->sale_price,
+                'currency' => 'BDT',
+                'transaction_id' => uniqid(),
+                'payment_type' => 'BACBON',
+                'payment_method' => 'BACBON',
+                'status' => 'Completed',
+            ]);
+            PaymentDetail::create([
+                'payment_id' => $payment->id,
+                'user_id' => $request->user_id,
+                'item_id' => $request->item_id,
+                'unit_price' => $item->sale_price,
+                'quantity' => 1,
+                'total' => $item->sale_price,
+
+            ]);
+            CourseParticipant::create([
+                'item_id' => $request->item_id,
+                'user_id' => $request->user_id,
+                'item_type' => "course",
+                'payment_id' => $payment->id,
+                'item_price' => $item->sale_price,
+                'paid_amount' => 0.00,
+                'discount' => $item->sale_price,
+                'item_type' => 'Course',
+                'is_trial_taken' => false,
+                'is_active' => $request->is_active,
+            ]);
+            DB::commit();
+            return $this->apiResponse([], 'Course Free Enrollment Updated Successfully', true, 200);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return $this->apiResponse([], $th->getMessage(), false, 500);
+        }
     }
 }

@@ -225,6 +225,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('student-Participant-list-by-course-id/{course_id}', [StudentController::class, 'courseParticipantList']);
         Route::get('course-payment-list-by-course-id/{course_id}', [StudentController::class, 'courseParticipantPaymentList']);
 
+        Route::get('enrollment-list/{id}', [CourseController::class, 'enrollMentorList']);
+        Route::post('course-free-enrollment', [CourseController::class, 'courseFreeEnrollment']);
+
     });
 });
 
