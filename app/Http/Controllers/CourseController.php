@@ -10,6 +10,7 @@ use App\Models\ChapterQuiz;
 use App\Models\QuizQuestionSet;
 use App\Models\ChapterQuizQuestion;
 use App\Models\ChapterQuizResult;
+use App\Models\ChapterQuizSubject;
 use App\Models\ChapterQuizResultAnswer;
 use App\Models\MentorZoomLink;
 use App\Models\ContentOutline;
@@ -331,11 +332,23 @@ class CourseController extends Controller
                 $set = QuizQuestionSet::inRandomOrder()->first();
                 $quiz = ChapterQuiz::where('id', $item->chapter_quiz_id)->first();
 
-                $quiz->questions = ChapterQuizQuestion::inRandomOrder()
+                $subject_list = ChapterQuizSubject::where('chapter_quiz_id', $item->chapter_quiz_id)->get();
+            
+                $questions = [];
+                foreach ($subject_list as $subject) 
+                {
+                    $set_question = ChapterQuizQuestion::inRandomOrder()
                     ->where('chapter_quiz_id', $item->chapter_quiz_id)
                     ->where('question_set_id', $set->id)
-                    ->limit($quiz->number_of_question)
+                    ->where('chapter_quiz_subject_id', $subject->id)
+                    ->limit($subject->no_of_question)
                     ->get();
+
+                    foreach ($set_question as $row) {
+                        array_push($questions, $row);
+                    }
+                }
+                $quiz->questions = $questions;
             }
 
             $item->quiz_details = $quiz;
@@ -382,11 +395,24 @@ class CourseController extends Controller
                 ->leftJoin('chapters', 'chapters.id', 'chapter_quizzes.chapter_id')
                 ->first();
 
-            $quiz_details->questions = ChapterQuizQuestion::inRandomOrder()
+            $subject_list = ChapterQuizSubject::where('chapter_quiz_id', $chapter_quiz_id)->get();
+            
+            $questions = [];
+            foreach ($subject_list as $item) 
+            {
+                $set_question = ChapterQuizQuestion::inRandomOrder()
                 ->where('chapter_quiz_id', $chapter_quiz_id)
                 ->where('question_set_id', $set->id)
-                ->limit($quiz_details->number_of_question)
+                ->where('chapter_quiz_subject_id', $item->id)
+                ->limit($item->no_of_question)
                 ->get();
+
+                foreach ($set_question as $row) {
+                    array_push($questions, $row);
+                }
+            }
+
+            $quiz_details->questions = $questions;
         }
 
         return response()->json([
