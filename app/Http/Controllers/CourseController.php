@@ -12,6 +12,7 @@ use App\Models\ChapterQuizQuestion;
 use App\Models\ChapterQuizResult;
 use App\Models\ChapterQuizSubject;
 use App\Models\ChapterQuizResultAnswer;
+use App\Models\ChapterQuizSubjectWiseResult;
 use App\Models\MentorZoomLink;
 use App\Models\ContentOutline;
 use App\Models\CourseOutline;
@@ -486,10 +487,19 @@ class CourseController extends Controller
             ], 422);
         }
 
+        $subject_list = ChapterQuizSubject::where('chapter_quiz_id', $chapter_quiz_id)->get();
+
+        foreach ($subject_list as $subject) {
+            $subject->positive_count = 0;
+            $subject->negetive_count = 0;
+        }
+
         foreach ($answers as $ans) {
             $question = ChapterQuizQuestion::where('id', $ans['question_id'])->select(
                 'id',
                 'chapter_quiz_id',
+                'question_set_id',
+                'chapter_quiz_subject_id',
                 'answer1',
                 'answer2',
                 'answer3',
@@ -511,8 +521,21 @@ class CourseController extends Controller
             ) {
                 $positiveCount++;
                 $is_correct = true;
+
+                foreach ($subject_list as $subject) {
+                    if($subject->quiz_core_subject_id == $question->chapter_quiz_subject_id){
+                        $subject->positive_count = $subject->positive_count + 1;
+                    }
+                }
+
             } else {
                 $negetiveCount++;
+
+                foreach ($subject_list as $subject) {
+                    if($subject->quiz_core_subject_id == $question->chapter_quiz_subject_id){
+                        $subject->negetive_count = $subject->negetive_count + 1;
+                    }
+                }
             }
 
             ChapterQuizResultAnswer::insert([
@@ -523,6 +546,18 @@ class CourseController extends Controller
                 'answer3' => $ans['answer3'] ? $ans['answer3'] : 0,
                 'answer4' => $ans['answer4'] ? $ans['answer4'] : 0,
                 'is_correct' => $is_correct
+            ]);
+        }
+
+        // Subject Wise Result
+        foreach ($subject_list as $subject) {
+            ChapterQuizSubjectWiseResult::create([
+                'chapter_quiz_result_id' => $result_id,
+                'chapter_quiz_id' => $chapter_quiz_id,
+                'user_id' => $user_id,
+                'quiz_core_subject_id' => $subject->quiz_core_subject_id,
+                'positive_count' => $subject->positive_count,
+                'negetive_count' => $subject->negetive_count
             ]);
         }
 
