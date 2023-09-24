@@ -14,6 +14,7 @@ class CourseParticipant extends Model
         'item_id',
         'item_price',
         'paid_amount',
+        'payment_id',
         'discount',
         'item_type',
         'is_trial_taken',

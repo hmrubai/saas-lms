@@ -1687,6 +1687,7 @@ class CourseController extends Controller
             ->select(
                 'course_participants.*',
                 'student_informations.name as student_name',
+                'student_informations.email as student_email',
                 'courses.title as course_title',
 
             )->when($id, function ($query, $id) {
@@ -1703,55 +1704,55 @@ class CourseController extends Controller
     {
         try {
             DB::beginTransaction();
-
-           
-      
-            $alreadyEnroll = CourseParticipant::where('item_id', $request->item_id)
-                ->where('user_id', $request->user_id)
+            $item = Course::where('id', $request->item_id)->first();
+            foreach($request->user_id as $value ){
+                $alreadyEnroll = CourseParticipant::where('item_id', $request->item_id)
+                ->where('user_id', $value['user_id'])
                 ->where('item_type', "Course")
                 ->first();
 
-            if ($alreadyEnroll) {
-                return $this->apiResponse([], 'Already Enroll', false, 403);
+                if ($alreadyEnroll) {
+                    continue;
+                }
+
+                $payment = Payment::create([
+                    'user_id' => $value['user_id'],
+                    'item_id' => $request->item_id,
+                    'item_type' => "Course",
+                    'is_promo_applied' => true,
+                    'promo_id' => $request->promo_id,
+                    'payable_amount' => $item->sale_price,
+                    'paid_amount' => 0.00,
+                    'discount_amount' => $item->sale_price,
+                    'currency' => 'BDT',
+                    'transaction_id' => uniqid(),
+                    'payment_type' => 'BACBON',
+                    'payment_method' => 'BACBON',
+                    'status' => 'Completed',
+                ]);
+
+                PaymentDetail::create([
+                    'payment_id' => $payment->id,
+                    'user_id' => $value['user_id'],
+                    'item_id' => $request->item_id,
+                    'unit_price' => $item->sale_price,
+                    'quantity' => 1,
+                    'total' => $item->sale_price,
+                ]);
+
+                CourseParticipant::create([
+                    'item_id' => $request->item_id,
+                    'user_id' => $value['user_id'],
+                    'item_type' => "course",
+                    'payment_id' => $payment->id,
+                    'item_price' => $item->sale_price,
+                    'paid_amount' => 0.00,
+                    'discount' => $item->sale_price,
+                    'item_type' => 'Course',
+                    'is_trial_taken' => false,
+                    'is_active' => $request->is_active,
+                ]);
             }
-
-            $item = Course::where('id', $request->item_id)->first();
-            $payment = Payment::create([
-                'user_id' => $request->user_id,
-                'item_id' => $request->item_id,
-                'item_type' => "Course",
-                'is_promo_applied' => true,
-                'promo_id' => $request->promo_id,
-                'payable_amount' => $item->sale_price,
-                'paid_amount' => 0.00,
-                'discount_amount' => $item->sale_price,
-                'currency' => 'BDT',
-                'transaction_id' => uniqid(),
-                'payment_type' => 'BACBON',
-                'payment_method' => 'BACBON',
-                'status' => 'Completed',
-            ]);
-            PaymentDetail::create([
-                'payment_id' => $payment->id,
-                'user_id' => $request->user_id,
-                'item_id' => $request->item_id,
-                'unit_price' => $item->sale_price,
-                'quantity' => 1,
-                'total' => $item->sale_price,
-
-            ]);
-            CourseParticipant::create([
-                'item_id' => $request->item_id,
-                'user_id' => $request->user_id,
-                'item_type' => "course",
-                'payment_id' => $payment->id,
-                'item_price' => $item->sale_price,
-                'paid_amount' => 0.00,
-                'discount' => $item->sale_price,
-                'item_type' => 'Course',
-                'is_trial_taken' => false,
-                'is_active' => $request->is_active,
-            ]);
             DB::commit();
             return $this->apiResponse([], 'Course Free Enrollment Updated Successfully', true, 200);
         } catch (\Throwable $th) {
