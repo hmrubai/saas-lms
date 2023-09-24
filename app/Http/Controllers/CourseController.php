@@ -9,10 +9,13 @@ use App\Models\Content;
 use App\Models\ChapterQuiz;
 use App\Models\QuizQuestionSet;
 use App\Models\ChapterQuizQuestion;
+use App\Models\ChapterQuizWrittenQuestion;
 use App\Models\ChapterQuizResult;
 use App\Models\ChapterQuizSubject;
 use App\Models\ChapterQuizResultAnswer;
 use App\Models\ChapterQuizSubjectWiseResult;
+use App\Models\ChapterQuizWrittenMark;
+use App\Models\ChapterQuizWrittenAttachment;
 use App\Models\MentorZoomLink;
 use App\Models\ContentOutline;
 use App\Models\CourseOutline;
@@ -397,6 +400,8 @@ class CourseController extends Controller
                 ->first();
 
             $subject_list = ChapterQuizSubject::where('chapter_quiz_id', $chapter_quiz_id)->get();
+
+            $quiz_details->written_question = ChapterQuizWrittenQuestion::where('chapter_quiz_id', $chapter_quiz_id)->first();
             
             $questions = [];
             foreach ($subject_list as $item) 
@@ -569,6 +574,69 @@ class CourseController extends Controller
             'negetive_count' => $negetiveCount,
             "submission_status" => "Submitted"
         ]);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Quiz Submitted Successful!',
+            'data' => []
+        ], 200);
+    }
+
+    public function submitWrittenAnswer(Request $request)
+    {
+        $user_id = $request->user()->id;
+
+        $formData = json_decode($request->data, true);
+        $result_id = $formData["result_id"] ? $formData["result_id"] : 0;
+        $chapter_quiz_id = $formData["chapter_quiz_id"] ? $formData["chapter_quiz_id"] : 0;
+        $attach_count = $formData["attach_count"] ? $formData["attach_count"] : 0;
+
+        if (!$attach_count) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Please, attach Answer!',
+                'data' => []
+            ], 422);
+        }
+
+        if (!$result_id) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Please, Start Exam properly!',
+                'data' => []
+            ], 422);
+        }
+
+        if($attach_count){
+            for($i = 0; $i < $attach_count; $i++){
+                $attach_file = "attachment_".$i;
+                $attachment_file = '';
+                if($request->$attach_file){
+                    $attachment_file  =  'written_answer_'. $chapter_quiz_id . "_" . $i . "_" .time().'.'.$request->$attach_file->getClientOriginalExtension();
+                    $request->$attach_file->move('uploads/written_answer/', $attachment_file);
+                }
+
+                ChapterQuizWrittenAttachment::create([
+                    'chapter_quiz_result_id' => $result_id,
+                    'chapter_quiz_id' => $chapter_quiz_id,
+                    'user_id' => $user_id,
+                    'attachment_url' => "uploads/written_answer/".$attachment_file,
+                ]);
+            }
+
+            $written = ChapterQuizWrittenQuestion::where('chapter_quiz_id', $chapter_quiz_id)->first();
+
+            for ($i=1; $i <= $written->no_of_question; $i++) { 
+                ChapterQuizWrittenMark::create([
+                    'chapter_quiz_result_id' => $result_id,
+                    'chapter_quiz_id' => $chapter_quiz_id,
+                    'user_id' => $user_id,
+                    'question_no' => $i, 
+                    'mark' => 0.00, 
+                    'marks_givenby_id' => 0
+                ]);
+            }
+        }
 
         return response()->json([
             'status' => true,
