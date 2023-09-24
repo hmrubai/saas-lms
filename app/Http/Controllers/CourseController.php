@@ -659,6 +659,27 @@ class CourseController extends Controller
         ], 200);
     }
 
+    public function quizSubjectWiseAnswerDetails(Request $request)
+    {
+        $result_id = $request->result_id ? $request->result_id : 0;
+
+        $answer = ChapterQuizSubjectWiseResult::select(
+            'chapter_quiz_subject_wise_results.*',
+            'quiz_core_subjects.name',
+            'quiz_core_subjects.name_bn'
+        )
+            ->leftJoin('quiz_core_subjects', 'quiz_core_subjects.id', 'chapter_quiz_subject_wise_results.quiz_core_subject_id')
+            ->where('chapter_quiz_subject_wise_results.chapter_quiz_result_id', $result_id)
+            ->orderBy('quiz_core_subjects.name', 'ASC')
+            ->get();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Answer Details Successful!',
+            'data' => $answer
+        ], 200);
+    }
+
     public function mentorStudentList(Request $request)
     {
         $user_id = $request->user()->id;

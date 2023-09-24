@@ -106,6 +106,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('submit-quiz', [CourseController::class, 'submitQuizAnswer']);
         Route::get('student-quiz-participated-list', [CourseController::class, 'quizAnswerList']);
         Route::get('student-quiz-result-details-by-id/{result_id}', [CourseController::class, 'quizAnswerDetails']);
+        Route::get('student-subject-wise-result/{result_id}', [CourseController::class, 'quizSubjectWiseAnswerDetails']);
+        
 
         //Assignment Routes 
         Route::get('class-list', [ContentController::class, 'classList']);
