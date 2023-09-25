@@ -5,20 +5,15 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class ContentOutline extends Model
+class ContentSubject extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'title',
-        'title_bn',
         'content_id',
         'class_level_id',
         'subject_id',
-        'chapter_id',
-        'chapter_script_id',
-        'chapter_video_id',
-        'chapter_quiz_id',
+        'price',
         'icon',
         'color_code',
         'is_free',

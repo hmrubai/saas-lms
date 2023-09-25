@@ -9,8 +9,13 @@ use App\Models\Content;
 use App\Models\ChapterQuiz;
 use App\Models\QuizQuestionSet;
 use App\Models\ChapterQuizQuestion;
+use App\Models\ChapterQuizWrittenQuestion;
 use App\Models\ChapterQuizResult;
+use App\Models\ChapterQuizSubject;
 use App\Models\ChapterQuizResultAnswer;
+use App\Models\ChapterQuizSubjectWiseResult;
+use App\Models\ChapterQuizWrittenMark;
+use App\Models\ChapterQuizWrittenAttachment;
 use App\Models\MentorZoomLink;
 use App\Models\ContentOutline;
 use App\Models\CourseOutline;
@@ -331,11 +336,23 @@ class CourseController extends Controller
                 $set = QuizQuestionSet::inRandomOrder()->first();
                 $quiz = ChapterQuiz::where('id', $item->chapter_quiz_id)->first();
 
-                $quiz->questions = ChapterQuizQuestion::inRandomOrder()
+                $subject_list = ChapterQuizSubject::where('chapter_quiz_id', $item->chapter_quiz_id)->get();
+            
+                $questions = [];
+                foreach ($subject_list as $subject) 
+                {
+                    $set_question = ChapterQuizQuestion::inRandomOrder()
                     ->where('chapter_quiz_id', $item->chapter_quiz_id)
                     ->where('question_set_id', $set->id)
-                    ->limit($quiz->number_of_question)
+                    ->where('chapter_quiz_subject_id', $subject->id)
+                    ->limit($subject->no_of_question)
                     ->get();
+
+                    foreach ($set_question as $row) {
+                        array_push($questions, $row);
+                    }
+                }
+                $quiz->questions = $questions;
             }
 
             $item->quiz_details = $quiz;
@@ -382,11 +399,26 @@ class CourseController extends Controller
                 ->leftJoin('chapters', 'chapters.id', 'chapter_quizzes.chapter_id')
                 ->first();
 
-            $quiz_details->questions = ChapterQuizQuestion::inRandomOrder()
+            $subject_list = ChapterQuizSubject::where('chapter_quiz_id', $chapter_quiz_id)->get();
+
+            $quiz_details->written_question = ChapterQuizWrittenQuestion::where('chapter_quiz_id', $chapter_quiz_id)->first();
+            
+            $questions = [];
+            foreach ($subject_list as $item) 
+            {
+                $set_question = ChapterQuizQuestion::inRandomOrder()
                 ->where('chapter_quiz_id', $chapter_quiz_id)
                 ->where('question_set_id', $set->id)
-                ->limit($quiz_details->number_of_question)
+                ->where('chapter_quiz_subject_id', $item->id)
+                ->limit($item->no_of_question)
                 ->get();
+
+                foreach ($set_question as $row) {
+                    array_push($questions, $row);
+                }
+            }
+
+            $quiz_details->questions = $questions;
         }
 
         return response()->json([
@@ -460,10 +492,19 @@ class CourseController extends Controller
             ], 422);
         }
 
+        $subject_list = ChapterQuizSubject::where('chapter_quiz_id', $chapter_quiz_id)->get();
+
+        foreach ($subject_list as $subject) {
+            $subject->positive_count = 0;
+            $subject->negetive_count = 0;
+        }
+
         foreach ($answers as $ans) {
             $question = ChapterQuizQuestion::where('id', $ans['question_id'])->select(
                 'id',
                 'chapter_quiz_id',
+                'question_set_id',
+                'chapter_quiz_subject_id',
                 'answer1',
                 'answer2',
                 'answer3',
@@ -485,8 +526,21 @@ class CourseController extends Controller
             ) {
                 $positiveCount++;
                 $is_correct = true;
+
+                foreach ($subject_list as $subject) {
+                    if($subject->quiz_core_subject_id == $question->chapter_quiz_subject_id){
+                        $subject->positive_count = $subject->positive_count + 1;
+                    }
+                }
+
             } else {
                 $negetiveCount++;
+
+                foreach ($subject_list as $subject) {
+                    if($subject->quiz_core_subject_id == $question->chapter_quiz_subject_id){
+                        $subject->negetive_count = $subject->negetive_count + 1;
+                    }
+                }
             }
 
             ChapterQuizResultAnswer::insert([
@@ -500,6 +554,18 @@ class CourseController extends Controller
             ]);
         }
 
+        // Subject Wise Result
+        foreach ($subject_list as $subject) {
+            ChapterQuizSubjectWiseResult::create([
+                'chapter_quiz_result_id' => $result_id,
+                'chapter_quiz_id' => $chapter_quiz_id,
+                'user_id' => $user_id,
+                'quiz_core_subject_id' => $subject->quiz_core_subject_id,
+                'positive_count' => $subject->positive_count,
+                'negetive_count' => $subject->negetive_count
+            ]);
+        }
+
         $mark = $positiveCount * $quiz_details->positive_mark - $negetiveCount * $quiz_details->negative_mark;
 
         ChapterQuizResult::where('id', $result_id)->update([
@@ -508,6 +574,69 @@ class CourseController extends Controller
             'negetive_count' => $negetiveCount,
             "submission_status" => "Submitted"
         ]);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Quiz Submitted Successful!',
+            'data' => []
+        ], 200);
+    }
+
+    public function submitWrittenAnswer(Request $request)
+    {
+        $user_id = $request->user()->id;
+
+        $formData = json_decode($request->data, true);
+        $result_id = $formData["result_id"] ? $formData["result_id"] : 0;
+        $chapter_quiz_id = $formData["chapter_quiz_id"] ? $formData["chapter_quiz_id"] : 0;
+        $attach_count = $formData["attach_count"] ? $formData["attach_count"] : 0;
+
+        if (!$attach_count) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Please, attach Answer!',
+                'data' => []
+            ], 422);
+        }
+
+        if (!$result_id) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Please, Start Exam properly!',
+                'data' => []
+            ], 422);
+        }
+
+        if($attach_count){
+            for($i = 0; $i < $attach_count; $i++){
+                $attach_file = "attachment_".$i;
+                $attachment_file = '';
+                if($request->$attach_file){
+                    $attachment_file  =  'written_answer_'. $chapter_quiz_id . "_" . $i . "_" .time().'.'.$request->$attach_file->getClientOriginalExtension();
+                    $request->$attach_file->move('uploads/written_answer/', $attachment_file);
+                }
+
+                ChapterQuizWrittenAttachment::create([
+                    'chapter_quiz_result_id' => $result_id,
+                    'chapter_quiz_id' => $chapter_quiz_id,
+                    'user_id' => $user_id,
+                    'attachment_url' => "uploads/written_answer/".$attachment_file,
+                ]);
+            }
+
+            $written = ChapterQuizWrittenQuestion::where('chapter_quiz_id', $chapter_quiz_id)->first();
+
+            for ($i=1; $i <= $written->no_of_question; $i++) { 
+                ChapterQuizWrittenMark::create([
+                    'chapter_quiz_result_id' => $result_id,
+                    'chapter_quiz_id' => $chapter_quiz_id,
+                    'user_id' => $user_id,
+                    'question_no' => $i, 
+                    'mark' => 0.00, 
+                    'marks_givenby_id' => 0
+                ]);
+            }
+        }
 
         return response()->json([
             'status' => true,
@@ -594,6 +723,27 @@ class CourseController extends Controller
         return response()->json([
             'status' => true,
             'message' => 'Answer Successful!',
+            'data' => $answer
+        ], 200);
+    }
+
+    public function quizSubjectWiseAnswerDetails(Request $request)
+    {
+        $result_id = $request->result_id ? $request->result_id : 0;
+
+        $answer = ChapterQuizSubjectWiseResult::select(
+            'chapter_quiz_subject_wise_results.*',
+            'quiz_core_subjects.name',
+            'quiz_core_subjects.name_bn'
+        )
+            ->leftJoin('quiz_core_subjects', 'quiz_core_subjects.id', 'chapter_quiz_subject_wise_results.quiz_core_subject_id')
+            ->where('chapter_quiz_subject_wise_results.chapter_quiz_result_id', $result_id)
+            ->orderBy('quiz_core_subjects.name', 'ASC')
+            ->get();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Answer Details Successful!',
             'data' => $answer
         ], 200);
     }
