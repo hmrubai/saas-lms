@@ -14,6 +14,7 @@ use App\Models\ChapterQuizWrittenQuestion;
 use App\Models\ChapterScript;
 use App\Models\ChapterVideo;
 use App\Models\ClassLevel;
+use App\Models\ContentSubject;
 use App\Models\QuizCoreSubjects;
 use App\Models\QuizQuestionSet;
 use App\Models\Subject;
@@ -592,7 +593,7 @@ class ContentController extends Controller
                 "question_text" => $request->question_text,
                 "question_text_bn" => $request->question_text_bn,
                 "question_set_id" => $request->question_set_id,
-                "chapter_quiz_subject_id" => $request->chapter_quiz_subject_id,
+                "chapter_quiz_subject_id" => $request->chapter_quiz_subject_id, //core subject id
                 "option1" => $request->option1,
                 "option2" => $request->option2,
                 "option3" => $request->option3,
@@ -681,14 +682,15 @@ class ContentController extends Controller
                 $qtn = [];
                 foreach ($excel_data as $key => $value) {
                     $qtn[] = [
-                        'chapter_quiz_id' => $value['chapter_quiz_id'],
-                        'class_level_id' => $value['class_level_id'],
-                        'subject_id' => $value['subject_id'],
-                        'chapter_id' => $value['chapter_id'],
-                        'chapter_quiz_subject_id' => $value['chapter_quiz_subject_id'],
+                        'chapter_quiz_id' => $request->chapter_quiz_id,
+                        'class_level_id' => $request->class_level_id,
+                        'subject_id' => $request->subject_id,
+                        'chapter_id' => $request->chapter_id,
+                        'chapter_quiz_subject_id' => $request->chapter_quiz_subject_id, //core subject id
+                        'question_set_id' => $request->question_set_id,
+
                         'question_text' => $value['question_text'],
                         'question_text_bn' => $value['question_text_bn'],
-                        'question_set_id' => $value['question_set_id'],
                         'option1' => $value['option1'],
                         'option2' => $value['option2'],
                         'option3' => $value['option3'],
@@ -705,33 +707,31 @@ class ContentController extends Controller
                 $sets = QuizQuestionSet::pluck('id')->toArray();
                 $sufficientQuestion = false;
 
-                if($quizQuestion){
+                if ($quizQuestion) {
                     foreach ($quizSubjectId as $subjectId) {
                         foreach ($sets as $set) {
-                            $quizQtnCount = ChapterQuizQuestion::
-                                where('chapter_quiz_id', $request->chapter_quiz_id)
+                            $quizQtnCount = ChapterQuizQuestion::where('chapter_quiz_id', $request->chapter_quiz_id)
                                 ->where('class_level_id', $request->class_level_id)
                                 ->where('subject_id', $request->subject_id)
                                 ->where('chapter_id', $request->chapter_id)
                                 ->where('chapter_quiz_subject_id', $subjectId)
                                 ->where('question_set_id', $set)
                                 ->count();
-                                $quizSubject = ChapterQuizSubject::where('id', $subjectId)->first();
-                                $numOfQtn = $quizSubject->no_of_question;
+                            $quizSubject = ChapterQuizSubject::where('id', $subjectId)->first();
+                            $numOfQtn = $quizSubject->no_of_question;
                             if ($numOfQtn <= $quizQtnCount) {
                                 $sufficientQuestion = true;
                             } else {
                                 $sufficientQuestion = false;
                                 break;
-                            }   
+                            }
                         };
                     }
-    
-                    if ($sufficientQuestion==true) {
+
+                    if ($sufficientQuestion == true) {
                         ChapterQuiz::where('id', $request->chapter_quiz_id)->update([
                             "sufficient_question" => true,
                         ]);
-    
                     }
                 }
             }
@@ -753,12 +753,14 @@ class ContentController extends Controller
             ->leftJoin('chapters', 'chapters.id', '=', 'chapter_quiz_questions.chapter_id')
             ->leftJoin('chapter_quizzes', 'chapter_quizzes.id', '=', 'chapter_quiz_questions.chapter_quiz_id')
             ->leftJoin('quiz_question_sets', 'quiz_question_sets.id', '=', 'chapter_quiz_questions.question_set_id')
+            ->leftJoin('quiz_core_subjects', 'quiz_core_subjects.id', '=', 'chapter_quiz_questions.chapter_quiz_subject_id')
             ->select(
                 'chapter_quiz_questions.id',
                 'chapter_quiz_questions.chapter_quiz_id',
                 'chapter_quiz_questions.class_level_id',
                 'chapter_quiz_questions.subject_id',
                 'chapter_quiz_questions.question_set_id',
+                'chapter_quiz_questions.chapter_quiz_subject_id',
                 'chapter_quiz_questions.chapter_id',
                 'chapter_quiz_questions.question_text',
                 'chapter_quiz_questions.question_text_bn',
@@ -787,6 +789,7 @@ class ContentController extends Controller
                 'chapter_quizzes.title as quiz_title',
                 'chapter_quizzes.title_bn as quiz_title_bn',
                 'quiz_question_sets.name as question_set_name',
+                'quiz_core_subjects.name as core_subject_name'
             )
             ->get();
         return $this->apiResponse($quizQuestions, 'Chapter Quiz Question List Successful', true, 200);
@@ -927,6 +930,7 @@ class ContentController extends Controller
                 'class_level_id' => $request->class_level_id,
                 'subject_id'    => $request->subject_id,
                 'chapter_id'   => $request->chapter_id,
+                'content_subject_id'=> $request->content_subject_id,
                 'chapter_script_id' => $request->chapter_script_id,
                 'chapter_video_id' => $request->chapter_video_id,
                 'chapter_quiz_id' => $request->chapter_quiz_id,
@@ -966,7 +970,9 @@ class ContentController extends Controller
     public function contentOutlineList(Request $request)
     {
         $id = $request->id ? $request->id : 0;
-        $contentOutlineList = ContentOutline::leftJoin('contents', 'contents.id', 'content_outlines.content_id')
+        $contentOutlineList =
+         ContentOutline::where('content_subject_id', $id)
+        ->leftJoin('contents', 'contents.id', 'content_outlines.content_id')
             ->leftJoin('class_levels', 'class_levels.id', 'content_outlines.class_level_id')
             ->leftJoin('subjects', 'subjects.id', 'content_outlines.subject_id')
             ->leftJoin('chapters', 'chapters.id', 'content_outlines.chapter_id')
@@ -977,9 +983,9 @@ class ContentController extends Controller
                 'subjects.name as subject_name',
                 'chapters.name as chapter_name',
             )
-            ->when($id, function ($query, $id) {
-                return $query->where('content_outlines.content_id', $id);
-            })
+            // ->when($id, function ($query, $id) {
+            //     return $query->where('content_outlines.content_id', $id);
+            // })
             ->get();
         return $this->apiResponse($contentOutlineList, 'Content Outline List', true, 200);
     }
@@ -1112,7 +1118,7 @@ class ContentController extends Controller
                 return $this->apiResponse([], 'Written Question Created Successfully', true, 201);
             } else {
                 $writtenQuestion = ChapterQuizWrittenQuestion::where('id', $request->id)->first();
-                $writtenQuestion->update( $question);
+                $writtenQuestion->update($question);
                 if ($request->hasFile('question_attachment')) {
                     $writtenQuestion->update([
                         'question_attachment' => $this->imageUpload($request, 'question_attachment', 'attachment', $writtenQuestion->question_attachment),
@@ -1124,5 +1130,57 @@ class ContentController extends Controller
             //throw $th; 
             return $this->apiResponse([], $th->getMessage(), false, 500);
         }
+    }
+
+    public function contentSubjectAssignSaveOrUpdate(Request $request)
+    {
+
+        try {
+            if (empty($request->id)) {
+                foreach($request->subjectArr as $value){
+                    $contentSubject = [
+                        'content_id' => $request->content_id,
+                        'class_level_id' => $value['class_level_id'],
+                        'subject_id' => $value['subject_id'],
+                        'is_active' => $value['is_active'],
+                    ];
+                    ContentSubject::create($contentSubject);
+                }
+                return $this->apiResponse([], 'Content Subject Created Successfully', true, 201);
+            } else {
+                $contentSubject = ContentSubject::where('id', $request->id)->first();
+                $contentSubject->update(
+                    [
+                        'content_id' => $request->content_id,
+                        'class_level_id' => $request->class_level_id,
+                        'subject_id' => $request->subject_id,
+                        'is_active' => $request->is_active,
+                    ]
+                );
+
+
+                return $this->apiResponse([], 'Content Subject Updated Successfully', true, 200);
+            }
+        } catch (\Throwable $th) {
+            return $this->apiResponse([], $th->getMessage(), false, 500);
+        }
+    }
+
+    public function contentSubjectList()
+    {
+
+        $contentSubjectList = ContentSubject::leftJoin('contents', 'contents.id', 'content_subjects.content_id')
+            ->leftJoin('class_levels', 'class_levels.id', 'content_subjects.class_level_id')
+            ->leftJoin('subjects', 'subjects.id', 'content_subjects.subject_id')
+            ->select(
+                'content_subjects.*',
+                'contents.title as content_name',
+                'class_levels.name as class_name',
+                'subjects.name as subject_name',
+            )
+            ->get();
+
+
+        return $this->apiResponse($contentSubjectList, 'Content Subject List', true, 200);
     }
 }
