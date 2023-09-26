@@ -14,6 +14,7 @@ class ContentOutline extends Model
         'title_bn',
         'content_id',
         'class_level_id',
+        'content_subject_id',
         'subject_id',
         'chapter_id',
         'chapter_script_id',

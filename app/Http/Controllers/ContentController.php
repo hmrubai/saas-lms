@@ -14,6 +14,7 @@ use App\Models\ChapterQuizWrittenQuestion;
 use App\Models\ChapterScript;
 use App\Models\ChapterVideo;
 use App\Models\ClassLevel;
+use App\Models\ContentSubject;
 use App\Models\QuizCoreSubjects;
 use App\Models\QuizQuestionSet;
 use App\Models\Subject;
@@ -929,6 +930,7 @@ class ContentController extends Controller
                 'class_level_id' => $request->class_level_id,
                 'subject_id'    => $request->subject_id,
                 'chapter_id'   => $request->chapter_id,
+                'content_subject_id'=> $request->content_subject_id,
                 'chapter_script_id' => $request->chapter_script_id,
                 'chapter_video_id' => $request->chapter_video_id,
                 'chapter_quiz_id' => $request->chapter_quiz_id,
@@ -968,7 +970,9 @@ class ContentController extends Controller
     public function contentOutlineList(Request $request)
     {
         $id = $request->id ? $request->id : 0;
-        $contentOutlineList = ContentOutline::leftJoin('contents', 'contents.id', 'content_outlines.content_id')
+        $contentOutlineList =
+         ContentOutline::where('content_subject_id', $id)
+        ->leftJoin('contents', 'contents.id', 'content_outlines.content_id')
             ->leftJoin('class_levels', 'class_levels.id', 'content_outlines.class_level_id')
             ->leftJoin('subjects', 'subjects.id', 'content_outlines.subject_id')
             ->leftJoin('chapters', 'chapters.id', 'content_outlines.chapter_id')
@@ -979,9 +983,9 @@ class ContentController extends Controller
                 'subjects.name as subject_name',
                 'chapters.name as chapter_name',
             )
-            ->when($id, function ($query, $id) {
-                return $query->where('content_outlines.content_id', $id);
-            })
+            // ->when($id, function ($query, $id) {
+            //     return $query->where('content_outlines.content_id', $id);
+            // })
             ->get();
         return $this->apiResponse($contentOutlineList, 'Content Outline List', true, 200);
     }
@@ -1126,5 +1130,57 @@ class ContentController extends Controller
             //throw $th; 
             return $this->apiResponse([], $th->getMessage(), false, 500);
         }
+    }
+
+    public function contentSubjectAssignSaveOrUpdate(Request $request)
+    {
+
+        try {
+            if (empty($request->id)) {
+                foreach($request->subjectArr as $value){
+                    $contentSubject = [
+                        'content_id' => $request->content_id,
+                        'class_level_id' => $value['class_level_id'],
+                        'subject_id' => $value['subject_id'],
+                        'is_active' => $value['is_active'],
+                    ];
+                    ContentSubject::create($contentSubject);
+                }
+                return $this->apiResponse([], 'Content Subject Created Successfully', true, 201);
+            } else {
+                $contentSubject = ContentSubject::where('id', $request->id)->first();
+                $contentSubject->update(
+                    [
+                        'content_id' => $request->content_id,
+                        'class_level_id' => $request->class_level_id,
+                        'subject_id' => $request->subject_id,
+                        'is_active' => $request->is_active,
+                    ]
+                );
+
+
+                return $this->apiResponse([], 'Content Subject Updated Successfully', true, 200);
+            }
+        } catch (\Throwable $th) {
+            return $this->apiResponse([], $th->getMessage(), false, 500);
+        }
+    }
+
+    public function contentSubjectList()
+    {
+
+        $contentSubjectList = ContentSubject::leftJoin('contents', 'contents.id', 'content_subjects.content_id')
+            ->leftJoin('class_levels', 'class_levels.id', 'content_subjects.class_level_id')
+            ->leftJoin('subjects', 'subjects.id', 'content_subjects.subject_id')
+            ->select(
+                'content_subjects.*',
+                'contents.title as content_name',
+                'class_levels.name as class_name',
+                'subjects.name as subject_name',
+            )
+            ->get();
+
+
+        return $this->apiResponse($contentSubjectList, 'Content Subject List', true, 200);
     }
 }
