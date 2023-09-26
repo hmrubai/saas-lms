@@ -1220,4 +1220,32 @@ class ContentController extends Controller
 
         return $this->apiResponse($contect, 'Content Subject List', true, 200);
     }
+
+    public function ContentOutlineDetailsByID(Request $request)
+    {
+        $content_subject_id = $request->content_subject_id ? $request->content_subject_id : 0;
+
+        if (!$content_subject_id) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Please, attach ID',
+                'data' => []
+            ], 422);
+        }
+
+        $content_subjects = ContentSubject::select(
+                'content_subjects.*',
+                'contents.title as content_name',
+                'class_levels.name as class_name',
+                'subjects.name as subject_name',
+            )
+            ->leftJoin('contents', 'contents.id', 'content_subjects.content_id')
+            ->leftJoin('class_levels', 'class_levels.id', 'content_subjects.class_level_id')
+            ->leftJoin('subjects', 'subjects.id', 'content_subjects.subject_id')
+            ->where('content_subjects.id', $content_subject_id)
+            ->orderBy('subjects.name', "ASC")
+            ->first();
+
+        return $this->apiResponse($content_subjects, 'Content Details Successful!', true, 200);
+    }
 }
