@@ -1197,23 +1197,23 @@ class ContentController extends Controller
             ], 422);
         }
 
-        $contect = Content::leftJoin('categories', 'categories.id', 'contents.category_id')
-            ->select(
+        $contect = Content::select(
                 'contents.*',
                 'categories.name as category_name',
             )
+            ->leftJoin('categories', 'categories.id', 'contents.category_id')
             ->where('contents.id', $content_id)
             ->first();
 
-            $contect->subjects = ContentSubject::leftJoin('contents', 'contents.id', 'content_subjects.content_id')
-            ->leftJoin('class_levels', 'class_levels.id', 'content_subjects.class_level_id')
-            ->leftJoin('subjects', 'subjects.id', 'content_subjects.subject_id')
-            ->select(
+        $contect->subjects = ContentSubject::select(
                 'content_subjects.*',
                 'contents.title as content_name',
                 'class_levels.name as class_name',
                 'subjects.name as subject_name',
             )
+            ->leftJoin('contents', 'contents.id', 'content_subjects.content_id')
+            ->leftJoin('class_levels', 'class_levels.id', 'content_subjects.class_level_id')
+            ->leftJoin('subjects', 'subjects.id', 'content_subjects.subject_id')
             ->where('content_subjects.content_id', $content_id)
             ->orderBy('subjects.name', "ASC")
             ->get();
