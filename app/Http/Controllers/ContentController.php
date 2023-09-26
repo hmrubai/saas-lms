@@ -533,6 +533,7 @@ class ContentController extends Controller
             return $this->apiResponse([], $th->getMessage(), false, 500);
         }
     }
+
     public function chapterQuizList(Request $request)
     {
         $class = $request->query('class_id') ? $request->query('class_id') : 0;
@@ -1182,5 +1183,41 @@ class ContentController extends Controller
 
 
         return $this->apiResponse($contentSubjectList, 'Content Subject List', true, 200);
+    }
+
+    public function contentDetailsByID(Request $request)
+    {
+        $content_id = $request->content_id ? $request->content_id : 0;
+
+        if (!$content_id) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Please, attach ID',
+                'data' => []
+            ], 422);
+        }
+
+        $contect = Content::leftJoin('categories', 'categories.id', 'contents.category_id')
+            ->select(
+                'contents.*',
+                'categories.name as category_name',
+            )
+            ->where('contents.id', $content_id)
+            ->first();
+
+            $contect->subjects = ContentSubject::leftJoin('contents', 'contents.id', 'content_subjects.content_id')
+            ->leftJoin('class_levels', 'class_levels.id', 'content_subjects.class_level_id')
+            ->leftJoin('subjects', 'subjects.id', 'content_subjects.subject_id')
+            ->select(
+                'content_subjects.*',
+                'contents.title as content_name',
+                'class_levels.name as class_name',
+                'subjects.name as subject_name',
+            )
+            ->where('content_subjects.content_id', $content_id)
+            ->orderBy('subjects.name', "ASC")
+            ->get();
+
+        return $this->apiResponse($contect, 'Content Subject List', true, 200);
     }
 }

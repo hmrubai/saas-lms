@@ -60,6 +60,9 @@ Route::group(['prefix' => 'website'], function () {
     Route::get('quiz-details-by-id/{quiz_id}', [CourseController::class, 'chapterQuizDetails']);
 
     Route::get('organization-details-by-id/{organization_id}', [OrganizationController::class, 'organizationDetailsByID']);
+
+    Route::get('content-details-by-id/{content_id}', [ContentController::class, 'contentDetailsByID']);
+    //Route::get('content-subjects-by-id/{content_id}', [ContentController::class, 'SubjectListByContentID']);
 });
 
 Route::middleware('auth:sanctum')->group(function () {

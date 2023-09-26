@@ -31,6 +31,7 @@ trait HelperTrait
         $newId++;
         return $newId;
     }
+    
     // ex: $req,'image','icon',$class->image
     protected function imageUpload($request, $image, $destination, $old_image = null)
     {
