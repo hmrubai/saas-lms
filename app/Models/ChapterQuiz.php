@@ -16,6 +16,7 @@ class ChapterQuiz extends Model
         'description',
         'quiz_code',
         'class_level_id',
+        'quiz_type_id',
         'subject_id',
         'chapter_id',
         'duration',
