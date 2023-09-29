@@ -57,6 +57,8 @@ Route::group(['prefix' => 'website'], function () {
     Route::get('menu-list', [MasterSettingsController::class, 'websiteMenuList']);
     Route::get('course-list-by-id/{menu_id}', [CourseController::class, 'courseListByID']);
     Route::get('course-details-by-user/{user_id}/{course_id}', [CourseController::class, 'courseDetailsByUserID']);
+    Route::get('course-details-by-user-v2/{user_id}/{course_id}', [CourseController::class, 'courseDetailsByUserIDV2']);
+    
     Route::get('quiz-details-by-id/{quiz_id}', [CourseController::class, 'chapterQuizDetails']);
 
     Route::get('organization-details-by-id/{organization_id}', [OrganizationController::class, 'organizationDetailsByID']);

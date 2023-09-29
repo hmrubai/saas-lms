@@ -1246,6 +1246,18 @@ class ContentController extends Controller
             ->orderBy('subjects.name', "ASC")
             ->first();
 
+        $main_subject_id = $content_subjects->subject_id ?? 0;
+
+        $lecture_scripts = Chapter::where('subject_id', $main_subject_id)->get();
+
+        foreach ($lecture_scripts as $chapter) {
+            $chapter->scripts = ChapterScript::where('chapter_id', $chapter->id)->get();
+            $chapter->videos = ChapterVideo::where('chapter_id', $chapter->id)->get();
+            $chapter->quiz = ChapterQuiz::where('chapter_id', $chapter->id)->get();
+        }
+
+        $content_subjects->outline = $lecture_scripts;
+
         return $this->apiResponse($content_subjects, 'Content Details Successful!', true, 200);
     }
 }

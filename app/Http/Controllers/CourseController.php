@@ -330,7 +330,22 @@ class CourseController extends Controller
             ->leftJoin('chapter_quizzes', 'chapter_quizzes.id', 'course_outlines.chapter_quiz_id')
             ->get();
 
-        foreach ($courses->course_outline as $item) {
+        $content_list = [];
+        $sub_content_list = [];
+        $count = 0;
+        $title_list = $courses->course_outline->where('is_only_note', true)->pluck('title');
+
+        foreach ($courses->course_outline as $key => $item) {
+
+            if($key > 0 && $item->is_only_note){
+                array_push($content_list, ['title' => $title_list[$count], 'content' => $sub_content_list]);
+                $count++;
+                $sub_content_list = [];
+            }
+            else{
+                array_push($sub_content_list, $item);
+            }
+
             $quiz = null;
             if ($item->chapter_quiz_id) {
                 $set = QuizQuestionSet::inRandomOrder()->first();
@@ -358,6 +373,129 @@ class CourseController extends Controller
             $item->quiz_details = $quiz;
         }
 
+        array_push($content_list, ['title' => $title_list[$count], 'content' => $sub_content_list]);
+        $courses->structured_outline = $content_list;
+
+        $courses->course_routine = CourseClassRoutine::where('course_id', $course_id)->get();
+        $courses->course_feature = CourseFeature::where('course_id', $course_id)->get();
+        $courses->course_mentor = CourseMentor::select('course_mentors.*', 'mentor_informations.name', 'mentor_informations.education', 'mentor_informations.institute', 'mentor_informations.image as mentor_image')
+            ->where('course_mentors.course_id', $course_id)
+            ->leftJoin('mentor_informations', 'mentor_informations.id', 'course_mentors.mentor_id')
+            ->get();
+        $courses->course_faq = CourseFaq::where('course_id', $course_id)->get();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Successful',
+            'data' => $courses
+        ], 200);
+    }
+
+    public function courseDetailsByUserIDV2(Request $request)
+    {
+        $user_id = $request->user_id ? $request->user_id : 0;
+        $course_id = $request->course_id ? $request->course_id : 0;
+
+        if (!$course_id) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Please, attach Course ID',
+                'data' => []
+            ], 422);
+        }
+
+        $courses = Course::where('id', $course_id)->first();
+
+        $is_exist = CourseParticipant::where('item_id', $course_id)->where('user_id', $user_id)->where('item_type', 'Course')->first();
+        if (!empty($is_exist)) {
+            $courses->is_purchased = true;
+        } else {
+            $courses->is_purchased = false;
+        }
+
+        $courses->course_outline = CourseOutline::select(
+            'course_outlines.*',
+            'class_levels.name as class_name',
+            'subjects.name as subject_name',
+            'chapters.name as chapter_name',
+            'chapter_videos.title as video_title',
+            'chapter_videos.title_bn as video_title_bn',
+            'chapter_videos.author_name as video_author_name',
+            'chapter_videos.author_details as video_author_details',
+            'chapter_videos.raw_url as video_raw_url',
+            'chapter_videos.s3_url as video_s3_url',
+            'chapter_videos.youtube_url as video_youtube_url',
+            'chapter_videos.download_url as video_download_url',
+            'chapter_videos.duration as video_duration',
+            'chapter_videos.thumbnail as video_thumbnail',
+            'chapter_videos.is_free as video_is_free',
+            'chapter_scripts.title as script_title',
+            'chapter_scripts.title_bn as script_title_bn',
+            'chapter_scripts.raw_url as script_raw_url',
+            'chapter_scripts.is_free as script_is_free',
+            'chapter_quizzes.title as quiz_title',
+            'chapter_quizzes.title_bn as quiz_title_bn',
+            'chapter_quizzes.duration as quiz_duration',
+            'chapter_quizzes.is_free as quiz_is_free',
+        )
+            ->where('course_outlines.course_id', $course_id)
+            ->leftJoin('class_levels', 'class_levels.id', 'course_outlines.class_level_id')
+            ->leftJoin('subjects', 'subjects.id', 'course_outlines.subject_id')
+            ->leftJoin('chapters', 'chapters.id', 'course_outlines.chapter_id')
+            ->leftJoin('chapter_videos', 'chapter_videos.id', 'course_outlines.chapter_video_id')
+            ->leftJoin('chapter_scripts', 'chapter_scripts.id', 'course_outlines.chapter_script_id')
+            ->leftJoin('chapter_quizzes', 'chapter_quizzes.id', 'course_outlines.chapter_quiz_id')
+            ->get();
+
+        $content_list = [];
+        $sub_content_list = [];
+        
+        $count = 0;
+
+        $title_list = $courses->course_outline->where('is_only_note', true)->pluck('title');
+
+        foreach ($courses->course_outline as $key => $item) {
+
+            if($key > 0 && $item->is_only_note){
+                array_push($content_list, ['title' => $title_list[$count], 'content' => $sub_content_list]);
+                $count++;
+                $sub_content_list = [];
+            }
+            else{
+                array_push($sub_content_list, $item);
+            }
+
+            // $quiz = null;
+            // if ($item->chapter_quiz_id) {
+            //     $set = QuizQuestionSet::inRandomOrder()->first();
+            //     $quiz = ChapterQuiz::where('id', $item->chapter_quiz_id)->first();
+
+            //     $subject_list = ChapterQuizSubject::where('chapter_quiz_id', $item->chapter_quiz_id)->get();
+            
+            //     $questions = [];
+            //     foreach ($subject_list as $subject) 
+            //     {
+            //         $set_question = ChapterQuizQuestion::inRandomOrder()
+            //         ->where('chapter_quiz_id', $item->chapter_quiz_id)
+            //         ->where('question_set_id', $set->id)
+            //         ->where('chapter_quiz_subject_id', $subject->id)
+            //         ->limit($subject->no_of_question)
+            //         ->get();
+
+            //         foreach ($set_question as $row) {
+            //             array_push($questions, $row);
+            //         }
+            //     }
+            //     $quiz->questions = $questions;
+            // }
+
+            // $item->quiz_details = $quiz;
+        }
+
+        array_push($content_list, ['title' => $title_list[$count], 'content' => $sub_content_list]);
+
+        $courses->structured_outline = $content_list;
+
         $courses->course_routine = CourseClassRoutine::where('course_id', $course_id)->get();
         $courses->course_feature = CourseFeature::where('course_id', $course_id)->get();
         $courses->course_mentor = CourseMentor::select('course_mentors.*', 'mentor_informations.name', 'mentor_informations.education', 'mentor_informations.institute')
@@ -369,7 +507,7 @@ class CourseController extends Controller
         return response()->json([
             'status' => true,
             'message' => 'Successful',
-            'data' => $courses
+            'data' => $content_list
         ], 200);
     }
 
