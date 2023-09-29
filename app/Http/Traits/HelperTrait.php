@@ -2,6 +2,7 @@
 
 namespace App\Http\Traits;
 
+use Carbon\Carbon;
 use Validator;
 use Illuminate\Http\Response;
 use Illuminate\Http\Request;
@@ -85,4 +86,36 @@ trait HelperTrait
         }
         return true;
     }
+
+    public function addHour($date_time, $hour){
+        return date("Y-m-d H:i:s", strtotime('+'.$hour.' hours', strtotime($date_time)));
+    }
+
+    public function getUTCTime($date) {
+        return new Carbon($date, 'UTC');
+    }
+
+    public function getTimeDifference($start, $end) {
+        $start_time  = new Carbon($start);
+        $end_time    = new Carbon($end);
+        return $start_time->diff($end_time)->format('%H:%I:%S');
+    }
+
+    public function calculateTime($time_array){
+        $sum = strtotime('00:00:00');
+        $totaltime = 0;
+        
+        foreach( $time_array as $element ) {
+            $timeinsec = strtotime($element) - $sum;
+            $totaltime = $totaltime + $timeinsec;
+        }
+
+        $h = intval($totaltime / 3600);
+        $totaltime = $totaltime - ($h * 3600);
+        $m = intval($totaltime / 60);
+        $s = $totaltime - ($m * 60);
+        
+        return "$h:$m:$s";
+    }
+    
 }

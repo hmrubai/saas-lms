@@ -348,26 +348,26 @@ class CourseController extends Controller
 
             $quiz = null;
             if ($item->chapter_quiz_id) {
-                $set = QuizQuestionSet::inRandomOrder()->first();
+                //$set = QuizQuestionSet::inRandomOrder()->first();
                 $quiz = ChapterQuiz::where('id', $item->chapter_quiz_id)->first();
 
-                $subject_list = ChapterQuizSubject::where('chapter_quiz_id', $item->chapter_quiz_id)->get();
+                // $subject_list = ChapterQuizSubject::where('chapter_quiz_id', $item->chapter_quiz_id)->get();
             
-                $questions = [];
-                foreach ($subject_list as $subject) 
-                {
-                    $set_question = ChapterQuizQuestion::inRandomOrder()
-                    ->where('chapter_quiz_id', $item->chapter_quiz_id)
-                    ->where('question_set_id', $set->id)
-                    ->where('chapter_quiz_subject_id', $subject->id)
-                    ->limit($subject->no_of_question)
-                    ->get();
+                // $questions = [];
+                // foreach ($subject_list as $subject) 
+                // {
+                //     $set_question = ChapterQuizQuestion::inRandomOrder()
+                //     ->where('chapter_quiz_id', $item->chapter_quiz_id)
+                //     ->where('question_set_id', $set->id)
+                //     ->where('chapter_quiz_subject_id', $subject->id)
+                //     ->limit($subject->no_of_question)
+                //     ->get();
 
-                    foreach ($set_question as $row) {
-                        array_push($questions, $row);
-                    }
-                }
-                $quiz->questions = $questions;
+                //     foreach ($set_question as $row) {
+                //         array_push($questions, $row);
+                //     }
+                // }
+                // $quiz->questions = $questions;
             }
 
             $item->quiz_details = $quiz;
@@ -977,6 +977,15 @@ class CourseController extends Controller
             ->get();
 
         foreach ($class as $item) {
+
+            if($item->start_time){
+                $item->start_time = $this->addHour($item->start_time, 6);
+            }
+
+            if($item->end_time){
+                $item->end_time = $this->addHour($item->end_time, 6);
+            }
+
             $isToday = date('Ymd') == date('Ymd', strtotime($item->schedule_datetime));
 
             $zoomLink = MentorZoomLink::where('mentor_id', $item->mentor_id)->first();
@@ -1156,6 +1165,7 @@ class CourseController extends Controller
 
         $history = StudentJoinHistory::where('class_schedule_id', $schedule_id)->get();
         foreach ($history as $item) {
+            $item->join_time = $this->addHour($item->join_time, 6);
             $item->schedule_datetime = $schedule_details->schedule_datetime;
             $item->course_title = $schedule_details->course_title;
             $item->mentor_name = $schedule_details->mentor_name;
@@ -1235,6 +1245,8 @@ class CourseController extends Controller
     public function mentorCompletedClassList(Request $request)
     {
         $user_id = $request->user()->id;
+        $from = $request->start_date ? $request->start_date.' 00:00:00' : '';
+        $to = $request->end_date ? $request->end_date.' 23:59:59' : '';;
         $mentor = MentorInformation::where('user_id', $user_id)->first();
 
         $class = ClassSchedule::select(
@@ -1246,15 +1258,29 @@ class CourseController extends Controller
         )
             ->where('class_schedules.mentor_id', $mentor->id)
             ->where('class_schedules.has_completed', true)
+            ->whereBetween('schedule_datetime', [$from, $to])
             ->leftJoin('courses', 'courses.id', 'class_schedules.course_id')
             ->leftJoin('mentor_informations', 'mentor_informations.id', 'class_schedules.mentor_id')
             ->leftJoin('student_informations', 'student_informations.id', 'class_schedules.student_id')
             ->get();
+        
+        $times = [];
+        foreach ($class as $key => $item) {
+            $item->start_time_gmt = $this->addHour($item->start_time, 6);
+            $item->end_time_gmt = $this->addHour($item->end_time, 6);
+            $item->total_minutes = $this->getTimeDifference($item->start_time, $item->end_time);
+            array_push($times, $this->getTimeDifference($item->start_time, $item->end_time));
+        }
+
+        $response = [
+            "total_time" => $this->calculateTime($times),
+            "list" => $class
+        ];
 
         return response()->json([
             'status' => true,
             'message' => 'Successful',
-            'data' => $class
+            'data' => $response
         ], 200);
     }
 
@@ -1276,9 +1302,16 @@ class CourseController extends Controller
             ->leftJoin('student_informations', 'student_informations.id', 'class_schedules.student_id')
             ->get();
 
-        //$class_list = [];
-
         foreach ($class as $item) {
+
+            if($item->start_time){
+                $item->start_time = $this->addHour($item->start_time, 6);
+            }
+
+            if($item->end_time){
+                $item->end_time = $this->addHour($item->end_time, 6);
+            }
+
             $isToday = date('Ymd') == date('Ymd', strtotime($item->schedule_datetime));
 
             $zoomLink = MentorZoomLink::where('mentor_id', $item->mentor_id)->first();
@@ -1329,6 +1362,15 @@ class CourseController extends Controller
         $class_list = [];
 
         foreach ($class as $item) {
+
+            if($item->start_time){
+                $item->start_time = $this->addHour($item->start_time, 6);
+            }
+
+            if($item->end_time){
+                $item->end_time = $this->addHour($item->end_time, 6);
+            }
+
             $isToday = date('Ymd') == date('Ymd', strtotime($item->schedule_datetime));
 
             if (!empty($zoomLink)) {
@@ -1904,7 +1946,6 @@ class CourseController extends Controller
 
         return $this->apiResponse($mentorList, 'Mentor List', true, 200);
     }
-
 
     public function courseFreeEnrollment(Request $request)
     {
