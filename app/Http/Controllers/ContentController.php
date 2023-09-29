@@ -17,6 +17,7 @@ use App\Models\ClassLevel;
 use App\Models\ContentSubject;
 use App\Models\QuizCoreSubjects;
 use App\Models\QuizQuestionSet;
+use App\Models\QuizType;
 use App\Models\Subject;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -499,6 +500,12 @@ class ContentController extends Controller
         return $this->apiResponse($quiz, 'Quiz By Id Successful', true, 200);
     }
 
+    public function quizTypeList ()
+    {
+        $quizTypeList = QuizType::select('id', 'name', 'name_bn', 'participation_limit', 'in_course', 'is_active')->get();
+        return $this->apiResponse($quizTypeList, 'Quiz Type List Successful', true, 200);
+    }
+
     public function saveOrUpdateQuiz(Request $request)
     {
         try {
@@ -509,6 +516,7 @@ class ContentController extends Controller
                 "class_level_id" => $request->class_level_id,
                 "subject_id" => $request->subject_id,
                 "chapter_id" => $request->chapter_id,
+                "quiz_type_id" => $request->quiz_type_id, //newly added "quiz_type_id
                 "duration" => $request->duration,
                 "positive_mark" => $request->positive_mark,
                 "negative_mark" => $request->negative_mark,
@@ -550,6 +558,7 @@ class ContentController extends Controller
                 'chapter_quizzes.title_bn',
                 'chapter_quizzes.class_level_id',
                 'chapter_quizzes.subject_id',
+                'chapter_quizzes.quiz_type_id',
                 'chapter_quizzes.chapter_id',
                 'chapter_quizzes.quiz_code',
                 'chapter_quizzes.description',
@@ -1197,7 +1206,7 @@ class ContentController extends Controller
             ], 422);
         }
 
-        $contect = Content::select(
+        $content = Content::select(
                 'contents.*',
                 'categories.name as category_name',
             )
@@ -1205,7 +1214,7 @@ class ContentController extends Controller
             ->where('contents.id', $content_id)
             ->first();
 
-        $contect->subjects = ContentSubject::select(
+        $content->subjects = ContentSubject::select(
                 'content_subjects.*',
                 'contents.title as content_name',
                 'class_levels.name as class_name',
@@ -1218,7 +1227,7 @@ class ContentController extends Controller
             ->orderBy('subjects.name', "ASC")
             ->get();
 
-        return $this->apiResponse($contect, 'Content Subject List', true, 200);
+        return $this->apiResponse($content, 'Content Subject List', true, 200);
     }
 
     public function ContentOutlineDetailsByID(Request $request)
