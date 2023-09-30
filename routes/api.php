@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\MasterSettingsController;
 use App\Http\Controllers\PromotionalNoticeController;
 use App\Http\Controllers\PackageController;
+use App\Http\Controllers\AssignmentController;
 use App\Http\Controllers\SchoolController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\ContentController;
@@ -118,6 +119,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('class-list', [ContentController::class, 'classList']);
         Route::get('subject-list-by-class-id/{class_id}', [ContentController::class, 'subjectListByClassID']);
         Route::get('chapter-list-by-subject-id/{subject_id}', [ContentController::class, 'chapterListBySubjectID']);
+
+        Route::post('create-assignment', [AssignmentController::class, 'createAssignment']);
+        Route::post('publish-assignment', [AssignmentController::class, 'publishAssignment']);
+        Route::get('assignment-list', [AssignmentController::class, 'assignmentList']);
+        Route::get('student-assignment-list', [AssignmentController::class, 'studentAssignmentList']);
         
         Route::get('resource-list-by-chapter-id/{chapter_id}', [ContentController::class, 'resourceListByChapterID']);
 
