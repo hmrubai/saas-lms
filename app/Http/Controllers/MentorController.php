@@ -294,4 +294,13 @@ class MentorController extends Controller
         $mentorList = MentorInformation::latest()->get();
         return  $this->apiResponse($mentorList, 'Mentor List', true, 200);
     }
+
+    public function mentorListForFilter(Request $request)
+    {
+        $mentorList = MentorInformation::where('is_active', true)
+        ->select('id', 'name','user_id','email','contact_no','organization_slug','mentor_code')
+        ->latest()
+        ->get();
+        return  $this->apiResponse($mentorList, 'Mentor List', true, 200);
+    }
 }
