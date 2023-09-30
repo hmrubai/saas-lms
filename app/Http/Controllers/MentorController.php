@@ -19,6 +19,7 @@ use App\Models\CourseClassRoutine;
 use App\Models\CourseFeature;
 use App\Models\CourseMentor;
 use App\Models\CourseFaq;
+use App\Models\CourseStudentMapping;
 use App\Models\User;
 use App\Models\MentorInformation;
 use Illuminate\Http\Request;
@@ -297,10 +298,13 @@ class MentorController extends Controller
 
     public function mentorListForFilter(Request $request)
     {
-        $mentorList = MentorInformation::where('is_active', true)
-        ->select('id', 'name','user_id','email','contact_no','organization_slug','mentor_code')
-        ->latest()
-        ->get();
+        $course_id = $request->course_id ? $request->course_id : 0;
+         $mentorList = CourseStudentMapping::where('course_id', $course_id)->pluck('mentor_id');
+        $mentorList = MentorInformation::whereIn('id', $mentorList)
+            ->where('is_active', true)
+            ->select('id', 'name', 'image', 'mentor_code')
+            ->get();
+           
         return  $this->apiResponse($mentorList, 'Mentor List', true, 200);
     }
 }

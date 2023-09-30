@@ -51,6 +51,7 @@ class CourseController extends Controller
         ], 200);
     }
 
+
     public function allCourseList(Request $request)
     {
         $menus = Category::where('is_course', true)->get();
@@ -111,6 +112,19 @@ class CourseController extends Controller
             'message' => 'List Successful',
             'data' => $menus
         ], 200);
+    }
+
+    public function courseListForFilter(){
+
+        $courseList = Course::select('id', 'title')->get();
+        return response()->json([
+            'status' => true,
+            'message' => 'List Successful',
+            'data' => $courseList
+        ], 200);
+
+
+
     }
 
     public function courseDetailsByID(Request $request)
@@ -2012,13 +2026,12 @@ class CourseController extends Controller
 
     public function adminCompletedClassList(Request $request)
     {
+        $course_id = $request->course_id ? $request->course_id : 0;
         $mentor_id = $request->mentor_id ? $request->mentor_id : 0;
         $student_id = $request->student_id ? $request->student_id : 0;
         $from = $request->from ? $request->from.' 00:00:00' : '';
         $to = $request->to ? $request->to.' 23:59:59' : '';
 
-        // $mentor = MentorInformation::where('id', $mentor_id)->first();
-        // $student = StudentInformation::where('id', $student_id)->first();
 
         $class = ClassSchedule::select(
             'class_schedules.*',
@@ -2027,34 +2040,16 @@ class CourseController extends Controller
             'student_informations.name as student_name',
             'student_informations.contact_no as student_contact_no'
         )
-         ->when($mentor_id, function ($query, $mentor_id) {
-                return $query->where('class_schedules.mentor_id', $mentor_id);
-            })
-            ->when($student_id, function ($query, $student_id) {
-                return $query->where('class_schedules.student_id', $student_id);
-            })
-            ->when($from, function ($query, $from) {
-                return $query->where('class_schedules.schedule_datetime', '>=', $from);
-            })
-            ->when($to, function ($query, $to) {
-                return $query->where('class_schedules.schedule_datetime', '<=', $to);
-            })
+            ->where('class_schedules.course_id', $course_id)
+            ->where('class_schedules.mentor_id', $mentor_id)
+            ->where('class_schedules.student_id', $student_id)
             ->where('class_schedules.has_completed', true)
+            ->whereBetween('schedule_datetime', [$from, $to])
             ->leftJoin('courses', 'courses.id', 'class_schedules.course_id')
             ->leftJoin('mentor_informations', 'mentor_informations.id', 'class_schedules.mentor_id')
             ->leftJoin('student_informations', 'student_informations.id', 'class_schedules.student_id')
-
-
+            
             ->get();
-
-
-            // ->where('class_schedules.mentor_id', $mentor->id)
-            // ->where('class_schedules.student_id', $student->id)
-            // ->where('class_schedules.has_completed', true)
-            // ->whereBetween('schedule_datetime', [$from, $to])
-            // ->leftJoin('courses', 'courses.id', 'class_schedules.course_id')
-            // ->leftJoin('mentor_informations', 'mentor_informations.id', 'class_schedules.mentor_id')
-            // ->leftJoin('student_informations', 'student_informations.id', 'class_schedules.student_id')
         
         $times = [];
         foreach ($class as $key => $item) {

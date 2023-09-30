@@ -148,6 +148,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('video-list-by-chapter-id/{chapter_id}', [ContentController::class, 'videoListByChapterID']);
         Route::get('quiz-list-by-chapter-id/{chapter_id}', [ContentController::class, 'quizListByChapterID']);
         Route::get('quiz-details-by-id/{id}', [ContentController::class, 'quizDetailsById']);
+        
+        Route::get('course-list-for-filter', [CourseController::class, 'courseListForFilter']);
+        
         Route::get('mentor-list-for-filter', [MentorController::class, 'mentorListForFilter']);
         Route::get('student-list-for-filter-by-mentor', [StudentController::class, 'studentListForFilterByMentorId']);
 

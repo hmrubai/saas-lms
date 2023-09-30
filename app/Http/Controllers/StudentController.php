@@ -370,10 +370,7 @@ class StudentController extends Controller
     public function studentListForFilterByMentorId(Request $request)
     {
         $mentor_id = $request->mentor_id ? $request->mentor_id : 0;
-        if (!$mentor_id) {
-            return  $this->apiResponse([], 'Please, attach mentor ID', false, 422);
-        }
-
+        
         $student_ids = CourseStudentMapping::where('mentor_id', $mentor_id)->pluck('student_id');
         $students = StudentInformation::whereIn('id', $student_ids)
             ->select('id', 'user_id', 'name', 'email', 'contact_no')
