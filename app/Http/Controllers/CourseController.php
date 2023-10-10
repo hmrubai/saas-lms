@@ -51,6 +51,7 @@ class CourseController extends Controller
         ], 200);
     }
 
+
     public function allCourseList(Request $request)
     {
         $menus = Category::where('is_course', true)->get();
@@ -111,6 +112,19 @@ class CourseController extends Controller
             'message' => 'List Successful',
             'data' => $menus
         ], 200);
+    }
+
+    public function courseListForFilter(){
+
+        $courseList = Course::select('id', 'title')->get();
+        return response()->json([
+            'status' => true,
+            'message' => 'List Successful',
+            'data' => $courseList
+        ], 200);
+
+
+
     }
 
     public function courseDetailsByID(Request $request)
@@ -2007,4 +2021,51 @@ class CourseController extends Controller
             return $this->apiResponse([], $th->getMessage(), false, 500);
         }
     }
+
+    // 
+
+    public function adminCompletedClassList(Request $request)
+    {
+        $course_id = $request->course_id ? $request->course_id : 0;
+        $mentor_id = $request->mentor_id ? $request->mentor_id : 0;
+        $student_id = $request->student_id ? $request->student_id : 0;
+        $from = $request->from ? $request->from.' 00:00:00' : '';
+        $to = $request->to ? $request->to.' 23:59:59' : '';
+
+
+        $class = ClassSchedule::select(
+            'class_schedules.*',
+            'courses.title as course_title',
+            'mentor_informations.name as mentor_name',
+            'student_informations.name as student_name',
+            'student_informations.contact_no as student_contact_no'
+        )
+            ->where('class_schedules.course_id', $course_id)
+            ->where('class_schedules.mentor_id', $mentor_id)
+            ->where('class_schedules.student_id', $student_id)
+            ->where('class_schedules.has_completed', true)
+            ->whereBetween('schedule_datetime', [$from, $to])
+            ->leftJoin('courses', 'courses.id', 'class_schedules.course_id')
+            ->leftJoin('mentor_informations', 'mentor_informations.id', 'class_schedules.mentor_id')
+            ->leftJoin('student_informations', 'student_informations.id', 'class_schedules.student_id')
+            
+            ->get();
+        
+        $times = [];
+        foreach ($class as $key => $item) {
+            $item->start_time_gmt = $this->addHour($item->start_time, 6);
+            $item->end_time_gmt = $this->addHour($item->end_time, 6);
+            $item->total_minutes = $this->getTimeDifference($item->start_time, $item->end_time);
+            array_push($times, $this->getTimeDifference($item->start_time, $item->end_time));
+        }
+
+        $response = [
+            "total_time" => $this->calculateTime($times),
+            "list" => $class
+        ];
+
+        return $this->apiResponse($response, 'Successful', true, 200);
+    }
+
+   
 }
