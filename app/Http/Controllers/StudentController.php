@@ -249,8 +249,8 @@ class StudentController extends Controller
                     $request->all(),
                     [
                         'name' => 'required',
-                        'email' => 'unique:users,email,' . $request->user_id,
-                        'contact_no' => 'unique:users,contact_no,' . $request->user_id,
+                        // 'email' => 'unique:users,email,' . $request->user_id,
+                        // 'contact_no' => 'unique:users,contact_no,' . $request->user_id,
                     ]
                 );
 
