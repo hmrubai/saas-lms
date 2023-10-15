@@ -80,6 +80,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::group(['prefix' => 'mobile'], function () {
         Route::get('student-profile', [StudentController::class, 'studentDetails']);
+        Route::post('submit-written-answer', [CourseController::class, 'submitWrittenAnswerMobile']);
     });
 
     Route::group(['prefix' => 'website'], function () {

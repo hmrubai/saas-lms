@@ -797,6 +797,72 @@ class CourseController extends Controller
         ], 200);
     }
 
+    public function submitWrittenAnswerMobile(Request $request)
+    {
+        $user_id = $request->user()->id;
+
+        $formData = json_decode($request->data, true);
+        $result_id = $formData["result_id"] ? $formData["result_id"] : 0;
+        $chapter_quiz_id = $formData["chapter_quiz_id"] ? $formData["chapter_quiz_id"] : 0;
+        $attach_count = $formData["attach_count"] ? $formData["attach_count"] : 0;
+
+        if (!$attach_count) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Please, attach Answer!',
+                'data' => []
+            ], 422);
+        }
+
+        if (!$result_id) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Please, Start Exam properly!',
+                'data' => []
+            ], 422);
+        }
+
+        if($attach_count){
+            $files = $request->file('files');
+            $i = 1;
+
+            foreach ($files as $file) {
+                $attachment_file = '';
+                if($file){
+                    $attachment_file = 'wa_'. $chapter_quiz_id . "_" . $i . "_" .time().'.'.$file->getClientOriginalExtension();
+                    $file->move('uploads/written_answer/', $attachment_file);
+                }
+    
+                ChapterQuizWrittenAttachment::create([
+                    'chapter_quiz_result_id' => $result_id,
+                    'chapter_quiz_id' => $chapter_quiz_id,
+                    'user_id' => $user_id,
+                    'attachment_url' => "uploads/written_answer/".$attachment_file,
+                ]);
+                $i++;
+            }
+
+            $written = ChapterQuizWrittenQuestion::where('chapter_quiz_id', $chapter_quiz_id)->first();
+
+            for ($i=1; $i <= $written->no_of_question; $i++) { 
+                ChapterQuizWrittenMark::create([
+                    'chapter_quiz_result_id' => $result_id,
+                    'chapter_quiz_id' => $chapter_quiz_id,
+                    'user_id' => $user_id,
+                    'question_no' => $i, 
+                    'mark' => 0.00, 
+                    'marks_givenby_id' => 0
+                ]);
+            }
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Quiz Submitted Successful!',
+            'data' => []
+        ], 200);
+    }
+
     public function quizAnswerList(Request $request)
     {
         $user_id = $request->user()->id;
