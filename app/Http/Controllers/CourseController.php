@@ -1917,8 +1917,9 @@ class CourseController extends Controller
                         $studentMapping[] = [
                             'course_id' => $value['course_id'],
                             'mentor_id' => $value['mentor_id'],
-                            'is_active' => $value['is_active'],
                             'student_id' => $value['student_id'],
+                            'is_active' => $value['is_active'],
+             
                         ];
                     }
                     CourseStudentMapping::insert($studentMapping);
