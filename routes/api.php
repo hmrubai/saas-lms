@@ -125,6 +125,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     //All Admin Routes Start
     Route::group(['prefix' => 'admin'], function () {
+        Route::post('password-reset', [AuthController::class, 'passwordReset']);
         //Menu Settings
         Route::get('menu-list', [MasterSettingsController::class, 'adminMenuList']);
         Route::post('menu-save-or-update', [MasterSettingsController::class, 'saveOrUpdateMenu']);

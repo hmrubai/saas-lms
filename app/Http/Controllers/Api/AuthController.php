@@ -540,4 +540,17 @@ class AuthController extends Controller
             'data' => []
         ], 200);
     }
+
+
+    public function passwordReset(request $request)
+    {
+        try {
+            $reset = User::where('id', '=', $request->id)->first();
+            $reset->password = bcrypt($request->new_password);
+            $reset->save();
+            return $this->apiResponse([], 'Password Reset Successfully', true, 200);
+        } catch (\Throwable $th) {
+            return $this->apiResponse([], $th->getMessage(), false, 500);
+        }
+    }
 }
