@@ -541,16 +541,32 @@ class AuthController extends Controller
         ], 200);
     }
 
-
     public function passwordReset(request $request)
     {
+        if (!$request->new_password || !$request->id) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Please, enter correct information!',
+                'data' => []
+            ], 422);
+        }
+
         try {
-            $reset = User::where('id', '=', $request->id)->first();
+            $reset = User::where('id', $request->id)->first();
             $reset->password = bcrypt($request->new_password);
             $reset->save();
-            return $this->apiResponse([], 'Password Reset Successfully', true, 200);
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Password Reset Successful',
+                'data' => []
+            ], 200);
         } catch (\Throwable $th) {
-            return $this->apiResponse([], $th->getMessage(), false, 500);
+            return response()->json([
+                'status' => true,
+                'message' => 'Unsuccessful',
+                'data' => $th->getMessage()
+            ], 422);
         }
     }
 }

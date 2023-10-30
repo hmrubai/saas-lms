@@ -1292,6 +1292,39 @@ class CourseController extends Controller
         ], 200);
     }
 
+    public function studentEndLiveClass(Request $request)
+    {
+        $schedule_id = $request->schedule_id ? $request->schedule_id : 0;
+
+        if (!$schedule_id) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Please, attach ID',
+                'data' => []
+            ], 422);
+        }
+
+        $schedule_details = ClassSchedule::where('id', $schedule_id)->first();
+
+        if (!$schedule_details->has_started) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Please start class first! You can not end a class before starts!',
+                'data' => []
+            ], 422);
+        }
+
+        $schedule_details->update([
+            "student_end_time" => date("Y-m-d H:i:s")
+        ]);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'The class has been ended! Thank You!',
+            'data' => []
+        ], 200);
+    }
+
     public function deleteClassSchedule(Request $request)
     {
         $schedule_id = $request->schedule_id ? $request->schedule_id : 0;

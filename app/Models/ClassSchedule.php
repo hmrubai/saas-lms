@@ -19,6 +19,7 @@ class ClassSchedule extends Model
         "has_completed",
         "start_time",
         "end_time",
+        "student_end_time",
         "is_active"
     ];
 

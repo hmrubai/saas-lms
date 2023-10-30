@@ -81,6 +81,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::group(['prefix' => 'mobile'], function () {
         Route::get('student-profile', [StudentController::class, 'studentDetails']);
         Route::post('submit-written-answer', [CourseController::class, 'submitWrittenAnswerMobile']);
+        Route::post('student-end-live-class', [CourseController::class, 'studentEndLiveClass']);
     });
 
     Route::group(['prefix' => 'website'], function () {
@@ -96,6 +97,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('delete-schedule', [CourseController::class, 'deleteClassSchedule']);
         Route::post('start-live-class', [CourseController::class, 'startLiveClass']);
         Route::post('end-live-class', [CourseController::class, 'endLiveClass']);
+        Route::post('student-end-live-class', [CourseController::class, 'studentEndLiveClass']);
 
         Route::post('join-live-class', [CourseController::class, 'studentJoinClass']);
         Route::get('student-join-history/{schedule_id}', [CourseController::class, 'studentClassJoinHistory']);
