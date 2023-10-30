@@ -112,6 +112,17 @@ class MentorController extends Controller
 
         $zoomLink = MentorZoomLink::where('mentor_id', $mentor->id)->first();
         
+        if(empty($zoomLink)){
+           $zoomLink = (object)[ 
+               "id" => $user_id,
+               "live_link" => "",
+               "mentor_id" => $mentor->id,
+               "is_active" => true,
+               "created_at" => null,
+               "updated_at" => null
+            ];
+        }
+        
         return response()->json([
             'status' => true,
             'message' => 'Link has been created successfully',
