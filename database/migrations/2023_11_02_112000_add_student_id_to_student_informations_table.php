@@ -14,7 +14,7 @@ class AddStudentIdToStudentInformationsTable extends Migration
     public function up()
     {
         Schema::table('student_informations', function (Blueprint $table) {
-            $table->dateTime('student_id')->after('username')->nullable();
+            $table->string('student_id')->after('username')->nullable();
         });
     }
 

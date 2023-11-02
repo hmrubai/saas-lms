@@ -15,6 +15,7 @@ class StudentInformation extends Model
         'name',
         'email',
         'username',
+        'student_id',
         'contact_no',
         'student_code',
         'organization_slug',
