@@ -2140,16 +2140,36 @@ class CourseController extends Controller
             'student_informations.name as student_name',
             'student_informations.contact_no as student_contact_no'
         )
-            ->where('class_schedules.course_id', $course_id)
-            ->where('class_schedules.mentor_id', $mentor_id)
-            ->where('class_schedules.student_id', $student_id)
-            ->where('class_schedules.has_completed', true)
-            ->whereBetween('schedule_datetime', [$from, $to])
+        
             ->leftJoin('courses', 'courses.id', 'class_schedules.course_id')
             ->leftJoin('mentor_informations', 'mentor_informations.id', 'class_schedules.mentor_id')
             ->leftJoin('student_informations', 'student_informations.id', 'class_schedules.student_id')
-            
+            ->where('class_schedules.course_id', $course_id)
+            ->where('class_schedules.mentor_id', $mentor_id)
+            ->where('class_schedules.has_completed', true)
+            ->whereBetween('schedule_datetime', [$from, $to])
+            ->when($student_id, function ($query, $student_id) {
+                return $query->where('class_schedules.student_id', $student_id);
+            })
             ->get();
+
+            // return $class;
+        // $class = ClassSchedule::select(
+        //     'class_schedules.*',
+        //     'courses.title as course_title',
+        //     'mentor_informations.name as mentor_name',
+        //     'student_informations.name as student_name',
+        //     'student_informations.contact_no as student_contact_no'
+        // )
+        //     ->where('class_schedules.course_id', $course_id)
+        //     ->where('class_schedules.mentor_id', $mentor_id)
+        //     ->where('class_schedules.student_id', $student_id)
+        //     ->where('class_schedules.has_completed', true)
+        //     ->whereBetween('schedule_datetime', [$from, $to])
+        //     ->leftJoin('courses', 'courses.id', 'class_schedules.course_id')
+        //     ->leftJoin('mentor_informations', 'mentor_informations.id', 'class_schedules.mentor_id')
+        //     ->leftJoin('student_informations', 'student_informations.id', 'class_schedules.student_id')
+        //     ->get();
         
         $times = [];
         foreach ($class as $key => $item) {
