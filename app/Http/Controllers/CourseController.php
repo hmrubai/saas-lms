@@ -2153,6 +2153,7 @@ class CourseController extends Controller
             })
             ->get();
 
+            
             // return $class;
         // $class = ClassSchedule::select(
         //     'class_schedules.*',
