@@ -141,6 +141,7 @@ class StudentController extends Controller
     {
         try {
             $student = [
+                'student_id'=> $request->student_id,
                 'education' => $request->education,
                 'institute' => $request->institute,
                 'device_id' => $request->device_id,
@@ -185,8 +186,8 @@ class StudentController extends Controller
                 if ($validateUser->fails()) {
                     return response()->json([
                         'status' => false,
-                        'message' => 'validation error',
-                        'data' => $validateUser->errors()
+                        'message' =>  $validateUser->errors()->first(),
+                        'data' => []
                     ], 422);
                 }
                 DB::beginTransaction();
