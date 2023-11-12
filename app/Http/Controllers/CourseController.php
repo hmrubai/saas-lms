@@ -1897,7 +1897,10 @@ class CourseController extends Controller
                 return $this->apiResponse([], 'Course mentor Created Successfully', true, 201);
             } else {
                 $mentor = CourseMentor::where('id', $request->id)->first();
-                $mentor->update($request->all());
+                $mentor->update([
+                    'is_active' => $request->is_active,
+                ]);
+                DB::commit();
                 return $this->apiResponse([], 'Course mentor Updated Successfully', true, 200);
             }
         } catch (\Throwable $th) {
@@ -1965,7 +1968,7 @@ class CourseController extends Controller
                 $studentMapping->update([
                     'is_active' => $request->is_active,
                 ]);
-
+                DB::commit();
                 return $this->apiResponse([], 'Course studentMapping Updated Successfully', true, 200);
             }
         } catch (\Throwable $th) {
