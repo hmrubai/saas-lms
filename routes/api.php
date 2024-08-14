@@ -66,6 +66,9 @@ Route::group(['prefix' => 'website'], function () {
 
     Route::get('content-details-by-id/{content_id}', [ContentController::class, 'contentDetailsByID']);
     Route::get('content-outline-details-by-id/{content_subject_id}', [ContentController::class, 'ContentOutlineDetailsByID']);
+
+    Route::get('home-course-list', [CourseController::class, 'homeCourseList']);
+
 });
 
 Route::middleware('auth:sanctum')->group(function () {

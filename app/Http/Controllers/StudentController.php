@@ -168,7 +168,12 @@ class StudentController extends Controller
                 'is_active' => $request->is_active,
                 'rating' => $request->rating,
             ];
-
+            
+            // return response()->json([
+            //     'status' => false,
+            //     'message' =>  "Testing Error!!",
+            //     'data' => [$student, $request->id, empty($request->id)]
+            // ], 422);
 
             if (empty($request->id)) {
                 $validateUser = Validator::make(
@@ -177,7 +182,7 @@ class StudentController extends Controller
                         'name' => 'required',
                         'organization_slug' => 'required',
                         'username' => 'required|unique:users,username,',
-                        'email' => 'unique:users,email,',
+                        //'email' => 'unique:users,email,',
                         'contact_no' => 'unique:users,contact_no,',
                         'password' => 'required'
                     ]
@@ -262,31 +267,60 @@ class StudentController extends Controller
                         'data' => $validateUser->errors()
                     ], 422);
                 }
+                
                 DB::beginTransaction();
-                $user = User::where('id', $request->user_id)->first();
-                $user->update([
-                    'name' => $request->name,
-                    'email' => $request->email,
-                    'contact_no' => $request->contact_no,
-                    'address' => $request->address,
-                ]);
-
-                if ($request->hasFile('image')) {
+                
+                    $user = User::where('id', $request->user_id)->first();
                     $user->update([
-                        'image' => $this->imageUpload($request, 'image', 'image'),
+                        'name' => $request->name,
+                        'email' => $request->email,
+                        'contact_no' => $request->contact_no,
+                        'address' => $request->address,
                     ]);
-                }
-
-                $studentInfo = StudentInformation::where('id', $request->id)->first();
-                $studentInfo->update([
-                    'name' => $user->name,
-                    'email' => $user->email,
-                    'contact_no' => $user->contact_no,
-                    'address' => $user->address,
-                    'image' => $user->image,
-
-                ]);
-                $studentInfo->update($student);
+    
+                    if ($request->hasFile('image')) {
+                        $user->update([
+                            'image' => $this->imageUpload($request, 'image', 'image'),
+                        ]);
+                    }
+    
+                    $studentInfo = StudentInformation::where('id', $request->id)->first();
+                    $studentInfo->update([
+                        'name' => $user->name,
+                        'email' => $user->email,
+                        'contact_no' => $user->contact_no,
+                        'address' => $user->address,
+                        'image' => $user->image,
+                        
+                        'student_id'=> $request->student_id,
+                        'education' => $request->education,
+                        'institute' => $request->institute,
+                        'device_id' => $request->device_id,
+                        'alternative_contact_no' => $request->alternative_contact_no,
+                        'gender' => $request->gender,
+                        'blood_group' => $request->blood_group,
+                        'bio' => $request->bio,
+                        'father_name' => $request->father_name,
+                        'mother_name' => $request->mother_name,
+                        'religion' => $request->religion,
+                        'marital_status' => $request->marital_status,
+                        'date_of_birth' => $request->date_of_birth,
+                        'current_address' => $request->current_address,
+                        'permanent_address' => $request->permanent_address,
+                        'interests' => $request->interests,
+                        'division_id' => $request->division_id,
+                        'city_id' => $request->city_id,
+                        'area_id' => $request->area_id,
+                        'nid_no' => $request->nid_no,
+                        'birth_certificate_no' => $request->birth_certificate_no,
+                        'passport_no' => $request->passport_no,
+                        'status' => $request->status,
+                        'is_foreigner' => $request->is_foreigner,
+                        'is_active' => $request->is_active,
+                        'rating' => $request->rating
+                    ]);
+                    //$studentInfo->update($student);
+                    
                 DB::commit();
                 return $this->apiResponse([], 'Student Updated Successfully', true, 200);
             }

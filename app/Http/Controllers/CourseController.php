@@ -386,8 +386,10 @@ class CourseController extends Controller
 
             $item->quiz_details = $quiz;
         }
-
-        array_push($content_list, ['title' => $title_list[$count], 'content' => $sub_content_list]);
+        
+        if(sizeof($title_list)){
+            array_push($content_list, ['title' => $title_list[$count], 'content' => $sub_content_list]);
+        }
         $courses->structured_outline = $content_list;
 
         $courses->course_routine = CourseClassRoutine::where('course_id', $course_id)->get();
@@ -1525,6 +1527,7 @@ class CourseController extends Controller
                 'discount_percentage'   => $request->discount_percentage,
                 'rating'    => $request->rating,
                 'has_life_coach'    => $request->has_life_coach,
+                'feed_to_homepage' => $request->feed_to_homepage ?? 0,
                 'is_active' => $request->is_active,
                 'is_free'   => $request->is_free,
                 'sequence'  => $request->sequence,
@@ -1566,6 +1569,16 @@ class CourseController extends Controller
     public function courseList()
     {
         $courseList = Course::leftJoin('categories', 'categories.id', 'courses.category_id')
+            ->select('courses.*', 'categories.name as category_name')
+            ->orderBy('courses.sequence', 'ASC')
+            ->get();
+        return $this->apiResponse($courseList, 'Course List', true, 200);
+    }
+
+    public function homeCourseList()
+    {
+        $courseList = Course::leftJoin('categories', 'categories.id', 'courses.category_id')
+            ->where('courses.feed_to_homepage', true)
             ->select('courses.*', 'categories.name as category_name')
             ->orderBy('courses.sequence', 'ASC')
             ->get();
@@ -1955,7 +1968,7 @@ class CourseController extends Controller
                             'mentor_id' => $value['mentor_id'],
                             'student_id' => $value['student_id'],
                             'is_active' => $value['is_active'],
-             
+                            'created_at' => date('Y-m-d H:i:s'),
                         ];
                     }
                     CourseStudentMapping::insert($studentMapping);
@@ -2015,6 +2028,7 @@ class CourseController extends Controller
                 'course_student_mappings.mentor_id',
                 'course_student_mappings.student_id',
                 'course_student_mappings.is_active',
+                'course_student_mappings.created_at',
                 'courses.title as course_title',
                 'mentor_informations.name as mentor_name',
                 'student_informations.name as student_name'
